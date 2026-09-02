@@ -3,94 +3,82 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- Unlisted, not secret: a QR is readable by whoever holds the device, so this
-     has to load without a login. noindex keeps it out of search results. -->
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="How to play Pocket Imposter — the handheld social deduction game. Word mode and Interactive mode, full rules.">
-<meta name="theme-color" content="#0B0D12">
+<meta name="description" content="How to play Pocket Imposter — the handheld party game. One of you is lying.">
+<meta name="theme-color" content="#FFC61A">
 <title>Pocket Imposter — How to Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Self-contained on purpose: no webfonts, no images, no scripts, no external
-   requests. It gets opened from a QR code on a playground, so it must render
-   instantly on bad signal and must not phone home to anybody.
+/* Light, warm and colourful, the way party-game sites actually look. Checked
+   against the real ones first: Exploding Kittens sits on cream #fcf8ee,
+   Jackbox on near-white with a bright red, Cards Against Humanity on blocks of
+   saturated yellow and cyan. Not one of them uses monospace or a near-black
+   ground - which is exactly why the previous version read as a hacker terminal.
    The device pictures are drawn in CSS at the firmware's real coordinates. */
 :root{
-  --bg:#0B0D12;
-  --panel:#151922;
-  --panel2:#1C212C;
-  --line:#262C3A;
-  --tx:#F5F7FB;
-  --mut:#949CAF;
+  --cream:#FFF7E8;
+  --paper:#FFFFFF;
+  --ink:#191614;
+  --mut:#6E675C;
   --gold:#FFC61A;
-  --green:#3AC75A;
-  --red:#FF4436;
+  --red:#E8412F;
+  --green:#12A05B;
+  --line:#EFE5D0;
+  --shadow:0 3px 0 rgba(25,22,20,.10);
+  --disp:"Fredoka",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
-  line-height:1.6;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:clip}
-.wrap{max-width:940px;margin:0 auto;padding:0 22px}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);
+  font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px}
 .narrow{max-width:660px}
 
-/* ---------------- nav ---------------- */
-.bar{position:sticky;top:0;z-index:20;background:rgba(11,13,18,.9);
-  backdrop-filter:saturate(150%) blur(10px);border-bottom:1px solid var(--line)}
-.bar .wrap{display:flex;align-items:center;gap:12px;height:56px}
-.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--tx);
-  font-weight:800;font-size:15px;letter-spacing:.01em;white-space:nowrap}
-.brand .dot{width:22px;height:22px;border-radius:6px;background:var(--red);
-  display:flex;align-items:center;justify-content:center;flex:none}
-.brand .dot::before{content:"";width:11px;height:5px;border-radius:2px;background:#0B0D12;
-  box-shadow:0 4px 0 #0B0D12}
-.brand em{font-style:normal;color:var(--mut);font-weight:600}
-/* Let the links scroll inside the bar rather than push the whole page sideways
-   on a very narrow screen. */
-.bar .wrap{min-width:0}
-.brand{flex:0 0 auto}
-.bar nav{margin-left:auto;display:flex;gap:2px;min-width:0;overflow-x:auto;
-  scrollbar-width:none;-ms-overflow-style:none}
+/* ---------- nav ---------- */
+.bar{position:sticky;top:0;z-index:20;background:rgba(255,247,232,.94);
+  backdrop-filter:blur(8px);border-bottom:2px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:12px;height:66px;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);
+  font-family:var(--disp);font-weight:700;font-size:20px;white-space:nowrap;flex:0 0 auto}
+.mark{width:32px;height:32px;border-radius:10px;background:var(--red);flex:none;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.mark::before{content:"";width:15px;height:6px;border-radius:3px;background:#fff;
+  box-shadow:0 6px 0 #fff}
+.bar nav{margin-left:auto;display:flex;gap:4px;min-width:0;overflow-x:auto;scrollbar-width:none}
 .bar nav::-webkit-scrollbar{display:none}
-.bar nav a{flex:0 0 auto}
-.bar nav a{font-size:14px;font-weight:600;color:var(--mut);text-decoration:none;
-  padding:7px 11px;border-radius:8px}
-.bar nav a:hover{color:var(--tx);background:var(--panel)}
+.bar nav a{flex:0 0 auto;font-family:var(--disp);font-weight:600;font-size:16px;
+  color:var(--mut);text-decoration:none;padding:8px 13px;border-radius:999px}
+.bar nav a:hover{color:var(--ink);background:#fff}
 
-/* ---------------- hero ---------------- */
-.hero{padding:56px 0 52px;border-bottom:1px solid var(--line)}
-.hero .grid{display:grid;gap:38px;align-items:center}
-@media(min-width:820px){.hero .grid{grid-template-columns:1.05fr .95fr;gap:48px}}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--gold);margin:0 0 14px}
-h1{font-size:clamp(38px,7vw,56px);line-height:1;margin:0;letter-spacing:-.035em;font-weight:900}
-.tagline{margin:18px 0 0;font-size:19px;color:var(--mut);max-width:32em}
-.facts{display:flex;gap:26px;margin:30px 0 0;flex-wrap:wrap}
-.facts div{min-width:0}
-.facts dt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--mut);margin:0}
-.facts dd{margin:5px 0 0;font-size:22px;font-weight:800;letter-spacing:-.02em}
+/* ---------- hero ---------- */
+.hero{background:var(--gold);border-bottom:2px solid var(--line);padding:52px 0 56px}
+.hero .grid{display:grid;gap:36px;align-items:center}
+@media(min-width:880px){.hero .grid{grid-template-columns:1fr auto;gap:52px}}
+.pill{display:inline-block;background:var(--ink);color:#fff;font-family:var(--disp);
+  font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;margin:0 0 18px}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line-height:1;
+  margin:0;letter-spacing:-.02em}
+.hero .sub{margin:18px 0 0;font-size:20px;max-width:20em;color:#4A4238;font-weight:500}
+.facts{display:flex;gap:12px;margin:28px 0 0;flex-wrap:wrap}
+.facts div{background:#fff;border-radius:14px;padding:12px 18px;box-shadow:var(--shadow)}
+.facts dt{font-size:13px;color:var(--mut);margin:0;font-weight:600}
+.facts dd{margin:2px 0 0;font-family:var(--disp);font-weight:700;font-size:22px}
 
-/* ---------------- the device, drawn in CSS ---------------- */
-.shot{display:flex;flex-direction:column;align-items:center;gap:10px}
-.bezel{background:#04050A;border:1px solid #2E3546;border-radius:16px;padding:11px;
-  box-shadow:0 22px 50px rgba(0,0,0,.55);width:max-content}
-.screen{width:320px;height:172px;position:relative;overflow:hidden;border-radius:4px;
+/* ---------- the device, drawn in CSS ---------- */
+.shot{display:flex;flex-direction:column;align-items:center;gap:12px;--s:1}
+.frame{width:calc(348px * var(--s));height:calc(200px * var(--s))}
+.bezel{background:#15171E;border-radius:20px;padding:13px;width:max-content;
+  box-shadow:0 10px 0 rgba(25,22,20,.18);transform:scale(var(--s));transform-origin:top left}
+.screen{width:320px;height:172px;position:relative;overflow:hidden;border-radius:6px;
   background:#14161C;color:#F2F4F8;font-weight:700;
   font-family:"Helvetica Neue",Arial,sans-serif}
 .screen *{position:absolute}
-.cap{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--mut);text-align:center}
-/* The screen is ALWAYS 320x172 - every element inside is positioned at the
-   firmware's real coordinates, so resizing it breaks all of them. To fit a
-   narrow phone, the whole frame is scaled instead and its wrapper reserves the
-   scaled space. */
-.shot{--s:1}
-.frame{width:calc(344px * var(--s));height:calc(196px * var(--s))}
-.bezel{transform:scale(var(--s));transform-origin:top left}
-@media(max-width:420px){.shot{--s:.80}}
-@media(max-width:360px){.shot{--s:.70}}
-/* screen furniture */
+.cap{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--mut);text-align:center}
+@media(max-width:430px){.shot{--s:.80}}
+@media(max-width:370px){.shot{--s:.70}}
 .s12{font-size:17px}.s18{font-size:25px}.s24{font-size:34px}
 .ctr{left:0;right:0;text-align:center}
 .dim{color:#868C9C}
@@ -107,107 +95,99 @@ h1{font-size:clamp(38px,7vw,56px);line-height:1;margin:0;letter-spacing:-.035em;
 .box{left:10px;top:36px;width:300px;height:78px;border-radius:10px;background:#262B38}
 .hold{left:132px;top:116px;width:56px;height:56px;border-radius:50%;background:#3AC75A;
   border:3px solid #F2F4F8}
-.hold.red{background:#FF4436}
 .btn{border-radius:12px;display:flex;align-items:center;justify-content:center}
 
-/* ---------------- sections ---------------- */
-section{padding:64px 0 0}
-.shead{margin:0 0 4px}
-h2{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--gold);margin:0 0 10px;font-weight:700}
-.htitle{font-size:clamp(27px,4.4vw,34px);line-height:1.15;margin:0;letter-spacing:-.025em;
-  font-weight:800}
-.intro{margin:12px 0 0;font-size:18px;color:var(--mut);max-width:34em}
-h3{font-size:21px;margin:36px 0 2px;letter-spacing:-.015em;font-weight:700}
-p{margin:11px 0 0;max-width:34em}
-ul{margin:14px 0 0;padding:0;list-style:none;max-width:34em}
-ul li{position:relative;padding-left:20px;margin:10px 0}
-ul li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;
-  border-radius:50%;background:var(--gold)}
-strong{color:var(--gold);font-weight:600}
+/* ---------- sections ---------- */
+section{padding:72px 0}
+section.white{background:var(--paper);border-top:2px solid var(--line);
+  border-bottom:2px solid var(--line)}
+.tag{display:inline-block;font-family:var(--disp);font-weight:700;font-size:14px;
+  padding:6px 14px;border-radius:999px;margin:0 0 14px}
+.tag.g{background:#FFF0C2;color:#8A6200}
+.tag.r{background:#FFE3DE;color:#B32A1B}
+.tag.b{background:#E3ECFF;color:#1F4BA8}
+h2{font-family:var(--disp);font-weight:700;font-size:clamp(29px,5vw,40px);line-height:1.1;
+  margin:0;letter-spacing:-.02em}
+.intro{margin:14px 0 0;font-size:19px;color:var(--mut);max-width:32em}
+h3{font-family:var(--disp);font-weight:600;font-size:24px;margin:34px 0 2px}
+p{margin:12px 0 0;max-width:33em}
+ul{margin:14px 0 0;padding:0;list-style:none;max-width:33em}
+ul li{position:relative;padding-left:26px;margin:11px 0}
+ul li::before{content:"";position:absolute;left:0;top:9px;width:11px;height:11px;
+  border-radius:50%;background:var(--gold);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+strong{font-weight:700}
 
-ol.steps{counter-reset:s;list-style:none;margin:20px 0 0;padding:0;
-  display:grid;gap:14px}
-@media(min-width:700px){ol.steps{grid-template-columns:repeat(3,1fr)}}
-ol.steps li{counter-increment:s;background:var(--panel);border:1px solid var(--line);
-  border-radius:13px;padding:18px}
-ol.steps li::before{content:counter(s);display:flex;width:28px;height:28px;border-radius:8px;
-  background:var(--panel2);border:1px solid var(--line);align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:13px;font-weight:600;color:var(--gold);margin-bottom:12px}
-ol.steps b{display:block;font-size:17px}
-ol.steps span{color:var(--mut);font-size:16px}
+.steps{display:grid;gap:16px;margin:28px 0 0;padding:0;list-style:none}
+@media(min-width:720px){.steps{grid-template-columns:repeat(3,1fr)}}
+.steps li{background:var(--cream);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.steps .n{width:38px;height:38px;border-radius:12px;background:var(--gold);
+  font-family:var(--disp);font-weight:700;font-size:19px;display:flex;align-items:center;
+  justify-content:center;margin-bottom:14px}
+.steps b{display:block;font-family:var(--disp);font-weight:600;font-size:20px}
+.steps span{color:var(--mut);font-size:17px}
 
-.split{display:grid;gap:30px;margin:34px 0 0;align-items:center}
-@media(min-width:780px){.split{grid-template-columns:1fr auto;gap:44px}}
-.split.flip>.shot{order:-1}
-@media(max-width:779px){.split.flip>.shot{order:0}}
-
-.note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);
-  border-radius:11px;padding:16px 18px;margin:26px 0 0;max-width:34em}
-.note b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--mut);margin-bottom:6px}
-.note p{margin:0;font-size:16px}
-
-.win{display:grid;gap:12px;margin:26px 0 0;max-width:34em}
-@media(min-width:540px){.win{grid-template-columns:1fr 1fr}}
-.win div{border-radius:12px;padding:16px 18px}
-.win .c{background:rgba(58,199,90,.10);border:1px solid rgba(58,199,90,.4)}
-.win .i{background:rgba(255,68,54,.10);border:1px solid rgba(255,68,54,.4)}
-.win b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
-  text-transform:uppercase;margin-bottom:6px}
-.win .c b{color:var(--green)}.win .i b{color:var(--red)}
-.win p{margin:0;font-size:16px}
-
-table{width:100%;max-width:34em;border-collapse:collapse;margin:20px 0 0;font-size:16px}
-th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line)}
-th{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--mut);font-weight:600}
-td:last-child,th:last-child{text-align:right;color:var(--gold);font-weight:600;
-  font-variant-numeric:tabular-nums}
-tr:last-child td{border-bottom:0}
-
-dl.ref{margin:22px 0 0;display:grid;gap:0}
-dl.ref div{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
-dl.ref div:last-child{border-bottom:0}
-dl.ref dt{flex:0 0 130px;font-weight:700;font-size:16px}
-dl.ref dd{margin:0;color:var(--mut);font-size:16px}
-@media(max-width:460px){dl.ref div{flex-direction:column;gap:3px}dl.ref dt{flex:none}}
-
-footer{margin-top:72px;border-top:1px solid var(--line);padding:26px 0 70px;
-  font-size:15px;color:var(--mut)}
-footer .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
-footer a{color:var(--mut)}
-@media(max-width:480px){
-  .bar .wrap{gap:8px;height:52px}
-  .brand .long{display:none}
-  .bar nav a{font-size:13px;padding:6px 8px}
+.split{display:grid;gap:32px;margin:36px 0 0;align-items:center}
+@media(min-width:820px){
+  .split{grid-template-columns:1fr auto;gap:48px}
+  .split.flip .shot{order:-1}
 }
+
+.note{background:var(--cream);border-radius:16px;padding:20px 22px;margin:26px 0 0;
+  max-width:33em;box-shadow:var(--shadow)}
+.note b{display:block;font-family:var(--disp);font-weight:700;font-size:17px;margin-bottom:4px}
+.note p{margin:0;font-size:17px;color:var(--mut)}
+
+.win{display:grid;gap:14px;margin:30px 0 0;max-width:33em}
+@media(min-width:540px){.win{grid-template-columns:1fr 1fr}}
+.win div{border-radius:18px;padding:20px;color:#fff;box-shadow:var(--shadow)}
+.win .c{background:var(--green)}
+.win .i{background:var(--red)}
+.win b{display:block;font-family:var(--disp);font-weight:700;font-size:20px;margin-bottom:3px}
+.win p{margin:0;font-size:17px;max-width:none}
+
+table{width:100%;max-width:33em;border-collapse:separate;border-spacing:0 8px;margin:18px 0 0}
+th{text-align:left;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--mut);
+  padding:0 14px}
+th:last-child{text-align:right}
+td{background:var(--cream);padding:14px;font-size:17px;font-weight:500}
+td:first-child{border-radius:12px 0 0 12px}
+td:last-child{border-radius:0 12px 12px 0;text-align:right;font-family:var(--disp);font-weight:700}
+
+dl.ref{margin:24px 0 0}
+dl.ref div{display:flex;gap:18px;background:var(--cream);border-radius:14px;padding:16px 18px;
+  margin-bottom:10px;box-shadow:var(--shadow)}
+dl.ref dt{flex:0 0 130px;font-family:var(--disp);font-weight:600;font-size:17px}
+dl.ref dd{margin:0;color:var(--mut);font-size:17px}
+@media(max-width:470px){dl.ref div{flex-direction:column;gap:2px}dl.ref dt{flex:none}}
+
+footer{background:var(--ink);color:#C9C2B6;padding:38px 0 60px;font-size:16px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+footer a{color:var(--gold);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
 
 <div class="bar"><div class="wrap">
-  <a class="brand" href="#top"><span class="dot"></span><span class="long">POCKET&nbsp;</span>IMPOSTER</a>
+  <a class="brand" href="#top"><span class="mark"></span>Pocket Imposter</a>
   <nav>
     <a href="#word">Word</a>
     <a href="#tag">Interactive</a>
-    <a href="#ref">Reference</a>
+    <a href="#ref">Settings</a>
   </nav>
 </div></div>
 
 <header class="hero" id="top"><div class="wrap"><div class="grid">
   <div>
-    <p class="eyebrow">Handheld party game</p>
+    <span class="pill">Handheld party game · 3–15 players</span>
     <h1>One of you<br>is lying.</h1>
-    <p class="tagline">Everyone gets the same secret word — except the imposter.
-    Everything the little screen doesn't have room for is here.</p>
+    <p class="sub">Everyone gets the same secret word — except the imposter.
+    Give a clue, spot the faker, don't be the faker.</p>
     <dl class="facts">
       <div><dt>Players</dt><dd>3–15</dd></div>
       <div><dt>A round</dt><dd>~5 min</dd></div>
       <div><dt>You need</dt><dd>The box</dd></div>
     </dl>
   </div>
-
   <div class="shot">
     <div class="frame"><div class="bezel"><div class="screen">
       <div class="s18 dim" style="left:10px;top:6px">?</div>
@@ -221,7 +201,7 @@ footer a{color:var(--mut)}
       </div>
       <div class="s12 dim" style="right:8px;top:9px">OFF</div>
       <div class="s24 ctr" style="top:44px;color:#FF4436;-webkit-text-stroke:4px #F2F4F8;
-        paint-order:stroke fill;letter-spacing:-.5px">IMPOSTER</div>
+        paint-order:stroke fill">IMPOSTER</div>
       <div class="btn" style="left:6px;top:88px;width:150px;height:74px;background:#FFC61A">
         <span class="s24" style="color:#14161C;position:static">Word</span></div>
       <div class="btn" style="left:164px;top:88px;width:150px;height:74px;background:#262B38">
@@ -233,21 +213,21 @@ footer a{color:var(--mut)}
 
 <main>
 
-<section id="word"><div class="wrap">
-  <div class="shead narrow">
-    <h2>Word mode</h2>
-    <p class="htitle">Sitting down, five minutes, one liar.</p>
-    <p class="intro">Everyone sees the same secret word. The imposter sees a hint instead,
-    and has to bluff their way through.</p>
+<section class="white" id="word"><div class="wrap">
+  <div class="narrow">
+    <span class="tag g">Word mode</span>
+    <h2>Sit down, pass it round, find the liar.</h2>
+    <p class="intro">Everyone sees the same secret word. The imposter sees a hint instead, and
+    has to bluff their way through.</p>
   </div>
 
   <ol class="steps">
-    <li><b>Set it up</b><span>Choose players and imposters, then press START. The device picks
-    a random category and word.</span></li>
-    <li><b>Pass it round</b><span>One person at a time. Hold the button to see your card, let
-    go before you hand it on.</span></li>
-    <li><b>Give one clue each</b><span>Go round the circle. One word out loud. Then talk, then
-    vote.</span></li>
+    <li><div class="n">1</div><b>Set it up</b>
+      <span>Choose players and imposters, then press START.</span></li>
+    <li><div class="n">2</div><b>Pass it round</b>
+      <span>Hold the button to see your card. Let go before you hand it on.</span></li>
+    <li><div class="n">3</div><b>One clue each</b>
+      <span>Go round the circle, one word out loud. Then talk, then vote.</span></li>
   </ol>
 
   <div class="split">
@@ -259,8 +239,8 @@ footer a{color:var(--mut)}
       gives the imposter a fighting chance.</p>
       <div class="note">
         <b>Why you hold the button</b>
-        <p>The word is only on screen while a finger is held down, so it can never be left
-        showing when the box changes hands.</p>
+        <p>The word only shows while a finger is held down, so it can never be left on screen
+        when the box changes hands.</p>
       </div>
     </div>
     <div class="shot">
@@ -274,7 +254,7 @@ footer a{color:var(--mut)}
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
       </div></div></div>
-      <p class="cap">Crew</p>
+      <p class="cap">What crew see</p>
     </div>
   </div>
 
@@ -291,20 +271,20 @@ footer a{color:var(--mut)}
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
       </div></div></div>
-      <p class="cap">Imposter</p>
+      <p class="cap">What the imposter sees</p>
     </div>
     <div>
       <h3>Bluffing</h3>
       <p>You know the category and one related word. Say something vague enough to survive and
       specific enough to sound like you know the answer.</p>
       <div class="note">
-        <b>The tension</b>
-        <p>Too obvious and the imposter learns the word. Too vague and the crew think you're
-        the imposter. That squeeze is the whole game.</p>
+        <b>The whole game in one line</b>
+        <p>Too obvious and the imposter learns the word. Too vague and everyone thinks you're
+        the imposter.</p>
       </div>
       <h3>The vote</h3>
       <p>Talk it over, then point at once on a count of three. Most votes is out. The device
-      deliberately doesn't run the vote — arguing about it is half the fun.</p>
+      stays out of it — arguing is half the fun.</p>
     </div>
   </div>
 
@@ -315,11 +295,11 @@ footer a{color:var(--mut)}
 </div></section>
 
 <section id="tag"><div class="wrap">
-  <div class="shead narrow">
-    <h2>Interactive mode</h2>
-    <p class="htitle">Outside, on your feet.</p>
+  <div class="narrow">
+    <span class="tag r">Interactive mode</span>
+    <h2>Same game, but outside and running.</h2>
     <p class="intro">Best somewhere with things to hide behind — an open field makes every tag
-    obvious. No word here: the device just deals roles.</p>
+    obvious. No secret word here: the device just deals roles.</p>
   </div>
 
   <div class="split">
@@ -328,7 +308,7 @@ footer a{color:var(--mut)}
       <p>Imposters take crew out by tagging them. If you're tagged you <strong>fall over and
       commit</strong> — lie there so somebody finds the body. No wandering off.</p>
       <h3>Ghosts</h3>
-      <p>Dead players go silent, leave the play area, and never point at their killer.</p>
+      <p>Dead players go quiet, leave the play area, and never point at their killer.</p>
       <h3>Fake deaths</h3>
       <p>Both sides can use them. Crew drop next to someone they suspect. Imposters drop right
       after a tag to muddy who did it.</p>
@@ -342,11 +322,11 @@ footer a{color:var(--mut)}
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
       </div></div></div>
-      <p class="cap">No word — role only</p>
+      <p class="cap">Role only — no word</p>
     </div>
   </div>
 
-  <h3>The two meetings</h3>
+  <h3>The two kinds of meeting</h3>
   <ul>
     <li><strong>Body meeting</strong> — anyone who finds a body shouts and everyone gathers.
     Unlimited, and it doesn't use up the device's count.</li>
@@ -355,19 +335,18 @@ footer a{color:var(--mut)}
   </ul>
   <div class="note">
     <b>End every meeting the same way</b>
-    <p>Count out <strong>"3, 2, 1, UP!"</strong> so anyone faking a death stands at the same
-    moment. Without it the faker is obvious. Then nobody may tag for
-    <strong>15 seconds</strong>, so people can scatter.</p>
+    <p>Count out "3, 2, 1, UP!" so anyone faking a death stands at the same moment — otherwise
+    the faker is obvious. Then nobody may tag for 15 seconds, so people can scatter.</p>
   </div>
 
-  <h3>Tag cooldown</h3>
-  <p>Honour system — the device doesn't time it. Add about 10 seconds per extra imposter.</p>
+  <h3>How long to wait between tags</h3>
   <table>
-    <tr><th>Players</th><th>Wait between tags</th></tr>
-    <tr><td>4–6</td><td>45 s</td></tr>
-    <tr><td>7–10</td><td>30 s</td></tr>
-    <tr><td>11–15</td><td>20 s</td></tr>
+    <tr><th>Players</th><th>Cooldown</th></tr>
+    <tr><td>4–6</td><td>45 sec</td></tr>
+    <tr><td>7–10</td><td>30 sec</td></tr>
+    <tr><td>11–15</td><td>20 sec</td></tr>
   </table>
+  <p style="color:#6E675C;font-size:17px">Honour system — add about 10 seconds per extra imposter.</p>
 
   <div class="win">
     <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
@@ -375,25 +354,23 @@ footer a{color:var(--mut)}
   </div>
 </div></section>
 
-<section id="ref"><div class="wrap">
-  <div class="shead narrow">
-    <h2>Reference</h2>
-    <p class="htitle">Every setting, explained.</p>
-  </div>
+<section class="white" id="ref"><div class="wrap">
   <div class="narrow">
+    <span class="tag b">Settings</span>
+    <h2>Every knob on the device.</h2>
     <dl class="ref">
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
       <div><dt>Imposters</dt><dd>Capped at half the players — 8 players allows at most 4.</dd></div>
-      <div><dt>Hint word</dt><dd>Off makes the imposter's job much harder.</dd></div>
+      <div><dt>Hint word</dt><dd>Turn it off to make the imposter's job much harder.</dd></div>
       <div><dt>Meetings</dt><dd>The shared pool of emergency meetings. Body meetings are free.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
       <div><dt>Theme</dt><dd>Night, Gold or Paper. Paper is the one to use outdoors.</dd></div>
       <div><dt>Touch</dt><dd>Re-runs the three-dot calibration if taps ever drift.</dd></div>
     </dl>
     <div class="note">
-      <b>The word bank</b>
-      <p>375 words across 15 categories, each with five possible hints — 1,875 in total. Every
-      word, hint and category is a single word, so nothing gets cut off on the screen.</p>
+      <b>375 words, 1,875 hints</b>
+      <p>15 categories, each word with five possible hints. Every word is a single word, so
+      nothing gets cut off on the little screen.</p>
     </div>
   </div>
 </div></section>
@@ -402,7 +379,7 @@ footer a{color:var(--mut)}
 
 <footer><div class="wrap">
   <span>Pocket Imposter — built by GamerCrafter15</span>
-  <span><a href="#top">Back to top</a></span>
+  <span><a href="#top">Back to top ↑</a></span>
 </div></footer>
 
 </body>
