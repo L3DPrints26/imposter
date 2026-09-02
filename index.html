@@ -3,172 +3,306 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- Unlisted, not secret: a QR is readable by whoever holds the device, so the
-     page has to load without a login. This keeps it out of search results. -->
+<!-- Unlisted, not secret: a QR is readable by whoever holds the device, so this
+     has to load without a login. noindex keeps it out of search results. -->
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="Rules for the Pocket Imposter handheld party game.">
-<meta name="theme-color" content="#14161C">
-<title>Pocket Imposter — Rules</title>
+<meta name="description" content="How to play Pocket Imposter — the handheld social deduction game. Word mode and Interactive mode, full rules.">
+<meta name="theme-color" content="#0F1116">
+<title>Pocket Imposter — How to Play</title>
 <style>
 /* Self-contained on purpose: no webfonts, no scripts, no external requests.
-   It is scanned on a playground, so it must render instantly on bad signal,
-   and it should not phone home to anyone. */
+   It gets opened on a playground, so it must render instantly on bad signal
+   and must not phone home to anybody. */
 :root{
-  --bg:#14161C; --surf:#1E222C; --line:#2C313D;
-  --tx:#F2F4F8; --mut:#9AA0B0;
-  --gold:#FFC61A; --green:#3AC75A; --red:#FF4436;
+  --bg:#0F1116;
+  --panel:#171A22;
+  --panel2:#1E222C;
+  --line:#282D3A;
+  --tx:#F4F6FA;
+  --mut:#98A0B2;
+  --gold:#FFC61A;
+  --green:#3AC75A;
+  --red:#FF4436;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:14px;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
-  line-height:1.55;-webkit-font-smoothing:antialiased}
-.wrap{max-width:620px;margin:0 auto;padding:32px 20px 72px}
+  line-height:1.6;-webkit-font-smoothing:antialiased;font-size:17px}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px}
 
-header{border-bottom:1px solid var(--line);padding-bottom:22px}
-.kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}
-h1{font-size:clamp(38px,13vw,58px);line-height:.92;margin:0;letter-spacing:-.03em;
-  font-weight:900;color:var(--red)}
-.sub{margin:14px 0 0;font-size:17px;color:var(--mut)}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 0}
-nav a{font-size:14px;font-weight:600;text-decoration:none;color:var(--tx);
-  border:1px solid var(--line);border-radius:999px;padding:9px 15px;background:var(--surf)}
+/* ---------- sticky nav ---------- */
+.bar{position:sticky;top:0;z-index:10;background:rgba(15,17,22,.92);
+  backdrop-filter:saturate(140%) blur(8px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:14px;height:54px}
+.brand{font-weight:800;font-size:15px;letter-spacing:.02em;color:var(--tx);
+  text-decoration:none;white-space:nowrap;min-width:0}
+.brand em{font-style:normal;color:var(--red)}
+.bar nav{margin-left:auto;display:flex;gap:4px}
+.bar nav a{font-size:14px;font-weight:600;color:var(--mut);text-decoration:none;
+  padding:7px 11px;border-radius:8px}
+.bar nav a:hover{color:var(--tx);background:var(--panel)}
 
-h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
-  margin:44px 0 4px;font-weight:800}
-h3{font-size:21px;margin:26px 0 4px;letter-spacing:-.01em;font-weight:700}
-p{margin:8px 0 0;font-size:17px}
-p.lead{font-size:18px;color:var(--mut)}
-ul{margin:10px 0 0;padding-left:20px}
-li{margin:7px 0;font-size:17px}
+/* ---------- hero ---------- */
+header.hero{padding:44px 0 8px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);margin:0 0 12px}
+h1{font-size:clamp(40px,12vw,60px);line-height:.94;margin:0;letter-spacing:-.035em;font-weight:900}
+.tagline{margin:16px 0 0;font-size:19px;color:var(--mut);max-width:34em}
+
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:28px 0 36px}
+.facts div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.facts dt{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--mut);margin:0}
+.facts dd{margin:6px 0 0;font-size:20px;font-weight:700;letter-spacing:-.01em}
+@media(max-width:460px){.facts{grid-template-columns:1fr 1fr}.facts div:last-child{grid-column:1/-1}}
+
+/* ---------- mode picker ---------- */
+.modes{display:grid;gap:12px;margin:0 0 8px}
+@media(min-width:560px){.modes{grid-template-columns:1fr 1fr}}
+.mode{display:block;text-decoration:none;color:inherit;border-radius:var(--r);
+  padding:20px;border:1px solid var(--line);background:var(--panel)}
+.mode:hover{border-color:var(--gold)}
+.mode b{display:block;font-size:21px;font-weight:800;letter-spacing:-.01em}
+.mode span{display:block;margin-top:6px;font-size:15px;color:var(--mut)}
+.mode i{display:block;margin-top:12px;font-style:normal;font-family:var(--mono);
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+
+/* ---------- sections ---------- */
+section{padding:46px 0 0}
+h2{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);
+  margin:0 0 10px;font-weight:800;font-family:var(--mono)}
+h2 + .intro{margin:0 0 6px;font-size:19px;color:var(--mut)}
+h3{font-size:22px;margin:32px 0 2px;letter-spacing:-.015em;font-weight:700}
+p{margin:10px 0 0}
+ul{margin:12px 0 0;padding-left:0;list-style:none}
+ul li{position:relative;padding-left:20px;margin:9px 0}
+ul li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;
+  border-radius:50%;background:var(--gold)}
 strong{color:var(--gold);font-weight:600}
-.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;
-  padding:15px 17px;margin:18px 0 0}
-.card h4{margin:0 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--mut);font-weight:700}
-.card p{margin:2px 0 0;font-size:16px}
-.win{display:grid;gap:10px;margin:14px 0 0}
+
+/* numbered steps */
+ol.steps{counter-reset:s;list-style:none;margin:16px 0 0;padding:0}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 0 46px;margin:18px 0}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:-1px;
+  width:30px;height:30px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:14px;font-weight:600;color:var(--gold)}
+ol.steps b{display:block;font-size:18px}
+ol.steps span{color:var(--mut)}
+
+.note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:10px;padding:15px 17px;margin:22px 0 0}
+.note b{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--mut);margin-bottom:5px;font-family:var(--mono)}
+.note p{margin:0;font-size:16px}
+
+.win{display:grid;gap:10px;margin:20px 0 0}
 @media(min-width:520px){.win{grid-template-columns:1fr 1fr}}
-.win div{border-radius:12px;padding:13px 15px;font-size:16px}
-.win .c{background:rgba(58,199,90,.12);border:1px solid rgba(58,199,90,.45)}
-.win .i{background:rgba(255,68,54,.12);border:1px solid rgba(255,68,54,.45)}
-.win b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.win div{border-radius:12px;padding:15px 17px}
+.win .c{background:rgba(58,199,90,.10);border:1px solid rgba(58,199,90,.42)}
+.win .i{background:rgba(255,68,54,.10);border:1px solid rgba(255,68,54,.42)}
+.win b{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:5px}
 .win .c b{color:var(--green)} .win .i b{color:var(--red)}
-table{width:100%;border-collapse:collapse;margin:12px 0 0;font-size:16px}
-th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line)}
-th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700}
-td:last-child,th:last-child{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}
-footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);
+.win p{margin:0;font-size:16px}
+
+table{width:100%;border-collapse:collapse;margin:18px 0 0;font-size:16px}
+caption{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--mut);padding-bottom:8px}
+th,td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--mut);font-weight:600}
+td:last-child,th:last-child{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;
+  font-weight:600}
+tr:last-child td{border-bottom:0}
+
+dl.ref{margin:16px 0 0}
+dl.ref div{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+dl.ref div:last-child{border-bottom:0}
+dl.ref dt{flex:0 0 116px;font-weight:700;font-size:16px}
+dl.ref dd{margin:0;color:var(--mut);font-size:16px}
+@media(max-width:440px){dl.ref div{flex-direction:column;gap:2px}dl.ref dt{flex:none}}
+
+footer{margin-top:56px;border-top:1px solid var(--line);padding:24px 0 64px;
   font-size:15px;color:var(--mut)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+footer a{color:var(--mut)}
+
+/* The nav was built at desktop width and overflowed a phone by 154px - the one
+   screen size this page actually exists for. Below 480 the brand drops its
+   first word and the links tighten up. */
+@media(max-width:480px){
+  .bar .wrap{gap:8px;height:50px}
+  .brand i{display:none}
+  .brand{font-size:14px}
+  .bar nav a{font-size:13px;padding:6px 8px}
+}
+@media(max-width:340px){
+  .bar nav a{font-size:12px;padding:6px 6px}
+}
+body{overflow-x:clip}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-<header>
-  <p class="kicker">Handheld party game</p>
-  <h1>IMPOSTER</h1>
-  <p class="sub">Everything the little screen doesn't have room for. Two ways to play:
-  one round a table, one running around outside.</p>
+<div class="bar"><div class="wrap">
+  <a class="brand" href="#top"><i>POCKET </i><em>IMPOSTER</em></a>
   <nav>
-    <a href="#word">Word mode</a>
-    <a href="#tag">Interactive mode</a>
-    <a href="#settings">Settings</a>
+    <a href="#word">Word</a>
+    <a href="#tag">Interactive</a>
+    <a href="#ref">Reference</a>
   </nav>
-</header>
+</div></div>
 
-<h2 id="word">Word mode</h2>
-<p class="lead">Sitting down, 3–15 players, about five minutes a round.</p>
+<header class="hero" id="top"><div class="wrap">
+  <p class="eyebrow">Handheld party game</p>
+  <h1>How to play</h1>
+  <p class="tagline">One of you is lying. Everything the little screen doesn't have
+  room for is here.</p>
 
-<h3>Dealing</h3>
-<p>Set the players and imposters, press START, then pass the box around. Each person holds
-the button to see their card and lets go before handing it on. The word is only on screen
-while a finger is held down, so it can't be left showing.</p>
-<ul>
-  <li><strong>Crew</strong> see the secret word.</li>
-  <li><strong>Imposters</strong> see one hint word instead — related, but not the answer.</li>
-  <li>Turn the hint off in setup to make it much harder for them.</li>
-</ul>
-<p>Everyone can see the <strong>category</strong>. That part isn't secret — it's what gives the
-imposter a fighting chance.</p>
+  <dl class="facts">
+    <div><dt>Players</dt><dd>3–15</dd></div>
+    <div><dt>A round</dt><dd>~5 min</dd></div>
+    <div><dt>You need</dt><dd>The box</dd></div>
+  </dl>
 
-<h3>Giving clues</h3>
-<p>Go round the circle. Each person says <strong>one word</strong> out loud that relates to the
-secret word. Not a sentence. Not a definition.</p>
-<div class="card">
-  <h4>The tension</h4>
-  <p>Too obvious and the imposter learns the word. Too vague and the crew think you're the
-  imposter. That squeeze is the whole game.</p>
-</div>
+  <div class="modes">
+    <a class="mode" href="#word">
+      <b>Word mode</b>
+      <span>Round a table. Everyone gets the same secret word — except one of you.</span>
+      <i>Indoors · Talking</i>
+    </a>
+    <a class="mode" href="#tag">
+      <b>Interactive mode</b>
+      <span>Outside, on your feet. Imposters tag people. Bodies get found.</span>
+      <i>Outdoors · Running</i>
+    </a>
+  </div>
+</div></header>
 
-<h3>Voting</h3>
-<p>Talk it over, then point at once on a count of three. Most votes is out. The device
-deliberately doesn't run the vote — arguing about it is half the fun.</p>
-<div class="win">
-  <div class="c"><b>Crew win</b>Vote out the imposter.</div>
-  <div class="i"><b>Imposter wins</b>Survive the vote, or guess the word.</div>
-</div>
+<main>
 
-<h2 id="tag">Interactive mode</h2>
-<p class="lead">Outside, on your feet. Best somewhere with things to hide behind — an open
-field makes every tag obvious.</p>
+<section id="word"><div class="wrap">
+  <h2>Word mode</h2>
+  <p class="intro">Sitting down, five minutes, no setup beyond passing the box.</p>
 
-<h3>Tagging</h3>
-<p>Imposters take crew out by tagging them. If you're tagged you <strong>fall over and
-commit</strong> — lie there so somebody finds the body. No wandering off.</p>
+  <h3>Dealing the roles</h3>
+  <ol class="steps">
+    <li><b>Set players and imposters</b><span>Then press START. The device picks a random
+    category and word.</span></li>
+    <li><b>Pass the box round</b><span>One person at a time. Hold the button to see your
+    card, let go before you hand it on.</span></li>
+    <li><b>Read your card</b><span>Crew see the secret word. Imposters see a hint word
+    instead — related, but not the answer.</span></li>
+  </ol>
 
-<h3>Two kinds of meeting</h3>
-<ul>
-  <li><strong>Body meeting</strong> — anyone who finds a body shouts and everyone gathers.
-  Unlimited, and it doesn't use up the device's count.</li>
-  <li><strong>Emergency meeting</strong> — called with no body. Limited, shared by everyone,
-  and imposters can call one to look innocent.</li>
-</ul>
-<p>Every meeting ends with a group <strong>"3, 2, 1, UP!"</strong> so anyone faking a death
-stands at the same moment. Without that, the faker is instantly obvious.</p>
-<p>Nobody may tag for <strong>15 seconds</strong> after a meeting ends, so people can scatter.</p>
+  <div class="note">
+    <b>Why holding matters</b>
+    <p>The word is only on screen while a finger is held down, so it can never be left
+    showing when the box changes hands.</p>
+  </div>
 
-<h3>Ghosts</h3>
-<p>Dead players go silent, leave the play area, and never point at their killer.</p>
+  <p style="margin-top:22px">Everyone can see the <strong>category</strong>. That part isn't
+  secret — it's what gives the imposter a fighting chance. Turn the hint word off in setup
+  to make their job much harder.</p>
 
-<h3>Fake deaths</h3>
-<p>Both sides can use them. Crew drop next to someone they suspect so others vote them out.
-Imposters drop right after a tag to muddy who did it.</p>
+  <h3>Giving clues</h3>
+  <p>Go round the circle. Each person says <strong>one word</strong> out loud that relates to
+  the secret word. Not a sentence. Not a definition.</p>
+  <div class="note">
+    <b>The tension</b>
+    <p>Too obvious and the imposter learns the word. Too vague and the crew think you're the
+    imposter. That squeeze is the whole game.</p>
+  </div>
 
-<h3>Tag cooldown</h3>
-<p>Honour system — the device doesn't time it.</p>
-<table>
-  <tr><th>Players</th><th>Wait between tags</th></tr>
-  <tr><td>4–6</td><td>45 s</td></tr>
-  <tr><td>7–10</td><td>30 s</td></tr>
-  <tr><td>11–15</td><td>20 s</td></tr>
-</table>
-<p>Add about 10 seconds for each extra imposter.</p>
-<div class="win">
-  <div class="c"><b>Crew win</b>No imposters left.</div>
-  <div class="i"><b>Imposters win</b>Living crew drops to the number of imposters.</div>
-</div>
+  <h3>The vote</h3>
+  <p>Talk it over, then point at once on a count of three. Most votes is out. The device
+  deliberately doesn't run the vote — arguing about it is half the fun.</p>
 
-<h2 id="settings">Settings</h2>
-<ul>
-  <li><strong>Players</strong> — 3 to 15.</li>
-  <li><strong>Imposters</strong> — capped at half the players, so 8 players allows at most 4.</li>
-  <li><strong>Hint word</strong> — off makes the imposter's job much harder.</li>
-  <li><strong>Meetings</strong> — the shared pool of emergency meetings. Body meetings are free.</li>
-  <li><strong>Light, Theme, Battery, Touch</strong> — behind the sliders icon on the menu.
-  Touch re-runs the three-dot calibration if taps ever drift.</li>
-</ul>
-<div class="card">
-  <h4>Words</h4>
-  <p>375 words across 15 categories, each with five possible hints — 1,875 in total. Every
-  word, hint and category is a single word, so nothing gets cut off on the screen.</p>
-</div>
+  <div class="win">
+    <div class="c"><b>Crew win</b><p>Vote out the imposter.</p></div>
+    <div class="i"><b>Imposter wins</b><p>Survive the vote, or guess the word.</p></div>
+  </div>
+</div></section>
 
-<footer>
-  <p>Built by GamerCrafter15. The device picks a random category every round — hold the
-  button, read your card, pass it on.</p>
-</footer>
+<section id="tag"><div class="wrap">
+  <h2>Interactive mode</h2>
+  <p class="intro">Outside, on your feet. Best somewhere with things to hide behind — an open
+  field makes every tag obvious.</p>
 
-</div>
+  <h3>Tagging</h3>
+  <p>Imposters take crew out by tagging them. If you're tagged you <strong>fall over and
+  commit</strong> — lie there so somebody finds the body. No wandering off.</p>
+
+  <h3>The two meetings</h3>
+  <ul>
+    <li><strong>Body meeting</strong> — anyone who finds a body shouts and everyone gathers.
+    Unlimited, and it doesn't use up the device's count.</li>
+    <li><strong>Emergency meeting</strong> — called with no body. Limited, shared by everyone,
+    and imposters can call one to look innocent.</li>
+  </ul>
+
+  <div class="note">
+    <b>End every meeting the same way</b>
+    <p>Count out <strong>"3, 2, 1, UP!"</strong> so anyone faking a death stands at the same
+    moment. Without it, the faker is instantly obvious. Then nobody may tag for
+    <strong>15 seconds</strong>, so people can scatter.</p>
+  </div>
+
+  <h3>Ghosts</h3>
+  <p>Dead players go silent, leave the play area, and never point at their killer.</p>
+
+  <h3>Fake deaths</h3>
+  <p>Both sides can use them. Crew drop next to someone they suspect so others vote them out.
+  Imposters drop right after a tag to muddy who did it.</p>
+
+  <h3>Tag cooldown</h3>
+  <p>Honour system — the device doesn't time it.</p>
+  <table>
+    <caption>Wait this long between tags</caption>
+    <tr><th>Players</th><th>Cooldown</th></tr>
+    <tr><td>4–6</td><td>45 s</td></tr>
+    <tr><td>7–10</td><td>30 s</td></tr>
+    <tr><td>11–15</td><td>20 s</td></tr>
+  </table>
+  <p style="color:var(--mut);font-size:16px">Add about 10 seconds for each extra imposter.</p>
+
+  <div class="win">
+    <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
+    <div class="i"><b>Imposters win</b><p>Living crew drops to the number of imposters.</p></div>
+  </div>
+</div></section>
+
+<section id="ref"><div class="wrap">
+  <h2>Reference</h2>
+  <p class="intro">What every setting on the device does.</p>
+
+  <dl class="ref">
+    <div><dt>Players</dt><dd>3 to 15.</dd></div>
+    <div><dt>Imposters</dt><dd>Capped at half the players — 8 players allows at most 4.</dd></div>
+    <div><dt>Hint word</dt><dd>Off makes the imposter's job much harder.</dd></div>
+    <div><dt>Meetings</dt><dd>The shared pool of emergency meetings. Body meetings are free.</dd></div>
+    <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
+    <div><dt>Theme</dt><dd>Night, Gold or Paper. Paper is the one to use outdoors.</dd></div>
+    <div><dt>Touch</dt><dd>Re-runs the three-dot calibration if taps ever drift.</dd></div>
+  </dl>
+
+  <div class="note">
+    <b>The word bank</b>
+    <p>375 words across 15 categories, each with five possible hints — 1,875 in total. Every
+    word, hint and category is a single word, so nothing gets cut off on the screen.</p>
+  </div>
+</div></section>
+
+</main>
+
+<footer><div class="wrap">
+  <span>Pocket Imposter — built by GamerCrafter15</span>
+  <span><a href="#top">Back to top</a></span>
+</div></footer>
+
 </body>
 </html>
