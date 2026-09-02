@@ -160,6 +160,25 @@ dl.ref dt{flex:0 0 130px;font-family:var(--disp);font-weight:600;font-size:17px}
 dl.ref dd{margin:0;color:var(--mut);font-size:17px}
 @media(max-width:470px){dl.ref div{flex-direction:column;gap:2px}dl.ref dt{flex:none}}
 
+
+/* ---------- report form ---------- */
+.report{background:var(--ink);color:#fff}
+.report h2{color:#fff}
+.report .intro{color:#B9B1A4}
+.report form{margin:26px 0 0;max-width:33em;display:grid;gap:12px}
+.report label{font-family:var(--disp);font-weight:600;font-size:16px;color:#E6DFD3}
+.report input,.report textarea{font-family:var(--sans);font-size:17px;width:100%;
+  padding:14px 16px;border-radius:14px;border:2px solid #3A342C;background:#231F1B;
+  color:#fff}
+.report input:focus,.report textarea:focus{outline:none;border-color:var(--gold)}
+.report textarea{min-height:130px;resize:vertical}
+.report button{font-family:var(--disp);font-weight:700;font-size:19px;color:var(--ink);
+  background:var(--gold);border:0;border-radius:14px;padding:16px 26px;cursor:pointer;
+  box-shadow:0 4px 0 #B98C00;justify-self:start}
+.report button:hover{background:#FFD34D}
+.report button:active{transform:translateY(2px);box-shadow:0 2px 0 #B98C00}
+.report .small{font-size:15px;color:#9A9186;margin-top:4px}
+.hp{position:absolute;left:-9999px}
 footer{background:var(--ink);color:#C9C2B6;padding:38px 0 60px;font-size:16px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
 footer a{color:var(--gold);text-decoration:none;font-weight:600}
@@ -173,6 +192,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <a href="#word">Word</a>
     <a href="#tag">Interactive</a>
     <a href="#ref">Settings</a>
+    <a href="#report">Feedback</a>
   </nav>
 </div></div>
 
@@ -180,8 +200,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div>
     <span class="pill">Handheld party game · 3–15 players</span>
     <h1>One of you<br>is lying.</h1>
-    <p class="sub">Everyone gets the same secret word — except the imposter.
-    Give a clue, spot the faker, don't be the faker.</p>
+    <p class="sub">Everyone gets the same secret word. Except one of you.
+    Give a clue, spot the faker, and try not to be the faker.</p>
     <dl class="facts">
       <div><dt>Players</dt><dd>3–15</dd></div>
       <div><dt>A round</dt><dd>~5 min</dd></div>
@@ -217,8 +237,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="narrow">
     <span class="tag g">Word mode</span>
     <h2>Sit down, pass it round, find the liar.</h2>
-    <p class="intro">Everyone sees the same secret word. The imposter sees a hint instead, and
-    has to bluff their way through.</p>
+    <p class="intro">Everyone sees the same secret word. The imposter only gets a hint, and has to
+    fake it.</p>
   </div>
 
   <ol class="steps">
@@ -233,14 +253,14 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="split">
     <div>
       <h3>Reading your card</h3>
-      <p>Crew see the word. Imposters see a hint word instead — related, but not the answer.
-      Turn the hint off in setup to make their job much harder.</p>
-      <p>Everyone can see the <strong>category</strong>. That part isn't secret — it's what
-      gives the imposter a fighting chance.</p>
+      <p>Crew see the word. Imposters get a hint word instead. It is related, but it is
+      not the answer. Turn the hint off in setup to make their job much harder.</p>
+      <p>Everyone can see the <strong>category</strong>. That part is not secret. It is what
+      gives the imposter a chance.</p>
       <div class="note">
         <b>Why you hold the button</b>
-        <p>The word only shows while a finger is held down, so it can never be left on screen
-        when the box changes hands.</p>
+        <p>The word only shows while you hold the button. Let go and it hides, so you cannot
+        leave it showing by accident.</p>
       </div>
     </div>
     <div class="shot">
@@ -275,16 +295,16 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     </div>
     <div>
       <h3>Bluffing</h3>
-      <p>You know the category and one related word. Say something vague enough to survive and
-      specific enough to sound like you know the answer.</p>
+      <p>You know the category and one related word. Say something vague enough to get away
+      with, but solid enough that nobody suspects you.</p>
       <div class="note">
         <b>The whole game in one line</b>
         <p>Too obvious and the imposter learns the word. Too vague and everyone thinks you're
         the imposter.</p>
       </div>
       <h3>The vote</h3>
-      <p>Talk it over, then point at once on a count of three. Most votes is out. The device
-      stays out of it — arguing is half the fun.</p>
+      <p>Talk it over, then point at once on three. Most votes is out. The device does not
+      run the vote. Arguing about it is half the fun.</p>
     </div>
   </div>
 
@@ -298,15 +318,15 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="narrow">
     <span class="tag r">Interactive mode</span>
     <h2>Same game, but outside and running.</h2>
-    <p class="intro">Best somewhere with things to hide behind — an open field makes every tag
-    obvious. No secret word here: the device just deals roles.</p>
+    <p class="intro">Play somewhere with stuff to hide behind. An open field makes every tag obvious.
+    There is no secret word in this mode. The device just hands out roles.</p>
   </div>
 
   <div class="split">
     <div>
       <h3>Tagging</h3>
-      <p>Imposters take crew out by tagging them. If you're tagged you <strong>fall over and
-      commit</strong> — lie there so somebody finds the body. No wandering off.</p>
+      <p>Imposters take crew out by tagging them. If you get tagged, <strong>fall over and
+      stay down</strong> so somebody finds the body. No wandering off.</p>
       <h3>Ghosts</h3>
       <p>Dead players go quiet, leave the play area, and never point at their killer.</p>
       <h3>Fake deaths</h3>
@@ -322,21 +342,22 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
       </div></div></div>
-      <p class="cap">Role only — no word</p>
+      <p class="cap">Role only, no word</p>
     </div>
   </div>
 
   <h3>The two kinds of meeting</h3>
   <ul>
-    <li><strong>Body meeting</strong> — anyone who finds a body shouts and everyone gathers.
-    Unlimited, and it doesn't use up the device's count.</li>
-    <li><strong>Emergency meeting</strong> — called with no body. Limited, shared by everyone,
-    and imposters can call one to look innocent.</li>
+    <li><strong>Body meeting.</strong> Anyone who finds a body shouts, and everyone gathers.
+    You get as many of these as you want. They do not use up the count on the device.</li>
+    <li><strong>Emergency meeting.</strong> Called when there is no body. There is a limited
+    number, shared by everyone, and imposters can call one to look innocent.</li>
   </ul>
   <div class="note">
     <b>End every meeting the same way</b>
-    <p>Count out "3, 2, 1, UP!" so anyone faking a death stands at the same moment — otherwise
-    the faker is obvious. Then nobody may tag for 15 seconds, so people can scatter.</p>
+    <p>Count out "3, 2, 1, UP!" so everyone faking a death stands up at the same time.
+    Otherwise the faker is obvious. Then nobody can tag for 15 seconds, so people can
+    spread out.</p>
   </div>
 
   <h3>How long to wait between tags</h3>
@@ -346,7 +367,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <tr><td>7–10</td><td>30 sec</td></tr>
     <tr><td>11–15</td><td>20 sec</td></tr>
   </table>
-  <p style="color:#6E675C;font-size:17px">Honour system — add about 10 seconds per extra imposter.</p>
+  <p style="color:#6E675C;font-size:17px">Honor system. Add about 10 seconds for each extra imposter.</p>
 
   <div class="win">
     <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
@@ -360,20 +381,50 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <h2>Every knob on the device.</h2>
     <dl class="ref">
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
-      <div><dt>Imposters</dt><dd>Capped at half the players — 8 players allows at most 4.</dd></div>
+      <div><dt>Imposters</dt><dd>Half the players, at most. So 8 players allows 4.</dd></div>
       <div><dt>Hint word</dt><dd>Turn it off to make the imposter's job much harder.</dd></div>
       <div><dt>Meetings</dt><dd>The shared pool of emergency meetings. Body meetings are free.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
       <div><dt>Theme</dt><dd>Night, Gold or Paper. Paper is the one to use outdoors.</dd></div>
-      <div><dt>Touch</dt><dd>Re-runs the three-dot calibration if taps ever drift.</dd></div>
+      <div><dt>Touch</dt><dd>Redo the three-dot calibration if taps start missing.</dd></div>
     </dl>
     <div class="note">
       <b>375 words, 1,875 hints</b>
-      <p>15 categories, each word with five possible hints. Every word is a single word, so
-      nothing gets cut off on the little screen.</p>
+      <p>15 categories. Every word has five possible hints. All of them are one word, so
+      nothing gets cut off on the small screen.</p>
     </div>
   </div>
 </div></section>
+
+
+<section class="report" id="report"><div class="wrap"><div class="narrow">
+  <span class="tag g">Feedback</span>
+  <h2>Something broken? Tell me.</h2>
+  <p class="intro">Found a bug, a word that makes no sense, or a rule that did not work?
+  Send it straight to me.</p>
+
+  <form action="https://api.web3forms.com/submit" method="POST">
+    <!-- Get a free key at web3forms.com: enter your email, they send you one.
+         Paste it here and every message lands in your inbox. -->
+    <input type="hidden" name="access_key" value="PASTE-YOUR-WEB3FORMS-KEY-HERE">
+    <input type="hidden" name="subject" value="Pocket Imposter feedback">
+    <input type="hidden" name="from_name" value="Pocket Imposter site">
+    <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+
+    <label for="n">Your name</label>
+    <input id="n" type="text" name="name" required maxlength="60" autocomplete="name">
+
+    <label for="e">Your email, if you want a reply</label>
+    <input id="e" type="email" name="email" maxlength="90" autocomplete="email">
+
+    <label for="m">What happened?</label>
+    <textarea id="m" name="message" required maxlength="1200"
+      placeholder="What were you doing, and what went wrong?"></textarea>
+
+    <button type="submit">Send it</button>
+    <p class="small">Goes straight to email. No account needed.</p>
+  </form>
+</div></div></section>
 
 </main>
 
