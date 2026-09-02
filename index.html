@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Unlisted, not secret: a QR is readable by whoever holds the device, so the
+     page has to load without a login. This keeps it out of search results. -->
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Rules for the Pocket Imposter handheld party game.">
+<meta name="theme-color" content="#14161C">
+<title>Pocket Imposter — Rules</title>
+<style>
+/* Self-contained on purpose: no webfonts, no scripts, no external requests.
+   It is scanned on a playground, so it must render instantly on bad signal,
+   and it should not phone home to anyone. */
+:root{
+  --bg:#14161C; --surf:#1E222C; --line:#2C313D;
+  --tx:#F2F4F8; --mut:#9AA0B0;
+  --gold:#FFC61A; --green:#3AC75A; --red:#FF4436;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:620px;margin:0 auto;padding:32px 20px 72px}
+
+header{border-bottom:1px solid var(--line);padding-bottom:22px}
+.kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}
+h1{font-size:clamp(38px,13vw,58px);line-height:.92;margin:0;letter-spacing:-.03em;
+  font-weight:900;color:var(--red)}
+.sub{margin:14px 0 0;font-size:17px;color:var(--mut)}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 0}
+nav a{font-size:14px;font-weight:600;text-decoration:none;color:var(--tx);
+  border:1px solid var(--line);border-radius:999px;padding:9px 15px;background:var(--surf)}
+
+h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
+  margin:44px 0 4px;font-weight:800}
+h3{font-size:21px;margin:26px 0 4px;letter-spacing:-.01em;font-weight:700}
+p{margin:8px 0 0;font-size:17px}
+p.lead{font-size:18px;color:var(--mut)}
+ul{margin:10px 0 0;padding-left:20px}
+li{margin:7px 0;font-size:17px}
+strong{color:var(--gold);font-weight:600}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;
+  padding:15px 17px;margin:18px 0 0}
+.card h4{margin:0 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--mut);font-weight:700}
+.card p{margin:2px 0 0;font-size:16px}
+.win{display:grid;gap:10px;margin:14px 0 0}
+@media(min-width:520px){.win{grid-template-columns:1fr 1fr}}
+.win div{border-radius:12px;padding:13px 15px;font-size:16px}
+.win .c{background:rgba(58,199,90,.12);border:1px solid rgba(58,199,90,.45)}
+.win .i{background:rgba(255,68,54,.12);border:1px solid rgba(255,68,54,.45)}
+.win b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.win .c b{color:var(--green)} .win .i b{color:var(--red)}
+table{width:100%;border-collapse:collapse;margin:12px 0 0;font-size:16px}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:700}
+td:last-child,th:last-child{text-align:right;color:var(--gold);font-variant-numeric:tabular-nums}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:15px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">Handheld party game</p>
+  <h1>IMPOSTER</h1>
+  <p class="sub">Everything the little screen doesn't have room for. Two ways to play:
+  one round a table, one running around outside.</p>
+  <nav>
+    <a href="#word">Word mode</a>
+    <a href="#tag">Interactive mode</a>
+    <a href="#settings">Settings</a>
+  </nav>
+</header>
+
+<h2 id="word">Word mode</h2>
+<p class="lead">Sitting down, 3–15 players, about five minutes a round.</p>
+
+<h3>Dealing</h3>
+<p>Set the players and imposters, press START, then pass the box around. Each person holds
+the button to see their card and lets go before handing it on. The word is only on screen
+while a finger is held down, so it can't be left showing.</p>
+<ul>
+  <li><strong>Crew</strong> see the secret word.</li>
+  <li><strong>Imposters</strong> see one hint word instead — related, but not the answer.</li>
+  <li>Turn the hint off in setup to make it much harder for them.</li>
+</ul>
+<p>Everyone can see the <strong>category</strong>. That part isn't secret — it's what gives the
+imposter a fighting chance.</p>
+
+<h3>Giving clues</h3>
+<p>Go round the circle. Each person says <strong>one word</strong> out loud that relates to the
+secret word. Not a sentence. Not a definition.</p>
+<div class="card">
+  <h4>The tension</h4>
+  <p>Too obvious and the imposter learns the word. Too vague and the crew think you're the
+  imposter. That squeeze is the whole game.</p>
+</div>
+
+<h3>Voting</h3>
+<p>Talk it over, then point at once on a count of three. Most votes is out. The device
+deliberately doesn't run the vote — arguing about it is half the fun.</p>
+<div class="win">
+  <div class="c"><b>Crew win</b>Vote out the imposter.</div>
+  <div class="i"><b>Imposter wins</b>Survive the vote, or guess the word.</div>
+</div>
+
+<h2 id="tag">Interactive mode</h2>
+<p class="lead">Outside, on your feet. Best somewhere with things to hide behind — an open
+field makes every tag obvious.</p>
+
+<h3>Tagging</h3>
+<p>Imposters take crew out by tagging them. If you're tagged you <strong>fall over and
+commit</strong> — lie there so somebody finds the body. No wandering off.</p>
+
+<h3>Two kinds of meeting</h3>
+<ul>
+  <li><strong>Body meeting</strong> — anyone who finds a body shouts and everyone gathers.
+  Unlimited, and it doesn't use up the device's count.</li>
+  <li><strong>Emergency meeting</strong> — called with no body. Limited, shared by everyone,
+  and imposters can call one to look innocent.</li>
+</ul>
+<p>Every meeting ends with a group <strong>"3, 2, 1, UP!"</strong> so anyone faking a death
+stands at the same moment. Without that, the faker is instantly obvious.</p>
+<p>Nobody may tag for <strong>15 seconds</strong> after a meeting ends, so people can scatter.</p>
+
+<h3>Ghosts</h3>
+<p>Dead players go silent, leave the play area, and never point at their killer.</p>
+
+<h3>Fake deaths</h3>
+<p>Both sides can use them. Crew drop next to someone they suspect so others vote them out.
+Imposters drop right after a tag to muddy who did it.</p>
+
+<h3>Tag cooldown</h3>
+<p>Honour system — the device doesn't time it.</p>
+<table>
+  <tr><th>Players</th><th>Wait between tags</th></tr>
+  <tr><td>4–6</td><td>45 s</td></tr>
+  <tr><td>7–10</td><td>30 s</td></tr>
+  <tr><td>11–15</td><td>20 s</td></tr>
+</table>
+<p>Add about 10 seconds for each extra imposter.</p>
+<div class="win">
+  <div class="c"><b>Crew win</b>No imposters left.</div>
+  <div class="i"><b>Imposters win</b>Living crew drops to the number of imposters.</div>
+</div>
+
+<h2 id="settings">Settings</h2>
+<ul>
+  <li><strong>Players</strong> — 3 to 15.</li>
+  <li><strong>Imposters</strong> — capped at half the players, so 8 players allows at most 4.</li>
+  <li><strong>Hint word</strong> — off makes the imposter's job much harder.</li>
+  <li><strong>Meetings</strong> — the shared pool of emergency meetings. Body meetings are free.</li>
+  <li><strong>Light, Theme, Battery, Touch</strong> — behind the sliders icon on the menu.
+  Touch re-runs the three-dot calibration if taps ever drift.</li>
+</ul>
+<div class="card">
+  <h4>Words</h4>
+  <p>375 words across 15 categories, each with five possible hints — 1,875 in total. Every
+  word, hint and category is a single word, so nothing gets cut off on the screen.</p>
+</div>
+
+<footer>
+  <p>Built by GamerCrafter15. The device picks a random category every round — hold the
+  button, read your card, pass it on.</p>
+</footer>
+
+</div>
+</body>
+</html>
