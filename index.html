@@ -45,7 +45,14 @@ body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
 .brand .dot::before{content:"";width:11px;height:5px;border-radius:2px;background:#0B0D12;
   box-shadow:0 4px 0 #0B0D12}
 .brand em{font-style:normal;color:var(--mut);font-weight:600}
-.bar nav{margin-left:auto;display:flex;gap:2px}
+/* Let the links scroll inside the bar rather than push the whole page sideways
+   on a very narrow screen. */
+.bar .wrap{min-width:0}
+.brand{flex:0 0 auto}
+.bar nav{margin-left:auto;display:flex;gap:2px;min-width:0;overflow-x:auto;
+  scrollbar-width:none;-ms-overflow-style:none}
+.bar nav::-webkit-scrollbar{display:none}
+.bar nav a{flex:0 0 auto}
 .bar nav a{font-size:14px;font-weight:600;color:var(--mut);text-decoration:none;
   padding:7px 11px;border-radius:8px}
 .bar nav a:hover{color:var(--tx);background:var(--panel)}
@@ -74,12 +81,15 @@ h1{font-size:clamp(38px,7vw,56px);line-height:1;margin:0;letter-spacing:-.035em;
 .screen *{position:absolute}
 .cap{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--mut);text-align:center}
-@media(max-width:400px){
-  .bezel{padding:8px;border-radius:13px}
-  .screen{transform:scale(.86);transform-origin:top left;
-    width:275px;height:148px}
-  .screen > *{transform-origin:top left}
-}
+/* The screen is ALWAYS 320x172 - every element inside is positioned at the
+   firmware's real coordinates, so resizing it breaks all of them. To fit a
+   narrow phone, the whole frame is scaled instead and its wrapper reserves the
+   scaled space. */
+.shot{--s:1}
+.frame{width:calc(344px * var(--s));height:calc(196px * var(--s))}
+.bezel{transform:scale(var(--s));transform-origin:top left}
+@media(max-width:420px){.shot{--s:.80}}
+@media(max-width:360px){.shot{--s:.70}}
 /* screen furniture */
 .s12{font-size:17px}.s18{font-size:25px}.s24{font-size:34px}
 .ctr{left:0;right:0;text-align:center}
@@ -199,7 +209,7 @@ footer a{color:var(--mut)}
   </div>
 
   <div class="shot">
-    <div class="bezel"><div class="screen">
+    <div class="frame"><div class="bezel"><div class="screen">
       <div class="s18 dim" style="left:10px;top:6px">?</div>
       <div style="left:142px;top:8px;width:36px;height:23px">
         <div style="left:0;top:1px;width:36px;height:3px;background:#868C9C"></div>
@@ -216,7 +226,7 @@ footer a{color:var(--mut)}
         <span class="s24" style="color:#14161C;position:static">Word</span></div>
       <div class="btn" style="left:164px;top:88px;width:150px;height:74px;background:#262B38">
         <span class="s12" style="position:static">Interactive</span></div>
-    </div></div>
+    </div></div></div>
     <p class="cap">The menu</p>
   </div>
 </div></div></header>
@@ -254,7 +264,7 @@ footer a{color:var(--mut)}
       </div>
     </div>
     <div class="shot">
-      <div class="bezel"><div class="screen">
+      <div class="frame"><div class="bezel"><div class="screen">
         <div class="back"></div>
         <div class="s12 dim" style="left:150px;top:8px">Food</div>
         <div class="box"></div>
@@ -263,14 +273,14 @@ footer a{color:var(--mut)}
         <div class="hold"></div>
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
-      </div></div>
+      </div></div></div>
       <p class="cap">Crew</p>
     </div>
   </div>
 
   <div class="split flip">
     <div class="shot">
-      <div class="bezel"><div class="screen">
+      <div class="frame"><div class="bezel"><div class="screen">
         <div class="back"></div>
         <div class="s12 dim" style="left:150px;top:8px">Food</div>
         <div class="box"></div>
@@ -280,7 +290,7 @@ footer a{color:var(--mut)}
         <div class="hold"></div>
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
-      </div></div>
+      </div></div></div>
       <p class="cap">Imposter</p>
     </div>
     <div>
@@ -324,14 +334,14 @@ footer a{color:var(--mut)}
       after a tag to muddy who did it.</p>
     </div>
     <div class="shot">
-      <div class="bezel"><div class="screen">
+      <div class="frame"><div class="bezel"><div class="screen">
         <div class="back"></div>
         <div class="box"></div>
         <div class="s24 ctr" style="top:56px;color:#FF4436">IMPOSTER</div>
         <div class="hold"></div>
         <div class="s18" style="left:8px;top:132px">P3</div>
         <div class="fwd"></div>
-      </div></div>
+      </div></div></div>
       <p class="cap">No word — role only</p>
     </div>
   </div>
