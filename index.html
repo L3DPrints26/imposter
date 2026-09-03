@@ -190,7 +190,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <a class="brand" href="#top"><span class="mark"></span>Pocket Imposter</a>
   <nav>
     <a href="#word">Word</a>
-    <a href="#tag">Interactive</a>
+    <a href="#tag">Tag</a>
     <a href="#ref">Settings</a>
     <a href="#report">Feedback</a>
   </nav>
@@ -222,10 +222,14 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div class="s12 dim" style="right:8px;top:9px">OFF</div>
       <div class="s24 ctr" style="top:44px;color:#FF4436;-webkit-text-stroke:4px #F2F4F8;
         paint-order:stroke fill">IMPOSTER</div>
-      <div class="btn" style="left:6px;top:88px;width:150px;height:74px;background:#FFC61A">
-        <span class="s24" style="color:#14161C;position:static">Word</span></div>
-      <div class="btn" style="left:164px;top:88px;width:150px;height:74px;background:#262B38">
-        <span class="s12" style="position:static">Interactive</span></div>
+      <div class="btn" style="left:6px;top:88px;width:150px;height:74px;background:#FFC61A;
+        flex-direction:column;gap:2px">
+        <span class="s24" style="color:#14161C;position:static">WORD</span>
+        <span style="color:#14161C;position:static;font-size:13px;font-weight:600">sit down</span></div>
+      <div class="btn" style="left:164px;top:88px;width:150px;height:74px;background:#262B38;
+        border:2px solid #FFC61A;flex-direction:column;gap:2px">
+        <span class="s24" style="position:static">TAG</span>
+        <span class="dim" style="position:static;font-size:13px;font-weight:600">outside</span></div>
     </div></div></div>
     <p class="cap">The menu</p>
   </div>
@@ -316,7 +320,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
 <section id="tag"><div class="wrap">
   <div class="narrow">
-    <span class="tag r">Interactive mode</span>
+    <span class="tag r">Tag mode</span>
     <h2>Same game, but outside and running.</h2>
     <p class="intro">Play somewhere with stuff to hide behind. An open field makes every tag obvious.
     There is no secret word in this mode. The device just hands out roles.</p>
@@ -367,7 +371,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <tr><td>7–10</td><td>30 sec</td></tr>
     <tr><td>11–15</td><td>20 sec</td></tr>
   </table>
-  <p style="color:#6E675C;font-size:17px">Honor system. Add about 10 seconds for each extra imposter.</p>
+  <p style="color:#6E675C;font-size:17px">The device counts this down for you. After the last card
+  is dealt, tag mode opens a play screen with the shared meeting pool on the left and the tag
+  cooldown on the right &mdash; tap the meeting tile to spend one, tap the cooldown tile after a
+  tag. It picks the number off the table above and adds 10 seconds for each imposter past the
+  first, so nobody has to remember it.</p>
 
   <div class="win">
     <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
@@ -383,15 +391,20 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
       <div><dt>Imposters</dt><dd>Half the players, at most. So 8 players allows 4.</dd></div>
       <div><dt>Hint word</dt><dd>Turn it off to make the imposter's job much harder.</dd></div>
-      <div><dt>Meetings</dt><dd>The shared pool of emergency meetings. Body meetings are free.</dd></div>
+      <div><dt>Meetings</dt><dd>The shared pool of emergency meetings, counted down on the play
+      screen during a round. Body meetings are free and do not touch it.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
       <div><dt>Theme</dt><dd>Night, Gold or Paper. Paper is the one to use outdoors.</dd></div>
       <div><dt>Touch</dt><dd>Redo the three-dot calibration if taps start missing.</dd></div>
+      <div><dt>Home and settings</dt><dd>Top right of every screen. You are never more than one tap
+      from either.</dd></div>
+      <div><dt>Reveal</dt><dd>End of a round. Shows the word and which players were lying.</dd></div>
     </dl>
     <div class="note">
-      <b>375 words, 1,875 hints</b>
-      <p>15 categories. Every word has five possible hints. All of them are one word, so
-      nothing gets cut off on the small screen.</p>
+      <b>360 words, 1,875 hints</b>
+      <p>15 categories. Every word has five possible hints. All of them are one word, so nothing
+      gets cut off on the small screen. The box will not deal you a word it has dealt in the
+      last 16 rounds.</p>
     </div>
   </div>
 </div></section>
@@ -403,9 +416,18 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <p class="intro">Found a bug, a word that makes no sense, or a rule that did not work?
   Send it straight to me.</p>
 
+  <p class="small"><b>The form is switched off until it has a key.</b> It was live with the
+  placeholder still in it, which means every message anyone sent went nowhere. Better to say so
+  than to eat them.</p>
+
+  <!-- TO SWITCH IT BACK ON, one step:
+       get a free key at web3forms.com (enter your email, they mail you one), paste it over
+       PASTE-YOUR-WEB3FORMS-KEY-HERE below, delete this comment wrapper and the paragraph
+       above, then push. Nothing else needs changing.
+
   <form action="https://api.web3forms.com/submit" method="POST">
-    <!-- Get a free key at web3forms.com: enter your email, they send you one.
-         Paste it here and every message lands in your inbox. -->
+    <!&#45;&#45; Get a free key at web3forms.com: enter your email, they send you one.
+         Paste it here and every message lands in your inbox. &#45;&#45;>
     <input type="hidden" name="access_key" value="PASTE-YOUR-WEB3FORMS-KEY-HERE">
     <input type="hidden" name="subject" value="Pocket Imposter feedback">
     <input type="hidden" name="from_name" value="Pocket Imposter site">
@@ -424,6 +446,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <button type="submit">Send it</button>
     <p class="small">Goes straight to email. No account needed.</p>
   </form>
+  -->
 </div></div></section>
 
 </main>
