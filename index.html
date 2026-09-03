@@ -93,8 +93,7 @@ h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line
   border-top:11px solid transparent;border-bottom:11px solid transparent;
   border-left:22px solid #FFC61A}
 .box{left:10px;top:36px;width:300px;height:78px;border-radius:10px;background:#262B38}
-.hold{left:132px;top:116px;width:56px;height:56px;border-radius:50%;background:#3AC75A;
-  border:3px solid #F2F4F8}
+.hold{left:112px;top:118px;width:96px;height:52px;border-radius:26px;background:#FF4436;border:3px solid #F2F4F8;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff}.hold.on{background:#3AC75A}.s9{font-size:13px;font-weight:400}.tile{position:absolute;background:#262B38;border-radius:10px}.bar{position:absolute;background:#FFC61A;border-radius:8px;color:#14161C;display:flex;align-items:center;justify-content:center;font-size:17px}
 .btn{border-radius:12px;display:flex;align-items:center;justify-content:center}
 
 /* ---------- sections ---------- */
@@ -249,36 +248,44 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <li><div class="n">1</div><b>Set it up</b>
       <span>Choose players and imposters, then press START.</span></li>
     <li><div class="n">2</div><b>Pass it round</b>
-      <span>Hold the button to see your card. Let go before you hand it on.</span></li>
+      <span>The box says who it goes to next. That player taps the arrow, holds
+      <b style="display:inline;font-size:inherit">HOLD</b> to see their card, lets go, and taps
+      Next.</span></li>
     <li><div class="n">3</div><b>One clue each</b>
-      <span>Go round the circle, one word out loud. Then talk, then vote.</span></li>
+      <span>The box picks who starts. Go round the circle, one word out loud. Then talk, then
+      vote, then tap Reveal to see the answer.</span></li>
   </ol>
 
   <div class="split">
     <div>
       <h3>Reading your card</h3>
-      <p>Crew see the word. Imposters get a hint word instead. It is related, but it is
-      not the answer. Turn the hint off in setup to make their job much harder.</p>
+      <p>Crew see the word. Imposters see <strong>IMPOSTER</strong> and a line that starts
+      <strong>Hint:</strong> &mdash; a related word, never the answer. Turn the hint off in setup and
+      the imposter gets only the category, which makes their job much harder.</p>
+      <p>Every hint is built to let you <em>bluff</em>, not to let you guess. On
+      <strong>Dog</strong> you might get <em>collar</em>, <em>walk</em> or <em>loyal</em> &mdash;
+      enough to say something that fits, never enough to know it is a dog.</p>
       <p>Everyone can see the <strong>category</strong>. That part is not secret. It is what
       gives the imposter a chance.</p>
       <div class="note">
         <b>Why you hold the button</b>
-        <p>The word only shows while you hold the button. Let go and it hides, so you cannot
-        leave it showing by accident.</p>
+        <p>The card only shows while you hold the button. Let go and it hides, so you cannot
+        leave it showing by accident. Before you hold it, the card itself tells you to.</p>
       </div>
     </div>
     <div class="shot">
       <div class="frame"><div class="bezel"><div class="screen">
         <div class="back"></div>
-        <div class="s12 dim" style="left:150px;top:8px">Food</div>
+        <div class="s12 dim ctr" style="top:8px">Food</div>
         <div class="box"></div>
         <div class="s12 ctr" style="top:44px;color:#A9AFC0">Word</div>
         <div class="s24 ctr" style="top:66px">Pizza</div>
-        <div class="hold"></div>
+        <div class="hold on">HOLD</div>
         <div class="s18" style="left:8px;top:132px">P3</div>
+        <div class="s9" style="left:216px;top:148px;color:#FFC61A">Next</div>
         <div class="fwd"></div>
       </div></div></div>
-      <p class="cap">What crew see</p>
+      <p class="cap">What crew see, while holding</p>
     </div>
   </div>
 
@@ -286,16 +293,16 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <div class="shot">
       <div class="frame"><div class="bezel"><div class="screen">
         <div class="back"></div>
-        <div class="s12 dim" style="left:150px;top:8px">Food</div>
+        <div class="s12 dim ctr" style="top:8px">Food</div>
         <div class="box"></div>
-        <div class="s18 ctr" style="top:38px;color:#FF4436">IMPOSTER</div>
-        <div class="s12 ctr" style="top:64px;color:#A9AFC0">Hint word</div>
-        <div class="s18 ctr" style="top:84px">melted</div>
-        <div class="hold"></div>
+        <div class="s12 ctr" style="top:44px;color:#FF4436">IMPOSTER</div>
+        <div class="s24 ctr" style="top:66px">Hint: melted</div>
+        <div class="hold on">HOLD</div>
         <div class="s18" style="left:8px;top:132px">P3</div>
+        <div class="s9" style="left:216px;top:148px;color:#FFC61A">Next</div>
         <div class="fwd"></div>
       </div></div></div>
-      <p class="cap">What the imposter sees</p>
+      <p class="cap">What the imposter sees, while holding</p>
     </div>
     <div>
       <h3>Bluffing</h3>
@@ -309,12 +316,37 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <h3>The vote</h3>
       <p>Talk it over, then point at once on three. Most votes is out. The device does not
       run the vote. Arguing about it is half the fun.</p>
+
+      <h3>Then settle it</h3>
+      <p>Once you have voted, tap <strong>Reveal</strong>. The box has known the answer the whole
+      time and this is where it tells you: the word, and exactly which players were lying. No
+      arguing about who was actually the imposter.</p>
     </div>
   </div>
 
-  <div class="win">
-    <div class="c"><b>Crew win</b><p>Vote out the imposter.</p></div>
-    <div class="i"><b>Imposter wins</b><p>Survive the vote, or guess the word.</p></div>
+  <div class="split">
+    <div class="shot">
+      <div class="frame"><div class="bezel"><div class="screen">
+        <div class="back"></div>
+        <div class="s12 dim ctr" style="top:14px">The word was</div>
+        <div class="s24 ctr" style="top:38px;color:#FFC61A">Pizza</div>
+        <div class="s12 dim ctr" style="top:80px">Imposters</div>
+        <div class="s18 ctr" style="top:100px;color:#FF4436">P3, P7</div>
+        <div class="bar" style="left:6px;top:136px;width:308px;height:32px">NEW GAME</div>
+      </div></div></div>
+      <p class="cap">Reveal &mdash; the end of a round</p>
+    </div>
+    <div>
+      <div class="win" style="margin:0">
+        <div class="c"><b>Crew win</b><p>Vote out the imposter.</p></div>
+        <div class="i"><b>Imposter wins</b><p>Survive the vote, or guess the word.</p></div>
+      </div>
+      <div class="note">
+        <b>Straight into the next round</b>
+        <p>New game keeps your players, imposters and settings, and deals a fresh word. It will
+        not repeat anything from the last 16 rounds.</p>
+      </div>
+    </div>
   </div>
 </div></section>
 
@@ -341,9 +373,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div class="frame"><div class="bezel"><div class="screen">
         <div class="back"></div>
         <div class="box"></div>
-        <div class="s24 ctr" style="top:56px;color:#FF4436">IMPOSTER</div>
-        <div class="hold"></div>
+        <div class="s24 ctr" style="top:50px;color:#FF4436">IMPOSTER</div>
+        <div class="s9 ctr" style="top:93px;color:#A9AFC0">Tag them. Blend in.</div>
+        <div class="hold on">HOLD</div>
         <div class="s18" style="left:8px;top:132px">P3</div>
+        <div class="s9" style="left:216px;top:148px;color:#FFC61A">Next</div>
         <div class="fwd"></div>
       </div></div></div>
       <p class="cap">Role only, no word</p>
@@ -377,9 +411,36 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   tag. It picks the number off the table above and adds 10 seconds for each imposter past the
   first, so nobody has to remember it.</p>
 
-  <div class="win">
-    <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
-    <div class="i"><b>Imposters win</b><p>Living crew drops to the number of imposters.</p></div>
+  <div class="split">
+    <div class="shot">
+      <div class="frame"><div class="bezel"><div class="screen">
+        <div class="back"></div>
+        <div class="tile" style="left:8px;top:40px;width:148px;height:88px"></div>
+        <div class="s12" style="left:8px;top:48px;width:148px;text-align:center;color:#A9AFC0">MEETINGS</div>
+        <div class="s24" style="left:8px;top:74px;width:148px;text-align:center;color:#FFC61A">2</div>
+        <div class="s9" style="left:8px;top:110px;width:148px;text-align:center;color:#A9AFC0">tap to use one</div>
+        <div class="tile" style="left:164px;top:40px;width:148px;height:88px"></div>
+        <div class="s12" style="left:164px;top:48px;width:148px;text-align:center;color:#A9AFC0">COOLDOWN</div>
+        <div class="s24" style="left:164px;top:74px;width:148px;text-align:center;color:#FF4436">23</div>
+        <div class="s9" style="left:164px;top:110px;width:148px;text-align:center;color:#A9AFC0">tap to restart</div>
+        <div class="tile" style="left:8px;top:134px;width:148px;height:34px;display:flex;
+          align-items:center;justify-content:center;font-size:17px;color:#F2F4F8">Reveal</div>
+        <div class="bar" style="left:164px;top:134px;width:148px;height:34px">New game</div>
+      </div></div></div>
+      <p class="cap">The play screen, live during a round</p>
+    </div>
+    <div>
+      <div class="win" style="margin:0">
+        <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
+        <div class="i"><b>Imposters win</b><p>Living crew drops to the number of imposters.</p></div>
+      </div>
+      <div class="note">
+        <b>Nobody has to keep count</b>
+        <p>The left tile is your shared pool of emergency meetings. The right one is the tag
+        cooldown, already set from the table above. Tap it the moment you tag someone and let it
+        run down before you tag again.</p>
+      </div>
+    </div>
   </div>
 </div></section>
 
@@ -390,21 +451,28 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <dl class="ref">
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
       <div><dt>Imposters</dt><dd>Half the players, at most. So 8 players allows 4.</dd></div>
-      <div><dt>Hint word</dt><dd>Turn it off to make the imposter's job much harder.</dd></div>
+      <div><dt>Hint word</dt><dd>On: the imposter gets a related word. Off: only the category.
+      The switch says which, so you are never guessing what it does.</dd></div>
       <div><dt>Meetings</dt><dd>The shared pool of emergency meetings, counted down on the play
       screen during a round. Body meetings are free and do not touch it.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
       <div><dt>Theme</dt><dd>Night, Gold or Paper. Paper is the one to use outdoors.</dd></div>
       <div><dt>Touch</dt><dd>Redo the three-dot calibration if taps start missing.</dd></div>
       <div><dt>Home and settings</dt><dd>Top right of every screen. You are never more than one tap
-      from either.</dd></div>
+      from either, and Back out of settings returns you to the screen you left.</dd></div>
+      <div><dt>Rules</dt><dd>Top left of the menu. Six short pages for whichever mode you tapped
+      last, and this page as a QR code on the sixth.</dd></div>
+      <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu when it is
+      under 20. The box dims after a minute idle and sleeps after ten; a tap wakes it right where
+      it was.</dd></div>
       <div><dt>Reveal</dt><dd>End of a round. Shows the word and which players were lying.</dd></div>
     </dl>
     <div class="note">
-      <b>360 words, 1,875 hints</b>
-      <p>15 categories. Every word has five possible hints. All of them are one word, so nothing
-      gets cut off on the small screen. The box will not deal you a word it has dealt in the
-      last 16 rounds.</p>
+      <b>450 words, 2,250 hints</b>
+      <p>18 categories: Animals, Food, Places, Sports, Household, Jobs, School, Tech, Nature,
+      Travel, Music, TV &amp; Movies, Clothing, Vehicles, Holidays, Countries, Games and Body.
+      Every word has five possible hints, each a single word, so nothing gets cut off on the small
+      screen. The box will not deal a word it has dealt in the last 16 rounds.</p>
     </div>
   </div>
 </div></section>
