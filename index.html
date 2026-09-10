@@ -95,6 +95,18 @@ h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line
 .box{left:10px;top:36px;width:300px;height:78px;border-radius:10px;background:#262B38}
 .hold{left:112px;top:118px;width:96px;height:52px;border-radius:26px;background:#FF4436;border:3px solid #F2F4F8;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:17px;color:#fff}.hold.on{background:#3AC75A}.s9{font-size:13px;font-weight:400}.tile{position:absolute;background:#262B38;border-radius:10px}.gbar{position:absolute;background:#FFC61A;border-radius:8px;color:#14161C;display:flex;align-items:center;justify-content:center;font-size:17px}
 .btn{border-radius:12px;display:flex;align-items:center;justify-content:center}
+/* the top-bar icons, at the coordinates the firmware draws them: padlock
+   centred on x 199, home on 250, settings on 296 */
+.pad{left:190px;top:6px;width:18px;height:24px}
+.pad::before{content:"";position:absolute;left:3px;top:1px;width:12px;height:12px;
+  border-radius:50%;border:2px solid #FFC61A;box-sizing:border-box}
+.pad::after{content:"";position:absolute;left:0;top:10px;width:18px;height:14px;
+  border-radius:3px;background:#FFC61A}
+.home{left:236px;top:7px;width:28px;height:23px}
+.home::before{content:"";position:absolute;left:0;top:0;width:0;height:0;
+  border-left:14px solid transparent;border-right:14px solid transparent;
+  border-bottom:12px solid #868C9C}
+.home::after{content:"";position:absolute;left:5px;top:10px;width:18px;height:13px;background:#868C9C}
 
 /* ---------- sections ---------- */
 section{padding:72px 0}
@@ -213,6 +225,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <a href="#howto">Start here</a>
     <a href="#word">Word</a>
     <a href="#tag">Tag</a>
+    <a href="#lock">Lock</a>
     <a href="#ref">Settings</a>
     <a href="#report">Feedback</a>
   </nav>
@@ -290,6 +303,13 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <b>The only three rules for your clue</b>
     <p>Do not say the secret word. Do not be so obvious that the imposter works it out. Do not
     be so vague that everyone starts looking at you.</p>
+  </div>
+
+  <div class="note">
+    <b>Nothing happening when you tap? It is locked, not broken</b>
+    <p>There is a padlock at the top of the screen. While it is shut, nothing else on the
+    screen answers, so the box cannot get tapped by accident while it is being passed. Tap the
+    padlock and it all works again. <a class="more" href="#lock">How the lock works &rarr;</a></p>
   </div>
 
   <h3 id="tagtips">Quick tips and how to play for tag mode</h3>
@@ -519,6 +539,67 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 </div></section>
 
+<section class="white" id="lock"><div class="wrap">
+  <div class="narrow">
+    <span class="tag b">The lock</span>
+    <h2>So nobody taps their way into your word.</h2>
+    <p class="intro">A touchscreen going round a table gets tapped by accident. By the next
+    player's thumb, or by the table itself when somebody sets it down. The padlock is there to
+    stop that.</p>
+  </div>
+
+  <div class="split">
+    <div>
+      <h3>What the padlock does</h3>
+      <p>It sits at the top of the screen, just left of the home icon. While it is shut,
+      <strong>nothing else on the screen answers you</strong>. Holding the button will not bring
+      the word up. The arrow will not move you on. Tap the padlock and everything works again.</p>
+      <div class="note">
+        <b>Read this before somebody thinks it is broken</b>
+        <p>A locked screen looks exactly like a frozen one. It is not. Look at the top of the
+        screen, tap the padlock, and carry on.</p>
+      </div>
+      <h3>Off, Manual, Auto</h3>
+      <p>The Lock tile in settings cycles through all three.</p>
+      <ul>
+        <li><strong>Off.</strong> No padlock at all, and nothing ever locks.</li>
+        <li><strong>Manual.</strong> The padlock is there and you shut it and open it
+        yourself.</li>
+        <li><strong>Auto.</strong> The box locks itself the moment you tap Next and hand it on.
+        The next player taps the padlock, sees their word, taps Next, and it locks again behind
+        them. Nobody can thumb their way into somebody else's word on the way across.</li>
+      </ul>
+      <div class="note">
+        <b>It only locks while the cards go round</b>
+        <p>Once everyone has looked, it stops. The talk screen and the tag play screen are
+        shared, and locking those would just be in the way. A fresh round never starts
+        locked.</p>
+      </div>
+    </div>
+    <div class="shot">
+      <div class="frame"><div class="bezel"><div class="screen">
+        <div class="back"></div>
+        <div class="pad"></div>
+        <div class="home"></div>
+        <div style="left:278px;top:6px;width:36px;height:23px">
+          <div style="left:0;top:1px;width:36px;height:3px;background:#868C9C"></div>
+          <div style="left:5px;top:-1px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+          <div style="left:0;top:10px;width:36px;height:3px;background:#868C9C"></div>
+          <div style="left:16px;top:8px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+          <div style="left:0;top:19px;width:36px;height:3px;background:#868C9C"></div>
+          <div style="left:25px;top:17px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+        </div>
+        <div class="s12 dim ctr" style="top:32px">Hand the box to</div>
+        <div class="s24 ctr" style="top:52px">Player 4</div>
+        <div class="s12 dim ctr" style="top:96px">4 of 8</div>
+        <div class="s9" style="left:196px;top:148px;color:#FFC61A">Then tap</div>
+        <div class="fwd"></div>
+      </div></div></div>
+      <p class="cap">Locked, waiting for the next player</p>
+    </div>
+  </div>
+</div></section>
+
 <section class="white" id="ref"><div class="wrap">
   <div class="narrow">
     <span class="tag b">Settings</span>
@@ -531,10 +612,14 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div><dt>Meetings</dt><dd>The shared pool of emergency meetings, counted down on the play
       screen during a round. Body meetings are free and do not touch it.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
-      <div><dt>Theme</dt><dd>A page of looks to pick from. Paper is the bright one, and it is the
-      one to use outside.</dd></div>
+      <div><dt>Theme</dt><dd>Looks to pick from, three on screen at a time with arrows to page
+      through the rest. Paper is the bright one, and it is the one to use outside.</dd></div>
       <div><dt>Tips</dt><dd>The small lines that tell you what a screen wants. Leave them on for
       your first few games and turn them off once you know the box.</dd></div>
+      <div><dt>Lock</dt><dd>Off, Manual or Auto. Manual puts a padlock at the top of the screen
+      that you shut yourself. Auto shuts it every time the box is handed on. While it is shut,
+      nothing answers except the padlock. <a class="more" href="#lock">All of it here &rarr;</a>
+      </dd></div>
       <div><dt>Home and settings</dt><dd>Top right of every screen. You are never more than one tap
       from either, and Back out of settings returns you to the screen you left.</dd></div>
       <div><dt>Rules</dt><dd>Top left of the menu. Six short pages for whichever mode you tapped
