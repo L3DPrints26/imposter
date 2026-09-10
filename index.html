@@ -225,6 +225,30 @@ esp-web-install-button{display:block;margin:22px 0 0}
 .flashbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #B98C00}
 .warn{display:block;max-width:33em;margin:22px 0 0;font-weight:600;color:#B32A1B}
 
+/* ---------- how far along the update is ----------
+   The installer draws its own progress inside its dialog, but that lives in a
+   shadow root the page cannot reach, and it is a thin grey line nobody reads.
+   This is the same numbers, on the page, big enough to see from across a
+   table. The percentage is the real one the flasher reports while it writes.
+   There is deliberately no bar at all until writing actually starts, because a
+   bar sitting at nought would be a lie about what the box is doing. Until then
+   it says which stage it is on in words. */
+.ustat{max-width:33em;margin:22px 0 0;background:var(--paper);border:2px solid var(--line);
+  border-radius:18px;padding:20px 22px;box-shadow:var(--shadow)}
+.ustat b{display:block;font-family:var(--disp);font-weight:700;font-size:21px;line-height:1.2}
+.ustat.done b{color:var(--green)}
+.ustat.bad b{color:var(--red)}
+.ustat p{margin:6px 0 0;font-size:17px;color:var(--mut)}
+.ubar{position:relative;height:46px;margin:16px 0 0;border-radius:14px;
+  background:var(--line);overflow:hidden}
+.ufill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:14px;
+  background:var(--gold);transition:width .2s linear}
+.ustat.done .ufill{background:var(--green)}
+.upct{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;
+  justify-content:center;font-family:var(--disp);font-weight:700;font-size:21px;color:var(--ink)}
+.ustat.done .upct{color:#fff}
+@media(prefers-reduced-motion:reduce){.ufill{transition:none}}
+
 /* a link that reads as a link on the cream ground */
 a.more{color:var(--ink);font-family:var(--disp);font-weight:600;text-decoration:none;
   box-shadow:inset 0 -3px 0 var(--gold)}
@@ -711,6 +735,18 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <p class="warn" id="upwait" hidden>There is nothing new to put on it right now. When there is,
   the button turns up here on its own.</p>
 
+  <!-- Nothing here until an update is actually running. It stays out of the
+       way when there is nothing to say. -->
+  <div class="ustat" id="upstat" hidden aria-live="polite">
+    <b id="upphase"></b>
+    <div class="ubar" id="upbar" hidden role="progressbar"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="ufill" id="upfill"></div>
+      <span class="upct" id="uppct">0%</span>
+    </div>
+    <p id="upsub"></p>
+  </div>
+
   <ol class="steps">
     <li><div class="n">1</div><b>Plug it in</b>
       <span>One end in the box, the other in the computer. The screen should come on.</span></li>
@@ -718,8 +754,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <span>A small window asks which device you mean. Unplug the box and plug it back in while
       you are looking at that list, and the one that appears is yours. Pick it.</span></li>
     <li><div class="n">3</div><b>Leave it alone</b>
-      <span>A bar fills up. Do not unplug it while that is happening. The box restarts by itself
-      when it is done and you are finished.</span></li>
+      <span>A bar fills up on this page and tells you how far along it is. Do not unplug it while
+      that is happening. The box restarts by itself when it is done and you are finished.</span></li>
   </ol>
 
   <div class="note">
@@ -822,6 +858,196 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       }));
     })
     .catch(missing);
+})();
+</script>
+
+<script>
+/* Put the real progress on the page.
+
+   Why this is not two lines of addEventListener: esp-web-tools 10.4.0 does
+   not fire anything at the install button. The button's whole job is to open
+   a serial port and drop an <ewt-install-dialog> on the end of <body>. There
+   IS a "state-changed" event in the bundle, but that one belongs to Improv
+   Wi-Fi and has nothing to do with flashing, so listening for it would get us
+   a bar that never moves.
+
+   What the flasher does do is hand every step to the dialog, which parks it
+   on itself as _installState. That object is the genuine article, straight
+   from the writer:
+
+     { state: "initializing" | "preparing" | "erasing" | "writing"
+              | "finished" | "error",
+       message: "...",
+       details: { percentage, bytesWritten, bytesTotal }   (while writing)
+                { error: "write_failed", ... }             (when it breaks) }
+
+   So: watch <body> for the dialog turning up, then read that object while it
+   is there. Every number below comes out of it. Nothing here is on a timer
+   and nothing moves on its own, which is the point - if the flasher stops
+   reporting, the bar stops, the way it should.
+
+   If a later version of esp-web-tools renames any of this, the readout falls
+   back to words and no bar at all. It never invents movement. */
+(function () {
+  var box   = document.getElementById('upstat'),
+      phase = document.getElementById('upphase'),
+      sub   = document.getElementById('upsub'),
+      bar   = document.getElementById('upbar'),
+      fill  = document.getElementById('upfill'),
+      pct   = document.getElementById('uppct');
+  if (!box || !window.MutationObserver) return;
+
+  var dlg = null, timer = null, key = '', done = false;
+
+  function pc(n) {
+    n = Math.max(0, Math.min(100, Math.round(n)));
+    fill.style.width = n + '%';
+    pct.textContent = n + '%';
+    bar.setAttribute('aria-valuenow', n);
+  }
+
+  /* One place that touches the panel. k is what makes a step different from
+     the one before it, so the words are only rewritten when they change and a
+     screen reader is not read the same line eighty times while it writes. */
+  function say(k, head, tail, n) {
+    if (k !== key) {
+      key = k;
+      phase.textContent = head;
+      sub.textContent = tail;
+      box.className = 'ustat' + (k === 'done' ? ' done' : k.charAt(0) === '!' ? ' bad' : '');
+      bar.hidden = n === null;
+      box.hidden = false;
+      done = k === 'done' || k.charAt(0) === '!';
+    }
+    if (n !== null) pc(n);
+  }
+
+  function idle() {
+    box.hidden = true;
+    bar.hidden = true;
+    box.className = 'ustat';
+    pc(0);
+    key = '';
+    done = false;
+  }
+
+  var reasons = {
+    failed_initialize:
+      'The computer could not get the box to answer. Unplug it, plug it back in, and press ' +
+      'Update my box to go again. When it keeps doing this it is nearly always the cable.',
+    not_supported:
+      'Whatever is on the end of that cable is not a Pocket Imposter. Check you picked the ' +
+      'right thing in the little window.',
+    failed_firmware_download:
+      'The new version would not come down to your computer. Check you are still online, then ' +
+      'press Update my box to go again.',
+    write_failed:
+      'It lost the box part way through writing. Leave it plugged in, press Update my box, and ' +
+      'let it run all the way this time. The box will not play again until an update finishes.'
+  };
+
+  function full(m) {
+    m = (m == null ? '' : String(m)).trim();
+    if (!m) return '';
+    return /[.!?]$/.test(m) ? m : m + '.';
+  }
+
+  function read() {
+    if (!dlg || !dlg.isConnected) { stop(); return; }
+
+    var s = dlg._installState, st = s && s.state, d = (s && s.details) || {};
+
+    if (st === 'writing') {
+      /* The only place a bar is allowed, because this is the only place with
+         a real number behind it. */
+      if (typeof d.percentage === 'number')
+        say('write', 'Putting it on the box',
+            'Keep it plugged in and keep this tab in front. Unplugging it now leaves it half done.',
+            d.percentage);
+      else
+        say('write?', 'Putting it on the box',
+            'Keep it plugged in and keep this tab in front. Unplugging it now leaves it half done.',
+            null);
+      return;
+    }
+
+    if (st === 'finished') {
+      say('done', 'All done',
+          'The box restarts on its own. Close the little window, unplug it, and go and play.', 100);
+      return;
+    }
+
+    if (st === 'error') {
+      /* The words on the page are ours, because the library's own line tells
+         people to hold a BOOT button and the sold boxes do not have one. The
+         library's line still goes to the console, once, so there is something
+         to go on if somebody reports it. */
+      var k = '!' + (d.error || s.message);
+      if (k !== key && s.message) console.warn('Pocket Imposter update failed:', s.message);
+      say(k, 'It stopped before it finished',
+          reasons[d.error] ||
+            'Something went wrong part way through. Unplug it, plug it back in, and press ' +
+            'Update my box to go again.',
+          null);
+      return;
+    }
+
+    if (st === 'erasing') {
+      say('erase', 'Making room on the box',
+          'This bit sits still for a while and looks like nothing is happening. That is normal. ' +
+          'Leave it alone.', null);
+      return;
+    }
+
+    if (st === 'preparing') {
+      say('prep', 'Getting the new version ready',
+          'It comes down to your computer first. A few seconds.', null);
+      return;
+    }
+
+    if (st === 'initializing') {
+      say('init', 'Waking the box up', 'Nothing for you to do here.', null);
+      return;
+    }
+
+    /* Nothing is being written yet. Either the dialog is still opening, or it
+       is sat there waiting for a person, or it fell over before it got going. */
+    if (dlg.getAttribute('state') === 'ERROR' && dlg._error) {
+      say('!dlg' + dlg._error, 'It could not get going',
+          full(dlg._error) + ' Nothing has been put on the box. Close the little window and ' +
+          'press Update my box to go again.', null);
+      return;
+    }
+
+    say('wait', 'Waiting on you',
+        'The little window is open. Press Install in it and this fills up.', null);
+  }
+
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+    dlg = null;
+    /* The dialog cannot be shut while it is writing, so a window that goes
+       away early is one that was still waiting on a person. Nothing happened,
+       so clear the panel rather than leave words on screen about an update
+       that never ran. A finished one, or a broken one, stays up to be read. */
+    if (!done) idle();
+  }
+
+  function watch(el) {
+    stop();
+    idle();
+    dlg = el;
+    read();
+    timer = setInterval(read, 100);
+  }
+
+  new MutationObserver(function (recs) {
+    for (var i = 0; i < recs.length; i++) {
+      var add = recs[i].addedNodes;
+      for (var j = 0; j < add.length; j++)
+        if (add[j].nodeType === 1 && add[j].localName === 'ewt-install-dialog') watch(add[j]);
+    }
+  }).observe(document.body, { childList: true });
 })();
 </script>
 
