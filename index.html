@@ -31,6 +31,9 @@
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box}
+/* A class with a display on it outranks the browser's own [hidden] rule, so
+   without this the hidden update note stays on screen. */
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);
   font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
@@ -208,6 +211,20 @@ dl.ref dd{margin:0;color:var(--mut);font-size:17px}
 .report .opt input,.report .tick input{flex:none;width:20px;height:20px;margin:2px 0 0;
   padding:0;border:0;border-radius:0;background:none;accent-color:var(--gold)}
 
+/* ---------- update your box ----------
+   The button is Espressif's own web component. It talks to the board over Web
+   Serial, which is why the browser list below is a hard requirement and not a
+   recommendation - Safari and Firefox have no Web Serial at all, so there is
+   nothing to fall back to. Same gold button as the feedback form, so the page
+   does not sprout a second button style. */
+esp-web-install-button{display:block;margin:22px 0 0}
+.flashbtn{font-family:var(--disp);font-weight:700;font-size:19px;color:var(--ink);
+  background:var(--gold);border:0;border-radius:14px;padding:16px 26px;cursor:pointer;
+  box-shadow:0 4px 0 #B98C00}
+.flashbtn:hover{background:#FFD34D}
+.flashbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #B98C00}
+.warn{display:block;max-width:33em;margin:22px 0 0;font-weight:600;color:#B32A1B}
+
 /* a link that reads as a link on the cream ground */
 a.more{color:var(--ink);font-family:var(--disp);font-weight:600;text-decoration:none;
   box-shadow:inset 0 -3px 0 var(--gold)}
@@ -227,6 +244,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <a href="#tag">Tag</a>
     <a href="#lock">Lock</a>
     <a href="#ref">Settings</a>
+    <a href="#update">Update</a>
     <a href="#report">Feedback</a>
   </nav>
 </div></div>
@@ -284,7 +302,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <li><div class="n">1</div><b>Sit in a circle</b>
       <span>One person holds the box to start with. It gets passed around.</span></li>
     <li><div class="n">2</div><b>Pick your numbers</b>
-      <span>How many of you are playing, and how many imposters. Then tap Start.</span></li>
+      <span>How many of you are playing, how many imposters, and whether the imposter gets a
+      hint. Three screens, then tap START.</span></li>
     <li><div class="n">3</div><b>Pass it round</b>
       <span>The box names the next player. Hold the button, read your card, let go, tap the
       arrow. Keep going until everyone has looked.</span></li>
@@ -341,7 +360,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <ol class="steps">
     <li><div class="n">1</div><b>Set it up</b>
-      <span>Choose players and imposters, then press START.</span></li>
+      <span>Choose players, then imposters, then the hint switch. Then press START.</span></li>
     <li><div class="n">2</div><b>Pass it round</b>
       <span>The box says who it goes to next. That player taps the arrow, holds
       <b style="display:inline;font-size:inherit">HOLD</b> to see their card, lets go, and taps
@@ -355,11 +374,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <div>
       <h3>Reading your card</h3>
       <p>Crew see the word. Imposters see <strong>IMPOSTER</strong> and a line that starts
-      <strong>Hint:</strong> &mdash; a related word, never the answer. Turn the hint off in setup and
-      the imposter gets only the category, which makes their job much harder.</p>
+      <strong>Hint:</strong> with a related word after it, never the answer. Turn the hint off in
+      setup and the imposter gets only the category, which makes their job much harder.</p>
       <p>Every hint is built to let you <em>bluff</em>, not to let you guess. On
-      <strong>Dog</strong> you might get <em>collar</em>, <em>walk</em> or <em>loyal</em> &mdash;
-      enough to say something that fits, never enough to know it is a dog.</p>
+      <strong>Dog</strong> you might get <em>collar</em>, <em>walk</em> or <em>loyal</em>. Enough
+      to say something that fits, never enough to know it is a dog.</p>
       <p>Everyone can see the <strong>category</strong>. That part is not secret. It is what
       gives the imposter a chance.</p>
       <div class="note">
@@ -429,7 +448,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
         <div class="s18 ctr" style="top:100px;color:#FF4436">P3, P7</div>
         <div class="gbar" style="left:6px;top:136px;width:308px;height:32px">NEW GAME</div>
       </div></div></div>
-      <p class="cap">Reveal &mdash; the end of a round</p>
+      <p class="cap">Reveal, the end of a round</p>
     </div>
     <div>
       <div class="win" style="margin:0">
@@ -496,15 +515,15 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <h3>How long to wait between tags</h3>
   <table>
     <tr><th>Players</th><th>Cooldown</th></tr>
-    <tr><td>4–6</td><td>45 sec</td></tr>
+    <tr><td>3–6</td><td>45 sec</td></tr>
     <tr><td>7–10</td><td>30 sec</td></tr>
     <tr><td>11–15</td><td>20 sec</td></tr>
   </table>
   <p style="color:#6E675C;font-size:17px">The device counts this down for you. After the last card
   is dealt, tag mode opens a play screen with the shared meeting pool on the left and the tag
-  cooldown on the right &mdash; tap the meeting tile to spend one, tap the cooldown tile after a
-  tag. It picks the number off the table above and adds 10 seconds for each imposter past the
-  first, so nobody has to remember it.</p>
+  cooldown on the right. Tap the meeting tile to spend one, tap the cooldown tile after a tag.
+  It picks the number off the table above and adds 10 seconds for each imposter past the first,
+  so nobody has to remember it.</p>
 
   <div class="split">
     <div class="shot">
@@ -607,10 +626,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <dl class="ref">
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
       <div><dt>Imposters</dt><dd>Half the players, at most. So 8 players allows 4.</dd></div>
-      <div><dt>Hint word</dt><dd>On: the imposter gets a related word. Off: only the category.
-      The switch says which, so you are never guessing what it does.</dd></div>
-      <div><dt>Meetings</dt><dd>The shared pool of emergency meetings, counted down on the play
-      screen during a round. Body meetings are free and do not touch it.</dd></div>
+      <div><dt>Hint word</dt><dd>Word mode, in setup. On: the imposter gets a related word.
+      Off: only the category. The switch says which, so you are never guessing what it
+      does.</dd></div>
+      <div><dt>Meetings</dt><dd>Tag mode, in setup. The shared pool of emergency meetings, up to
+      nine, counted down on the play screen during a round. Body meetings are free and do not
+      touch it.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
       <div><dt>Theme</dt><dd>Looks to pick from, three on screen at a time with arrows to page
       through the rest. Paper is the bright one, and it is the one to use outside.</dd></div>
@@ -620,28 +641,102 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       that you shut yourself. Auto shuts it every time the box is handed on. While it is shut,
       nothing answers except the padlock. <a class="more" href="#lock">All of it here &rarr;</a>
       </dd></div>
-      <div><dt>Home and settings</dt><dd>Top right of every screen. You are never more than one tap
-      from either, and Back out of settings returns you to the screen you left.</dd></div>
+      <div><dt>Home and settings</dt><dd>Top right of every screen once a game is under way, and
+      on the menu the settings sliders sit in the middle of the top row instead. You are never
+      more than one tap from either, and Back out of settings returns you to the screen you
+      left.</dd></div>
       <div><dt>Rules</dt><dd>Top left of the menu. Six short pages for whichever mode you tapped
       last, and this page as a QR code on the sixth.</dd></div>
-      <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu when it is
-      under 20. The box dims after a minute idle and sleeps after ten; a tap wakes it right where
-      it was.</dd></div>
-      <div><dt>Off</dt><dd>Top right of the menu. Tapping it blanks the screen and a tap wakes it
-      again. To shut it down properly, press the BOOT button on the board, or hold BOOT for about
-      a second from any screen.</dd></div>
-      <div><dt>Reveal</dt><dd>End of a round. Shows the word and which players were lying.</dd></div>
+      <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu once it is
+      down to 20. The box dims after a minute of nobody touching it and blanks after ten, and a
+      tap wakes it right where it was. It will not do either in the middle of a tag cooldown,
+      because that screen is the game at that moment.</dd></div>
+      <div><dt>Off</dt><dd>Top right of the menu. Tapping it turns the backlight off and blanks
+      the screen, and a tap on the glass brings it back exactly where you left it. There is no
+      power switch on this one, so that is what off means here. It is still sipping a little in
+      the background, so plug it in between game nights the way you would anything else with a
+      battery in it.</dd></div>
+      <div><dt>Reveal</dt><dd>End of a round. In word mode it shows the word and which players
+      were lying. In tag mode there is no word, so it just names the imposters.</dd></div>
     </dl>
     <div class="note">
-      <b>450 words, 2,250 hints</b>
-      <p>18 categories: Animals, Food, Places, Sports, Household, Jobs, School, Tech, Nature,
-      Travel, Music, TV &amp; Movies, Clothing, Vehicles, Holidays, Countries, Games and Body.
-      Every word has five possible hints, each a single word, so nothing gets cut off on the small
-      screen. The box will not deal a word it has dealt in the last 16 rounds.</p>
+      <b>The five tiles behind the sliders</b>
+      <p>Light, Theme, Battery, Tips and Lock. That is the whole settings page, and it is one
+      page, not a list you scroll. Players, imposters, the hint switch and meetings are not in
+      here, because you set those on the way into a game instead.</p>
+    </div>
+    <div class="note">
+      <b>The word bank</b>
+      <p>Everyday categories, the sort a room full of people all know without explaining:
+      animals, food, places, sports, jobs, school and plenty more. Every word carries five
+      possible hints and each hint is a single word, so nothing gets cut off on a screen this
+      small. The box will not deal a word it has already dealt in the last 16 rounds.</p>
     </div>
   </div>
 </div></section>
 
+
+<section id="update"><div class="wrap"><div class="narrow">
+  <span class="tag b">Update your box</span>
+  <h2>Plug it into a computer and update it here.</h2>
+  <p class="intro">New words and fixes go out through this page. Nothing to download, nothing to
+  install on your computer, no account to make.</p>
+
+  <h3>What you need</h3>
+  <ul>
+    <li>A laptop or a desktop running <strong>Chrome or Edge</strong>. Firefox cannot do this
+    and neither can Safari.</li>
+    <li>A <strong>USB-C cable that carries data</strong>, not just power. A charging cable looks
+    exactly the same and does nothing here. If you have one that came with a phone or a pair of
+    headphones, use that one.</li>
+    <li>The box, awake, with something on the screen.</li>
+  </ul>
+
+  <div class="note">
+    <b>It will not work on a phone</b>
+    <p>There is no way round it. An iPhone cannot do this at all, and Safari cannot do it on
+    anything. Go and borrow a laptop. Once you are sat at one the whole thing takes about a
+    minute.</p>
+  </div>
+
+  <div id="upgo">
+    <esp-web-install-button manifest="firmware/manifest.json">
+      <button class="flashbtn" slot="activate">Update my box</button>
+      <span class="warn" slot="unsupported">This browser cannot talk to the box. Open this page
+      in Chrome or Edge on a computer and the button will be here.</span>
+      <span class="warn" slot="not-allowed">This page has to be opened over a secure connection
+      for the button to work.</span>
+    </esp-web-install-button>
+  </div>
+  <p class="warn" id="upwait" hidden>There is nothing new to put on it right now. When there is,
+  the button turns up here on its own.</p>
+
+  <ol class="steps">
+    <li><div class="n">1</div><b>Plug it in</b>
+      <span>One end in the box, the other in the computer. The screen should come on.</span></li>
+    <li><div class="n">2</div><b>Press the button</b>
+      <span>A small window asks which device you mean. Unplug the box and plug it back in while
+      you are looking at that list, and the one that appears is yours. Pick it.</span></li>
+    <li><div class="n">3</div><b>Leave it alone</b>
+      <span>A bar fills up. Do not unplug it while that is happening. The box restarts by itself
+      when it is done and you are finished.</span></li>
+  </ol>
+
+  <div class="note">
+    <b>What an update actually does</b>
+    <p>It puts the newest version of the game on the box. Your brightness, your theme, your tips
+    switch and your lock setting all stay exactly as you had them, because they sit in a part of
+    the memory the update steps over. There is nothing else on the box that is yours to lose. It
+    keeps no scores, no names and no saved games.</p>
+  </div>
+
+  <div class="note">
+    <b>If nothing happens</b>
+    <p>Try a different cable first, that is nearly always what it is. Then try the other socket
+    on the computer. If the window opens but the box is not in the list, the cable you are using
+    only carries power.</p>
+  </div>
+</div></div></section>
 
 <section class="report" id="report"><div class="wrap"><div class="narrow">
   <span class="tag g">Feedback</span>
@@ -698,6 +793,37 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <span>Pocket Imposter — built by GamerCrafter15</span>
   <span><a href="#top">Back to top ↑</a></span>
 </div></footer>
+
+<!-- Espressif's own installer component, pinned to an exact version so it cannot
+     change under the page. It is an ES module and it pulls the rest of itself
+     from the same folder on the CDN, so it has to be loaded as a module. -->
+<script type="module"
+  src="https://cdn.jsdelivr.net/npm/esp-web-tools@10.4.0/dist/web/install-button.js"></script>
+
+<script>
+/* Only show the update button when there is actually something to install.
+   The firmware files land in /firmware later than this page did, and a button
+   that opens a dialog and then fails to download reads as a broken product.
+   So: ask for the manifest, ask for every part it names, and if any of them is
+   missing say so in words instead. Once the files are committed this fixes
+   itself and nothing here needs editing. */
+(function () {
+  var go = document.getElementById('upgo'), wait = document.getElementById('upwait');
+  if (!go || !wait) return;
+  function missing() { go.hidden = true; wait.hidden = false; }
+  function ok(r) { if (!r.ok) throw 0; return r; }
+  fetch('firmware/manifest.json', { cache: 'no-store' })
+    .then(ok)
+    .then(function (r) { return r.json(); })
+    .then(function (m) {
+      var parts = m.builds[0].parts;
+      return Promise.all(parts.map(function (p) {
+        return fetch('firmware/' + p.path, { method: 'HEAD', cache: 'no-store' }).then(ok);
+      }));
+    })
+    .catch(missing);
+})();
+</script>
 
 <script>
 /* Two small jobs. One: keep the subject line and the labels matching whichever
@@ -761,6 +887,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       return;
     }
     a.push(now);
+    // Clear a red warning from an earlier blocked attempt, so the line under
+    // the button is not still telling you off while the message goes.
+    msg.className = 'small';
     try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {}
   });
 })();
