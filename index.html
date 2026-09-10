@@ -177,7 +177,29 @@ dl.ref dd{margin:0;color:var(--mut);font-size:17px}
 .report button:hover{background:#FFD34D}
 .report button:active{transform:translateY(2px);box-shadow:0 2px 0 #B98C00}
 .report .small{font-size:15px;color:#9A9186;margin-top:4px}
+.report .small.bad{color:#FFB3A8}
+/* the cream note sits on the dark section, so its heading needs its ink back */
+.report .note b{color:var(--ink)}
 .hp{position:absolute;left:-9999px}
+
+/* the two feedback kinds, and the reply tick */
+.report .pick{display:grid;gap:10px;margin:2px 0 6px}
+@media(min-width:560px){.report .pick{grid-template-columns:1fr 1fr}}
+.report .opt{display:flex;gap:12px;align-items:flex-start;background:#231F1B;
+  border:2px solid #3A342C;border-radius:14px;padding:14px 16px;cursor:pointer}
+.report .opt:has(input:checked){border-color:var(--gold);background:#2C261F}
+.report .opt span{font-family:var(--sans);font-weight:400;font-size:15px;color:#9A9186}
+.report .opt b{display:block;font-family:var(--disp);font-weight:600;font-size:17px;
+  color:#E6DFD3;margin-bottom:2px}
+.report .tick{display:flex;gap:12px;align-items:flex-start;cursor:pointer;
+  font-family:var(--sans);font-weight:400;font-size:16px;color:#B9B1A4;margin:2px 0 0}
+.report .opt input,.report .tick input{flex:none;width:20px;height:20px;margin:2px 0 0;
+  padding:0;border:0;border-radius:0;background:none;accent-color:var(--gold)}
+
+/* a link that reads as a link on the cream ground */
+a.more{color:var(--ink);font-family:var(--disp);font-weight:600;text-decoration:none;
+  box-shadow:inset 0 -3px 0 var(--gold)}
+a.more:hover{box-shadow:inset 0 -22px 0 var(--gold)}
 footer{background:var(--ink);color:#C9C2B6;padding:38px 0 60px;font-size:16px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
 footer a{color:var(--gold);text-decoration:none;font-weight:600}
@@ -188,6 +210,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 <div class="bar"><div class="wrap">
   <a class="brand" href="#top"><span class="mark"></span>Pocket Imposter</a>
   <nav>
+    <a href="#howto">Start here</a>
     <a href="#word">Word</a>
     <a href="#tag">Tag</a>
     <a href="#ref">Settings</a>
@@ -235,6 +258,58 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 </div></div></header>
 
 <main>
+
+<section id="howto"><div class="wrap">
+  <div class="narrow">
+    <span class="tag g">Start here</span>
+    <h2>Never played? It takes two minutes to learn.</h2>
+    <p class="intro">This is word mode, the one you play sitting down. Six lines and you know
+    the game.</p>
+  </div>
+
+  <ol class="steps">
+    <li><div class="n">1</div><b>Sit in a circle</b>
+      <span>One person holds the box to start with. It gets passed around.</span></li>
+    <li><div class="n">2</div><b>Pick your numbers</b>
+      <span>How many of you are playing, and how many imposters. Then tap Start.</span></li>
+    <li><div class="n">3</div><b>Pass it round</b>
+      <span>The box names the next player. Hold the button, read your card, let go, tap the
+      arrow. Keep going until everyone has looked.</span></li>
+    <li><div class="n">4</div><b>Now you know</b>
+      <span>Crew all saw the same secret word. Imposters saw the word IMPOSTER and one hint
+      instead. Everyone saw the category.</span></li>
+    <li><div class="n">5</div><b>One clue each</b>
+      <span>The box says who starts. Go round the circle and say one word about the secret
+      word. One word, out loud, no explaining it.</span></li>
+    <li><div class="n">6</div><b>Vote, then tap Reveal</b>
+      <span>Talk it over, then point at once on three. Most votes is out. Reveal tells you the
+      word and who was lying.</span></li>
+  </ol>
+
+  <div class="note">
+    <b>The only three rules for your clue</b>
+    <p>Do not say the secret word. Do not be so obvious that the imposter works it out. Do not
+    be so vague that everyone starts looking at you.</p>
+  </div>
+
+  <h3 id="tagtips">Quick tips and how to play for tag mode</h3>
+  <p>Tag mode is the interactive one. Same game, but you are outside and running instead of
+  sitting down, and there is no secret word. The box just hands out the roles.</p>
+  <ul>
+    <li>Play somewhere with things to hide behind. An open field makes every tag obvious.</li>
+    <li>Imposters take crew out by tagging them. Get tagged and you fall over and stay down, so
+    somebody finds you.</li>
+    <li>Found a body? Shout, and everyone comes in. Those meetings are free and you get as many
+    as you want.</li>
+    <li>No body, but you want everyone in anyway? Call an emergency meeting on the box. There is
+    a limited number and all of you share them.</li>
+    <li>End every meeting by counting "3, 2, 1, UP!" so anyone faking a death stands up at the
+    same moment. Then nobody can tag for 15 seconds.</li>
+    <li>Tap the cooldown tile the second you tag someone, and let it run down before you tag
+    again.</li>
+  </ul>
+  <p><a class="more" href="#tag">All of tag mode, in full &rarr;</a></p>
+</div></section>
 
 <section class="white" id="word"><div class="wrap">
   <div class="narrow">
@@ -456,8 +531,10 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div><dt>Meetings</dt><dd>The shared pool of emergency meetings, counted down on the play
       screen during a round. Body meetings are free and do not touch it.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
-      <div><dt>Theme</dt><dd>Night, Gold or Paper. Paper is the one to use outdoors.</dd></div>
-      <div><dt>Touch</dt><dd>Redo the three-dot calibration if taps start missing.</dd></div>
+      <div><dt>Theme</dt><dd>Five of them: Night, Arcade, Slate, Dusk and Paper. Paper is the
+      one to use outdoors.</dd></div>
+      <div><dt>Tips</dt><dd>The small lines that tell you what a screen wants. Leave them on for
+      your first few games and turn them off once you know the box.</dd></div>
       <div><dt>Home and settings</dt><dd>Top right of every screen. You are never more than one tap
       from either, and Back out of settings returns you to the screen you left.</dd></div>
       <div><dt>Rules</dt><dd>Top left of the menu. Six short pages for whichever mode you tapped
@@ -465,6 +542,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu when it is
       under 20. The box dims after a minute idle and sleeps after ten; a tap wakes it right where
       it was.</dd></div>
+      <div><dt>Off</dt><dd>Top right of the menu. Tapping it blanks the screen and a tap wakes it
+      again. To shut it down properly, press the BOOT button on the board, or hold BOOT for about
+      a second from any screen.</dd></div>
       <div><dt>Reveal</dt><dd>End of a round. Shows the word and which players were lying.</dd></div>
     </dl>
     <div class="note">
@@ -480,29 +560,51 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
 <section class="report" id="report"><div class="wrap"><div class="narrow">
   <span class="tag g">Feedback</span>
-  <h2>Something broken? Tell me.</h2>
-  <p class="intro">Found a bug, a word that makes no sense, or a rule that did not work?
-  Send it straight to me.</p>
+  <h2>Tell me what broke. Or tell me what you liked.</h2>
+  <p class="intro">Both are worth sending. Pick which one this is and it lands in my inbox.</p>
 
-  <form action="https://api.web3forms.com/submit" method="POST">
+  <form id="fb" action="https://api.web3forms.com/submit" method="POST">
     <input type="hidden" name="access_key" value="a345cc60-c78b-4c0b-8a96-cdf37bbe7852">
-    <input type="hidden" name="subject" value="Pocket Imposter feedback">
+    <input type="hidden" name="subject" id="subj" value="Pocket Imposter: a problem">
     <input type="hidden" name="from_name" value="Pocket Imposter site">
     <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+
+    <div class="pick">
+      <label class="opt"><input type="radio" name="Type" value="A problem" checked>
+      <span><b>Something is broken</b>A bug, a word that makes no sense, or a rule that did not
+      work.</span></label>
+      <label class="opt"><input type="radio" name="Type" value="Something good">
+      <span><b>Something is good</b>A round that went great, a bit you liked, or an idea you want
+      in it.</span></label>
+    </div>
 
     <label for="n">Your name</label>
     <input id="n" type="text" name="name" required maxlength="60" autocomplete="name">
 
-    <label for="e">Your email, if you want a reply</label>
-    <input id="e" type="email" name="email" maxlength="90" autocomplete="email">
+    <label for="e">Your email</label>
+    <input id="e" type="email" name="email" required maxlength="90" autocomplete="email">
 
-    <label for="m">What happened?</label>
+    <label for="m" id="mlab">What happened?</label>
     <textarea id="m" name="message" required maxlength="1200"
       placeholder="What were you doing, and what went wrong?"></textarea>
 
+    <label class="tick"><input type="checkbox" id="rep" name="Reply" value="Yes please">
+    <span>Send my email along with this, so you can write back to me.</span></label>
+    <input type="hidden" name="replyto" id="rto" value="" disabled>
+
     <button type="submit">Send it</button>
-    <p class="small">Goes straight to email. No account needed.</p>
+    <p class="small" id="msg">Goes straight to email. No account needed.</p>
   </form>
+
+  <div class="note">
+    <b>Why I ask for your email</b>
+    <p>Your message does not get sent from your email address. I only use it to tell messages
+    apart, so I can see when three of them came from one person instead of from three different
+    people. That is the whole reason. Tick the box above and your address does get sent along
+    with what you wrote, and then I can write back to you.</p>
+  </div>
+  <p class="small">One more thing: you can send three of these a day. That is plenty for one
+  person and it keeps the junk out.</p>
 </div></div></section>
 
 </main>
@@ -511,6 +613,73 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <span>Pocket Imposter — built by GamerCrafter15</span>
   <span><a href="#top">Back to top ↑</a></span>
 </div></footer>
+
+<script>
+/* Two small jobs. One: keep the subject line and the labels matching whichever
+   kind of message you picked, so an email says at a glance whether it is a
+   problem or not. Two: a throttle, three a day and a minute between sends.
+   The throttle lives in this browser's own storage, so it is a speed bump for
+   a person leaning on the button, not a wall. There is no server here to
+   enforce anything - the real filters are the web3forms honeypot and the fact
+   that every message has to carry an email address. */
+(function(){
+  var f = document.getElementById('fb');
+  if (!f) return;
+  var subj = document.getElementById('subj'),
+      lab  = document.getElementById('mlab'),
+      m    = document.getElementById('m'),
+      rep  = document.getElementById('rep'),
+      mail = document.getElementById('e'),
+      rto  = document.getElementById('rto'),
+      msg  = document.getElementById('msg'),
+      kinds = f.querySelectorAll('input[name="Type"]');
+
+  function sync() {
+    var good = false, i;
+    for (i = 0; i < kinds.length; i++)
+      if (kinds[i].checked) good = kinds[i].value !== 'A problem';
+    subj.value = good ? 'Pocket Imposter: something good' : 'Pocket Imposter: a problem';
+    lab.textContent = good ? 'What was good?' : 'What happened?';
+    m.placeholder = good ? 'What did you like, or what would you put in it?'
+                         : 'What were you doing, and what went wrong?';
+  }
+  for (var i = 0; i < kinds.length; i++) kinds[i].addEventListener('change', sync);
+  sync();
+
+  function carry() { rto.disabled = !rep.checked; rto.value = mail.value; }
+  rep.addEventListener('change', carry);
+  mail.addEventListener('input', carry);
+  carry();
+
+  var KEY = 'pi_feedback_sent', MAX = 3, DAY = 86400000, GAP = 60000;
+  function sent() {
+    var now = Date.now(), out = [], i, a;
+    try { a = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { a = []; }
+    for (i = 0; i < a.length; i++) if (typeof a[i] === 'number' && now - a[i] < DAY) out.push(a[i]);
+    return out;
+  }
+  function stop(text) {
+    msg.textContent = text;
+    msg.className = 'small bad';
+  }
+  f.addEventListener('submit', function (ev) {
+    carry();
+    var a = sent(), now = Date.now();
+    if (a.length >= MAX) {
+      ev.preventDefault();
+      stop('That is three messages today already. Send the next one tomorrow.');
+      return;
+    }
+    if (a.length && now - a[a.length - 1] < GAP) {
+      ev.preventDefault();
+      stop('Give it a minute before you send another one.');
+      return;
+    }
+    a.push(now);
+    try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {}
+  });
+})();
+</script>
 
 </body>
 </html>
