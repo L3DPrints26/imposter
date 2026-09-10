@@ -283,8 +283,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div>
     <span class="pill">Handheld party game · 3–15 players</span>
     <h1>One of you<br>is lying.</h1>
-    <p class="sub">Everyone gets the same secret word. Except one of you.
-    Give a clue, spot the faker, and try not to be the faker.</p>
+    <p class="sub">Everyone gets the same secret word. One person does not, and has to pretend
+    they do. That person is the imposter. Everyone else is the crew, and your job is to work out
+    who the imposter is before they get away with it.</p>
     <dl class="facts">
       <div><dt>Players</dt><dd>3–15</dd></div>
       <div><dt>A round</dt><dd>~5 min</dd></div>
@@ -324,8 +325,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="narrow">
     <span class="tag g">Start here</span>
     <h2>Never played? It takes two minutes to learn.</h2>
-    <p class="intro">This is word mode, the one you play sitting down. Six lines and you know
-    the game.</p>
+    <p class="intro">The box plays two games. This is Word, the one you play sitting down, and
+    it is the one to start with. Six steps and you know it.</p>
   </div>
 
   <ol class="steps">
@@ -333,21 +334,37 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <span>One person holds the box to start with. It gets passed around. Screen black? Tap
       it and it wakes up.</span></li>
     <li><div class="n">2</div><b>Pick your numbers</b>
-      <span>Tap Word on the menu. It asks how many of you are playing, how many imposters, and
-      whether the imposter gets a hint. Three screens, then tap START.</span></li>
+      <span>Tap Word on the menu. It asks how many of you there are, how many imposters to hide
+      among you, and whether the imposter gets a hint. Three screens, then tap START. Start with
+      one imposter.</span></li>
     <li><div class="n">3</div><b>Pass it round</b>
-      <span>The box names the next player. That player taps the arrow, holds the button to see
-      their card, lets go, and taps Next. Keep going until everyone has looked.</span></li>
+      <span>The box names whoever is next. That player takes it, taps the arrow, holds the
+      button down to see their own card, lets go, and taps Next. Do not let anyone else see it.
+      Keep going until everyone has looked.</span></li>
     <li><div class="n">4</div><b>Now you know</b>
-      <span>Crew all saw the same secret word. Imposters saw the word IMPOSTER and one hint
-      instead. Everyone saw the category.</span></li>
+      <span>Most of you saw the same secret word. You are the crew. The rest saw the word
+      IMPOSTER and a one word hint instead, and have no idea what the real word is. They are the
+      imposters. Everyone saw the category, which is just the sort of thing the word is, like
+      Food.</span></li>
     <li><div class="n">5</div><b>One clue each</b>
-      <span>The box says who starts. Go round the circle and say one word about the secret
-      word. One word, out loud, no explaining it.</span></li>
+      <span>The box says who goes first. Go round the circle and each say one word about the
+      secret word. Out loud, one word, no explaining it. The imposters have to give a clue too,
+      and have to make theirs up.</span></li>
     <li><div class="n">6</div><b>Vote, then tap Reveal</b>
-      <span>Talk it over, then point at once on three. Most votes is out. Reveal tells you the
+      <span>Talk about who sounded off, then everyone points at once on the count of three, so
+      nobody can hang back and copy. Most votes is out. Then tap Reveal and the box tells you the
       word and who was lying.</span></li>
   </ol>
+
+  <div class="note">
+    <b>One round, start to finish</b>
+    <p>Four of you are playing, with one imposter. The box says the category is Food. Three of
+    you hold the button and see the word Pizza. The fourth sees IMPOSTER and the hint melted,
+    and does not know the word. Round you go: "cheese", "delivery", "slice", and then the
+    imposter, who has to say something, works out that melted plus Food is probably something
+    hot and says "oven". It nearly fits. Then you talk it over, point on three, and tap Reveal
+    to find out if you got the right person.</p>
+  </div>
 
   <div class="note">
     <b>The only three rules for your clue</b>
@@ -363,22 +380,28 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 
   <h3 id="tagtips">Tag mode, the short version</h3>
-  <p>Tag mode is the interactive one. Same game, but you are outside and running instead of
-  sitting down, and there is no secret word. The box just hands out the roles.</p>
+  <p>Tag is the running around one. Same idea, but you are outside instead of sitting down, and
+  there is no secret word at all. The box quietly tells each of you whether you are crew or an
+  imposter, and then it is imposters against everybody else.</p>
   <ul>
     <li>Play somewhere with things to hide behind. An open field makes every tag obvious.</li>
-    <li>Imposters take crew out by tagging them. Get tagged and you fall over and stay down, so
-    somebody finds you.</li>
-    <li>Found a body? Shout, and everyone comes in. That is a meeting, and the ones you call
-    over a body are free. Have as many as you like.</li>
-    <li>No body, but you want everyone in anyway? Call an emergency meeting on the box. There is
-    a limited number and all of you share them.</li>
-    <li>Every meeting is a vote. Point at once on three, most votes is out. That is the only
-    way crew get an imposter out.</li>
-    <li>End every meeting by counting "3, 2, 1, UP!" so anyone faking a death stands up at the
-    same moment. Then nobody can tag for 15 seconds.</li>
-    <li>Tap the cooldown tile the second you tag someone, and let it run down before you tag
-    again.</li>
+    <li>Imposters knock crew out of the game by tagging them. If you get tagged, drop to the
+    ground and stay there. You are now a body, and you are lying there so that somebody finds
+    you.</li>
+    <li>Find somebody on the ground? Shout, and everyone stops and comes over. That is a
+    meeting, which is just the whole group standing together working out who did it. Meetings
+    you call over a body are free, so have as many as you need.</li>
+    <li>Nobody on the ground, but you still want everyone together? That is an emergency
+    meeting, and you call it on the box. There is only a set number of them and all of you
+    share the same pile, so do not waste them.</li>
+    <li>Every meeting ends in a vote. Point at once on three, most votes is out. Voting is the
+    only way crew ever get rid of an imposter, because crew are not allowed to tag.</li>
+    <li>End every meeting by counting "3, 2, 1, UP!" so anyone who was lying down without
+    actually being tagged gets back up at the same moment as everybody else. Then nobody can tag
+    for 15 seconds, so people can spread out first.</li>
+    <li>After a tag, an imposter has to wait before tagging anyone else. That wait is called the
+    cooldown. Tap the timer tile on the box the second you tag someone, and let it run to zero
+    before you tag again.</li>
   </ul>
   <p><a class="more" href="#tag">All of tag mode, in full &rarr;</a></p>
 </div></section>
@@ -387,17 +410,18 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="narrow">
     <span class="tag g">Word mode</span>
     <h2>Sit down, pass it round, find the liar.</h2>
-    <p class="intro">Everyone sees the same secret word. The imposter only gets a hint, and has to
-    fake it.</p>
+    <p class="intro">Everyone sees the same secret word except the imposter, who gets one hint
+    and has to fake the rest.</p>
   </div>
 
   <ol class="steps">
     <li><div class="n">1</div><b>Set it up</b>
-      <span>Choose players, then imposters, then the hint switch. Then press START.</span></li>
+      <span>Choose how many players, then how many imposters, then whether the imposter gets a
+      hint. Then press START.</span></li>
     <li><div class="n">2</div><b>Pass it round</b>
-      <span>The box says who it goes to next. That player taps the arrow, holds
-      <b style="display:inline;font-size:inherit">HOLD</b> to see their card, lets go, and taps
-      Next.</span></li>
+      <span>The box says who it goes to next. That player taps the arrow, holds the
+      <b style="display:inline;font-size:inherit">HOLD</b> button down to see their card, lets
+      go, and taps Next.</span></li>
     <li><div class="n">3</div><b>One clue each</b>
       <span>The box picks who starts. Go round the circle, one word out loud. Then talk, then
       vote, then tap Reveal to see the answer.</span></li>
@@ -409,11 +433,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <p>Crew see the word. Imposters see <strong>IMPOSTER</strong> and a line that starts
       <strong>Hint:</strong> with a related word after it, never the answer. Turn the hint off in
       setup and the imposter gets only the category, which makes their job much harder.</p>
-      <p>Every hint is built to let you <em>bluff</em>, not to let you guess. On
+      <p>The hint is there so you can bluff, which just means saying something that sounds right
+      when you actually have no idea. It is not there to let you guess the word. If the word is
       <strong>Dog</strong> you might get <em>collar</em>, <em>walk</em> or <em>loyal</em>. Enough
       to say something that fits, never enough to know it is a dog.</p>
-      <p>Everyone can see the <strong>category</strong>. That part is not secret. It is what
-      gives the imposter a chance.</p>
+      <p>Everyone can see the <strong>category</strong>, which is the sort of thing the word is,
+      like Food or Animals. That part is not secret. It is what gives the imposter a chance.</p>
       <div class="note">
         <b>Why you hold the button</b>
         <p>The card only shows while you hold the button. Let go and it hides, so you cannot
@@ -453,15 +478,17 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     </div>
     <div>
       <h3>Bluffing</h3>
-      <p>You know the category and one related word. Say something vague enough to get away
-      with, but solid enough that nobody suspects you.</p>
+      <p>Bluffing is what the imposter does for the whole round. You know the category and one
+      related word and nothing else, so you have to sound like you know the word. Say something
+      vague enough to get away with, but solid enough that nobody suspects you.</p>
       <div class="note">
         <b>The whole game in one line</b>
-        <p>Too obvious and the imposter learns the word. Too vague and everyone thinks you're
-        the imposter.</p>
+        <p>This one catches the crew as well. Too obvious and the imposter learns the word. Too
+        vague and everyone thinks you're the imposter.</p>
       </div>
       <h3>The vote</h3>
-      <p>Talk it over, then point at once on three. Most votes is out. The device does not
+      <p>Talk it over, then point at once on three. Everyone points at the same moment so that
+      nobody can hang back and just follow the crowd. Most votes is out. The device does not
       run the vote. Arguing about it is half the fun.</p>
       <p>The last chance: if you vote the imposter out and they can still name the secret word,
       they steal the win. Agree before you start whether you are playing it that way, because
@@ -488,8 +515,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     </div>
     <div>
       <div class="win" style="margin:0">
-        <div class="c"><b>Crew win</b><p>Vote out the imposter.</p></div>
-        <div class="i"><b>Imposter wins</b><p>Survive the vote, or guess the word.</p></div>
+        <div class="c"><b>Crew win</b><p>You vote out every imposter.</p></div>
+        <div class="i"><b>Imposters win</b><p>They survive the vote, or they name the word.</p></div>
       </div>
       <div class="note">
         <b>Straight into the next round</b>
@@ -504,20 +531,28 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="narrow">
     <span class="tag r">Tag mode</span>
     <h2>Same game, but outside and running.</h2>
-    <p class="intro">Play somewhere with stuff to hide behind. An open field makes every tag obvious.
-    There is no secret word in this mode. The device just hands out roles.</p>
+    <p class="intro">There is no secret word in this one. The device only tells each of you
+    whether you are crew or an imposter, and then you go and play. Play somewhere with stuff to
+    hide behind. An open field makes every tag obvious.</p>
   </div>
 
   <div class="split">
     <div>
       <h3>Tagging</h3>
-      <p>Imposters take crew out by tagging them. If you get tagged, <strong>fall over and
-      stay down</strong> so somebody finds the body. No wandering off.</p>
+      <p>Imposters knock crew out of the game by tagging them. Only imposters get to tag. If
+      you get tagged, <strong>fall over and stay down</strong> right where you are, and no
+      wandering off. A player lying on the ground is what everyone calls a body, and it is what
+      starts the next meeting, so if you go and hide instead nobody ever finds out anything.</p>
       <h3>Ghosts</h3>
-      <p>Dead players go quiet, leave the play area, and never point at their killer.</p>
+      <p>Once you are tagged you are a ghost, which is just the word for being out and watching.
+      Go quiet, walk off the play area, and never let on who tagged you. You saw them do it, so
+      if ghosts were allowed to talk you would say the name and the game would be over on the
+      spot.</p>
       <h3>Fake deaths</h3>
-      <p>Both sides can use them. Crew drop next to someone they suspect. Imposters drop right
-      after a tag to muddy who did it.</p>
+      <p>You are allowed to lie down when nobody has tagged you at all. Crew do it next to
+      somebody they suspect, to see what that person does when they think they are alone.
+      Imposters do it right after a real tag, so it is less obvious who was standing near the
+      body. Everyone faking gets back up at the end of the meeting.</p>
     </div>
     <div class="shot">
       <div class="frame"><div class="bezel"><div class="screen">
@@ -535,34 +570,43 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 
   <h3>The two kinds of meeting</h3>
+  <p>A meeting is everyone stopping what they are doing, coming together in one place, and
+  talking about who they think the imposters are. There are two ways one starts.</p>
   <ul>
-    <li><strong>Body meeting.</strong> Anyone who finds a body shouts, and everyone gathers.
-    You get as many of these as you want. They do not use up the count on the device.</li>
-    <li><strong>Emergency meeting.</strong> Called when there is no body. There is a limited
-    number, shared by everyone, and imposters can call one to look innocent.</li>
+    <li><strong>Body meeting.</strong> Anyone who finds somebody lying on the ground shouts,
+    and everyone gathers. You get as many of these as you want, and they do not use up the
+    number on the device.</li>
+    <li><strong>Emergency meeting.</strong> The kind you call when there is no body and you
+    just want everyone in one place. There is only a set number of them and all of you share
+    the same pile, which is why they run out. An imposter is allowed to call one, and calling
+    one is a decent way to look innocent.</li>
   </ul>
-  <p>Either kind is a vote, and voting is the only way crew ever get an imposter out. Argue it
-  out, point at once on three, and whoever has the most votes is out of the game and becomes a
-  ghost. If you cannot agree, send nobody out and carry on.</p>
+  <p>Either kind ends in a vote, and voting is the only way crew ever get an imposter out,
+  because crew cannot tag anybody. Argue it out, point at once on three, and whoever has the
+  most votes is out of the game and becomes a ghost. If you cannot agree, send nobody out and
+  carry on.</p>
   <div class="note">
     <b>End every meeting the same way</b>
-    <p>Count out "3, 2, 1, UP!" so everyone faking a death stands up at the same time.
-    Otherwise the faker is obvious. Then nobody can tag for 15 seconds, so people can
-    spread out.</p>
+    <p>Count out "3, 2, 1, UP!" so that everyone who was lying down without being tagged gets
+    up at the same moment as everybody else. Do it one at a time and the fakers are obvious.
+    Then nobody can tag for 15 seconds, so people get a chance to spread out first.</p>
   </div>
 
   <h3>How long to wait between tags</h3>
+  <p>After an imposter tags somebody they have to wait before they are allowed to tag anyone
+  else. That wait is called the cooldown, and without it one imposter could clear the whole
+  field in half a minute. How long it is depends on how many of you are playing.</p>
   <table>
     <tr><th>Players</th><th>Cooldown</th></tr>
     <tr><td>3–6</td><td>45 sec</td></tr>
     <tr><td>7–10</td><td>30 sec</td></tr>
     <tr><td>11–15</td><td>20 sec</td></tr>
   </table>
-  <p style="color:#6E675C;font-size:17px">The device counts this down for you. After the last card
-  is dealt, tag mode opens a play screen with the shared meeting pool on the left and the tag
-  cooldown on the right. Tap the meeting tile to spend one, tap the cooldown tile after a tag.
-  It picks the number off the table above and adds 10 seconds for each imposter past the first,
-  so nobody has to remember it.</p>
+  <p style="color:#6E675C;font-size:17px">The device counts it down for you, so nobody has to
+  remember any of this. Once the last card has been looked at, tag mode opens a screen with two
+  big tiles: your emergency meetings on the left, the tag timer on the right. Tap the left one
+  to use up a meeting, tap the right one the moment you tag someone. It takes the number off the
+  table above and adds 10 seconds for every imposter after the first.</p>
 
   <div class="split">
     <div class="shot">
@@ -584,8 +628,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     </div>
     <div>
       <div class="win" style="margin:0">
-        <div class="c"><b>Crew win</b><p>No imposters left.</p></div>
-        <div class="i"><b>Imposters win</b><p>Living crew drops to the number of imposters.</p></div>
+        <div class="c"><b>Crew win</b><p>Every imposter has been voted out.</p></div>
+        <div class="i"><b>Imposters win</b><p>There are as many imposters left as crew left. Two
+        of each, and the crew can no longer outvote them.</p></div>
       </div>
       <div class="note">
         <b>Nobody has to keep count</b>
@@ -664,13 +709,15 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <h2>Every knob on the device.</h2>
     <dl class="ref">
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
-      <div><dt>Imposters</dt><dd>Half the players, at most. So 8 players allows 4.</dd></div>
-      <div><dt>Hint word</dt><dd>Word mode, in setup. On: the imposter gets a related word.
-      Off: only the category. The switch says which, so you are never guessing what it
-      does.</dd></div>
-      <div><dt>Meetings</dt><dd>Tag mode, in setup. The shared pool of emergency meetings, up to
-      nine, counted down on the play screen during a round. Body meetings are free and do not
-      touch it.</dd></div>
+      <div><dt>Imposters</dt><dd>How many of you are secretly lying. Half the players at most,
+      so 8 players allows 4. One is plenty to start with.</dd></div>
+      <div><dt>Hint word</dt><dd>Word mode, in setup. The hint word is the single word an
+      imposter gets instead of the real one. On: they get it. Off: they get only the category,
+      which makes it a lot harder for them. The switch says which, so you are never guessing
+      what it does.</dd></div>
+      <div><dt>Meetings</dt><dd>Tag mode, in setup. How many emergency meetings the whole group
+      gets to share, up to nine, counted down on screen while you play. The meetings you call
+      because you found somebody on the ground are free and never touch this number.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
       <div><dt>Theme</dt><dd>Nine looks to pick from, three on screen at a time with arrows to
       page through the rest. Paper and Frost are the light ones, and Mono is black on white,
