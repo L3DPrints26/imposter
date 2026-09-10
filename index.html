@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<meta name="description" content="How to play Pocket Imposter — the handheld party game. One of you is lying.">
+<meta name="description" content="How to play Pocket Imposter, the handheld party game. One of you is lying.">
 <meta name="theme-color" content="#FFC61A">
-<title>Pocket Imposter — How to Play</title>
+<title>Pocket Imposter: How to Play</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
@@ -75,8 +75,14 @@ h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line
 .frame{width:calc(348px * var(--s));height:calc(200px * var(--s))}
 .bezel{background:#15171E;border-radius:20px;padding:13px;width:max-content;
   box-shadow:0 10px 0 rgba(25,22,20,.18);transform:scale(var(--s));transform-origin:top left}
+/* line-height:1 is load-bearing, not styling. Every "top" in these pictures is
+   the firmware's own y, and the firmware measures a text's box from the top of
+   the letters. Inheriting the body's 1.6 put half the leading above every
+   string and pushed the letters roughly ten pixels down their own box, which
+   is how IMPOSTER ended up sitting on the Word and Tag buttons and how the big
+   numbers on the tag screen ended up on top of their captions. */
 .screen{width:320px;height:172px;position:relative;overflow:hidden;border-radius:6px;
-  background:#14161C;color:#F2F4F8;font-weight:700;
+  background:#14161C;color:#F2F4F8;font-weight:700;line-height:1;
   font-family:"Helvetica Neue",Arial,sans-serif}
 .screen *{position:absolute}
 .cap{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--mut);text-align:center}
@@ -324,13 +330,14 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <ol class="steps">
     <li><div class="n">1</div><b>Sit in a circle</b>
-      <span>One person holds the box to start with. It gets passed around.</span></li>
+      <span>One person holds the box to start with. It gets passed around. Screen black? Tap
+      it and it wakes up.</span></li>
     <li><div class="n">2</div><b>Pick your numbers</b>
-      <span>How many of you are playing, how many imposters, and whether the imposter gets a
-      hint. Three screens, then tap START.</span></li>
+      <span>Tap Word on the menu. It asks how many of you are playing, how many imposters, and
+      whether the imposter gets a hint. Three screens, then tap START.</span></li>
     <li><div class="n">3</div><b>Pass it round</b>
-      <span>The box names the next player. Hold the button, read your card, let go, tap the
-      arrow. Keep going until everyone has looked.</span></li>
+      <span>The box names the next player. That player taps the arrow, holds the button to see
+      their card, lets go, and taps Next. Keep going until everyone has looked.</span></li>
     <li><div class="n">4</div><b>Now you know</b>
       <span>Crew all saw the same secret word. Imposters saw the word IMPOSTER and one hint
       instead. Everyone saw the category.</span></li>
@@ -355,17 +362,19 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     padlock and it all works again. <a class="more" href="#lock">How the lock works &rarr;</a></p>
   </div>
 
-  <h3 id="tagtips">Quick tips and how to play for tag mode</h3>
+  <h3 id="tagtips">Tag mode, the short version</h3>
   <p>Tag mode is the interactive one. Same game, but you are outside and running instead of
   sitting down, and there is no secret word. The box just hands out the roles.</p>
   <ul>
     <li>Play somewhere with things to hide behind. An open field makes every tag obvious.</li>
     <li>Imposters take crew out by tagging them. Get tagged and you fall over and stay down, so
     somebody finds you.</li>
-    <li>Found a body? Shout, and everyone comes in. Those meetings are free and you get as many
-    as you want.</li>
+    <li>Found a body? Shout, and everyone comes in. That is a meeting, and the ones you call
+    over a body are free. Have as many as you like.</li>
     <li>No body, but you want everyone in anyway? Call an emergency meeting on the box. There is
     a limited number and all of you share them.</li>
+    <li>Every meeting is a vote. Point at once on three, most votes is out. That is the only
+    way crew get an imposter out.</li>
     <li>End every meeting by counting "3, 2, 1, UP!" so anyone faking a death stands up at the
     same moment. Then nobody can tag for 15 seconds.</li>
     <li>Tap the cooldown tile the second you tag someone, and let it run down before you tag
@@ -454,6 +463,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <h3>The vote</h3>
       <p>Talk it over, then point at once on three. Most votes is out. The device does not
       run the vote. Arguing about it is half the fun.</p>
+      <p>The last chance: if you vote the imposter out and they can still name the secret word,
+      they steal the win. Agree before you start whether you are playing it that way, because
+      that one is between you and not something the box decides.</p>
 
       <h3>Then settle it</h3>
       <p>Once you have voted, tap <strong>Reveal</strong>. The box has known the answer the whole
@@ -529,6 +541,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <li><strong>Emergency meeting.</strong> Called when there is no body. There is a limited
     number, shared by everyone, and imposters can call one to look innocent.</li>
   </ul>
+  <p>Either kind is a vote, and voting is the only way crew ever get an imposter out. Argue it
+  out, point at once on three, and whoever has the most votes is out of the game and becomes a
+  ghost. If you cannot agree, send nobody out and carry on.</p>
   <div class="note">
     <b>End every meeting the same way</b>
     <p>Count out "3, 2, 1, UP!" so everyone faking a death stands up at the same time.
@@ -657,10 +672,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       nine, counted down on the play screen during a round. Body meetings are free and do not
       touch it.</dd></div>
       <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
-      <div><dt>Theme</dt><dd>Looks to pick from, three on screen at a time with arrows to page
-      through the rest. Paper is the bright one, and it is the one to use outside.</dd></div>
-      <div><dt>Tips</dt><dd>The small lines that tell you what a screen wants. Leave them on for
-      your first few games and turn them off once you know the box.</dd></div>
+      <div><dt>Theme</dt><dd>Nine looks to pick from, three on screen at a time with arrows to
+      page through the rest. Paper and Frost are the light ones, and Mono is black on white,
+      which is the one that holds up in bright sun.</dd></div>
+      <div><dt>Tips</dt><dd>The little helper line along the bottom of the screen, the one that
+      says "Locked. Tap the padlock." when you tap a locked box. Leave it on for your first few
+      games and turn it off once you know what everything does.</dd></div>
       <div><dt>Lock</dt><dd>Off, Manual or Auto. Manual puts a padlock at the top of the screen
       that you shut yourself. Auto shuts it every time the box is handed on. While it is shut,
       nothing answers except the padlock. <a class="more" href="#lock">All of it here &rarr;</a>
@@ -669,12 +686,14 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       on the menu the settings sliders sit in the middle of the top row instead. You are never
       more than one tap from either, and Back out of settings returns you to the screen you
       left.</dd></div>
-      <div><dt>Rules</dt><dd>Top left of the menu. Six short pages for whichever mode you tapped
-      last, and this page as a QR code on the sixth.</dd></div>
+      <div><dt>Rules</dt><dd>Top left of the menu. Seven pages: five short ones for whichever
+      mode you tapped last, then this page as a QR code, then the same address written out in
+      plain text for when a phone will not read the code.</dd></div>
       <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu once it is
-      down to 20. The box dims after a minute of nobody touching it and blanks after ten, and a
-      tap wakes it right where it was. It will not do either in the middle of a tag cooldown,
-      because that screen is the game at that moment.</dd></div>
+      down to 20. Charge it with any USB-C cable. While it is plugged in that same tile says
+      Charging, and Charged once it is full. The box dims after a minute of nobody touching it
+      and blanks after ten, and a tap wakes it right where it was. It will not do either in the
+      middle of a tag cooldown, because that screen is the game at that moment.</dd></div>
       <div><dt>Off</dt><dd>Top right of the menu. Tapping it turns the backlight off and blanks
       the screen, and a tap on the glass brings it back exactly where you left it. There is no
       power switch on this one, so that is what off means here. It is still sipping a little in
@@ -691,10 +710,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     </div>
     <div class="note">
       <b>The word bank</b>
-      <p>Everyday categories, the sort a room full of people all know without explaining:
-      animals, food, places, sports, jobs, school and plenty more. Every word carries five
-      possible hints and each hint is a single word, so nothing gets cut off on a screen this
-      small. The box will not deal a word it has already dealt in the last 16 rounds.</p>
+      <p>Eighteen categories and 450 words, the everyday sort a room full of people all know
+      without explaining: animals, food, places, sports, jobs, school and plenty more. Every
+      word carries five possible hints and each hint is a single word, so nothing gets cut off
+      on a screen this small. The box will not deal a word it has already dealt in the last 16
+      rounds.</p>
     </div>
   </div>
 </div></section>
@@ -718,9 +738,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <div class="note">
     <b>It will not work on a phone</b>
-    <p>There is no way round it. An iPhone cannot do this at all, and Safari cannot do it on
-    anything. Go and borrow a laptop. Once you are sat at one the whole thing takes about a
-    minute.</p>
+    <p>There is no way round it. Not an iPhone, not an Android, not a tablet, and not Safari on
+    anything. Talking to a plugged-in gadget is something only a proper computer's browser can
+    do. Go and borrow a laptop. Once you are sat at one the whole thing takes about a minute.</p>
   </div>
 
   <div id="upgo">
@@ -805,7 +825,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       placeholder="What were you doing, and what went wrong?"></textarea>
 
     <label class="tick"><input type="checkbox" id="rep" name="Reply" value="Yes please">
-    <span>Send my email along with this, so you can write back to me.</span></label>
+    <span>Write back to me at that address.</span></label>
     <input type="hidden" name="replyto" id="rto" value="" disabled>
 
     <button type="submit">Send it</button>
@@ -814,10 +834,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <div class="note">
     <b>Why I ask for your email</b>
-    <p>Your message does not get sent from your email address. I only use it to tell messages
-    apart, so I can see when three of them came from one person instead of from three different
-    people. That is the whole reason. Tick the box above and your address does get sent along
-    with what you wrote, and then I can write back to you.</p>
+    <p>Your message does not get sent from your email address, and it does not go on any list.
+    It comes along with what you wrote so I can tell messages apart, and see when three of them
+    came from one person instead of from three different people. That is the whole reason. Tick
+    the box above and I will hit reply and write back. Leave it unticked and I will still read
+    it, you just will not hear anything back.</p>
   </div>
   <p class="small">One more thing: you can send three of these a day. That is plenty for one
   person and it keeps the junk out.</p>
@@ -826,7 +847,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 </main>
 
 <footer><div class="wrap">
-  <span>Pocket Imposter — built by GamerCrafter15</span>
+  <span>Pocket Imposter, built by GamerCrafter15</span>
   <span><a href="#top">Back to top ↑</a></span>
 </div></footer>
 
@@ -1069,7 +1090,10 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       mail = document.getElementById('e'),
       rto  = document.getElementById('rto'),
       msg  = document.getElementById('msg'),
-      kinds = f.querySelectorAll('input[name="Type"]');
+      kinds = f.querySelectorAll('input[name="Type"]'),
+      // the line the button starts with, so a send that goes through can put
+      // it back instead of leaving an earlier telling-off sitting there
+      msgOk = msg.textContent;
 
   function sync() {
     var good = false, i;
@@ -1116,6 +1140,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     // Clear a red warning from an earlier blocked attempt, so the line under
     // the button is not still telling you off while the message goes.
     msg.className = 'small';
+    msg.textContent = msgOk;
     try { localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {}
   });
 })();
