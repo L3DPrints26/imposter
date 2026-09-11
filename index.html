@@ -55,6 +55,22 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);
 .bar nav a{flex:0 0 auto;font-family:var(--disp);font-weight:600;font-size:16px;
   color:var(--mut);text-decoration:none;padding:8px 13px;border-radius:999px}
 .bar nav a:hover{color:var(--ink);background:#fff}
+/* On a phone the wordmark was eating 188px of a 320px bar and the seven links
+   were left sharing 72px, so the first one was chopped mid-word and the other
+   six were off the side with nothing to say they were there. Most people reach
+   this page from the QR code, on a phone, so that is the case that has to
+   work. Below 840px the name drops and the logo alone carries it - the logo is
+   still the link home - and the links get the width. They still scroll
+   sideways, so the fade on the right edge says so.
+   840 is measured, not picked: the seven links are 558px, the bar has 48px of
+   padding, the wordmark with its gap is 200px and a desktop scrollbar is
+   another 15px, so 821 is the narrowest the name can stay without chopping a
+   link. 840 leaves a little room for the font landing a hair wider. */
+@media(max-width:839px){
+  .bname{display:none}
+  .bar nav{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+}
 
 /* ---------- hero ---------- */
 .hero{background:var(--gold);border-bottom:2px solid var(--line);padding:52px 0 56px}
@@ -267,7 +283,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 <body>
 
 <div class="bar"><div class="wrap">
-  <a class="brand" href="#top"><span class="mark"></span>Pocket Imposter</a>
+  <a class="brand" href="#top"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
   <nav>
     <a href="#howto">Start here</a>
     <a href="#word">Word</a>
@@ -614,12 +630,15 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="split">
     <div class="shot">
       <div class="frame"><div class="bezel"><div class="screen">
-        <div class="back"></div>
-        <div class="tile" style="left:8px;top:40px;width:148px;height:88px"></div>
+        <!-- No back arrow, and that is not an omission: the firmware draws none
+             on this screen. Back went to Home and binned a live round, so it
+             was taken out. The tiles are at y=44 and 84 tall, the same numbers
+             drawMeetingTile and drawCooldownTile use. -->
+        <div class="tile" style="left:8px;top:44px;width:148px;height:84px"></div>
         <div class="s12" style="left:8px;top:48px;width:148px;text-align:center;color:#A9AFC0">MEETINGS</div>
         <div class="s24" style="left:8px;top:74px;width:148px;text-align:center;color:#FFC61A">2</div>
         <div class="s9" style="left:8px;top:110px;width:148px;text-align:center;color:#A9AFC0">tap to use one</div>
-        <div class="tile" style="left:164px;top:40px;width:148px;height:88px"></div>
+        <div class="tile" style="left:164px;top:44px;width:148px;height:84px"></div>
         <div class="s12" style="left:164px;top:48px;width:148px;text-align:center;color:#A9AFC0">NEXT TAG</div>
         <div class="s24" style="left:164px;top:74px;width:148px;text-align:center;color:#FF4436">23</div>
         <div class="s9" style="left:164px;top:110px;width:148px;text-align:center;color:#A9AFC0">tap to restart</div>
