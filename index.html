@@ -101,6 +101,26 @@ h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line
   background:#14161C;color:#F2F4F8;font-weight:700;line-height:1;
   font-family:"Helvetica Neue",Arial,sans-serif}
 .screen *{position:absolute}
+/* Quick tips. Numbered badges sit on the mockups and repeat down the legend, so
+   a reader can go either way: spot an icon and look it up, or read the list and
+   find the icon. Rings rather than arrows - an arrow needs room outside the
+   element it points at, and this panel is 320x172 with no margin to spare. */
+.guide{display:grid;gap:34px 30px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  margin-top:26px}
+.guide>div{min-width:0}
+.gtitle{font-family:var(--disp);font-weight:700;font-size:20px;margin:0 0 12px}
+.ring{border:2px solid #FF4436;border-radius:7px;
+  box-shadow:0 0 0 3px rgba(255,68,54,.25);z-index:4}
+.call{width:21px;height:21px;border-radius:50%;background:#FF4436;color:#fff;
+  font-family:var(--disp);font-weight:700;font-size:13px;line-height:21px;
+  text-align:center;box-shadow:0 0 0 2px #F2F4F8;z-index:5}
+.legend{list-style:none;padding:0;margin:16px 0 0}
+.legend li{display:grid;grid-template-columns:24px 1fr;gap:11px;align-items:start;
+  padding:9px 0;border-top:1px solid var(--line);font-size:17px;line-height:1.5}
+.legend li:first-child{border-top:0}
+.legend .k{width:21px;height:21px;border-radius:50%;background:#FF4436;color:#fff;
+  font-family:var(--disp);font-weight:700;font-size:13px;line-height:21px;text-align:center;
+  margin-top:3px}
 .cap{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--mut);text-align:center}
 @media(max-width:430px){.shot{--s:.80}}
 @media(max-width:370px){.shot{--s:.70}}
@@ -286,6 +306,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <a class="brand" href="#top"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
   <nav>
     <a href="#howto">Start here</a>
+    <a href="#tips">Quick tips</a>
     <a href="#word">Word</a>
     <a href="#tag">Tag</a>
     <a href="#lock">Lock</a>
@@ -341,43 +362,41 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 <section id="howto"><div class="wrap">
   <div class="narrow">
     <span class="tag g">Start here</span>
-    <h2>Never played? It takes two minutes to learn.</h2>
-    <p class="intro">The box plays two games. This is Word, the one you play sitting down, and
-    it is the one to start with. Six steps and you know it.</p>
+    <h2>Never played before? It takes two minutes to learn.</h2>
+    <p class="intro">The box plays two games. This is Word, the one you play sitting down, and it's the one to start with. Six steps and you know it.</p>
   </div>
 
   <ol class="steps">
     <li><div class="n">1</div><b>Sit in a circle</b>
-      <span>One person holds the box to start with. It gets passed around. Screen black? Tap
-      it and it wakes up.</span></li>
+      <span>One person holds the box to start with. It gets passed around. If the screen is black, tap it and it wakes up.</span></li>
     <li><div class="n">2</div><b>Pick your numbers</b>
       <span>Tap Word on the menu. It asks how many of you there are, how many imposters to hide
       among you, and whether the imposter gets a hint. Three screens, then tap START. Start with
       one imposter.</span></li>
-    <li><div class="n">3</div><b>Pass it round</b>
+    <li><div class="n">3</div><b>Pass it around</b>
       <span>The box names whoever is next. That player takes it, taps the arrow, holds the
-      button down to see their own card, lets go, and taps Next. Do not let anyone else see it.
+      button down to see their own card, lets go, and taps Next. Don't let anyone else see it.
       Keep going until everyone has looked.</span></li>
     <li><div class="n">4</div><b>Now you know</b>
-      <span>Most of you saw the same secret word. You are the crew. The rest saw the word
-      IMPOSTER and a one word hint instead, and have no idea what the real word is. They are the
+      <span>Most of you saw the same secret word. You're the crew. The rest saw the word
+      IMPOSTER and a one word hint instead, and have no idea what the real word is. They're the
       imposters. Everyone saw the category, which is just the sort of thing the word is, like
       Food. The box picks that at random. Nobody chooses it.</span></li>
     <li><div class="n">5</div><b>One clue each</b>
-      <span>The box says who goes first. Go round the circle and each say one word about the
+      <span>The box says who goes first. Go around the circle and each say one word about the
       secret word. Out loud, one word, no explaining it. The imposters have to give a clue too,
       and have to make theirs up.</span></li>
     <li><div class="n">6</div><b>Vote, then tap Reveal</b>
-      <span>Talk about who sounded off, then everyone points at once on the count of three, so
+      <span>Talk about who sounded suspicious, then everyone points at once on the count of three, so
       nobody can hang back and copy. Most votes is out. Then tap Reveal and the box tells you the
       word and who was lying.</span></li>
   </ol>
 
   <div class="note">
     <b>One round, start to finish</b>
-    <p>Four of you are playing, with one imposter. The box says the category is Food. Three of
+    <p>Four of you're playing, with one imposter. The box says the category is Food. Three of
     you hold the button and see the word Pizza. The fourth sees IMPOSTER and the hint melted,
-    and does not know the word. Round you go: "cheese", "delivery", "slice", and then the
+    and doesn't know the word. Round you go: "cheese", "delivery", "slice", and then the
     imposter, who has to say something, works out that melted plus Food is probably something
     hot and says "oven". It nearly fits. Then you talk it over, point on three, and tap Reveal
     to find out if you got the right person.</p>
@@ -385,48 +404,221 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <div class="note">
     <b>The only three rules for your clue</b>
-    <p>Do not say the secret word. Do not be so obvious that the imposter works it out. Do not
+    <p>Don't say the secret word. Don't be so obvious that the imposter works it out. Do not
     be so vague that everyone starts looking at you.</p>
   </div>
 
   <div class="note">
-    <b>Nothing happening when you tap? It is locked, not broken</b>
-    <p>There is a padlock at the top of the screen. While it is shut, nothing else on the
-    screen answers, so the box cannot get tapped by accident while it is being passed. Tap the
+    <b>If nothing happens when you tap, it&rsquo;s locked rather than broken</b>
+    <p>There's a padlock at the top of the screen. While it's shut, nothing else on the
+    screen answers, so the box can't get tapped by accident while it's being passed. Tap the
     padlock and it all works again. <a class="more" href="#lock">How the lock works &rarr;</a></p>
   </div>
 
   <h3 id="tagtips">Tag mode, the short version</h3>
-  <p>Tag is the running around one. Same idea, but you are outside instead of sitting down, and
-  there is no secret word at all. The box quietly tells each of you whether you are crew or an
-  imposter, and then it is imposters against everybody else.</p>
+  <p>Tag is the version you play running around. Same idea, but you're outside instead of sitting down, and
+  there's no secret word at all. The box quietly tells each of you whether you're crew or an
+  imposter, and then it's imposters against everybody else.</p>
   <ul>
     <li>Play somewhere with things to hide behind. An open field makes every tag obvious.</li>
     <li>Imposters knock crew out of the game by tagging them. If you get tagged, drop to the
-    ground and stay there. You are now a body, and you are lying there so that somebody finds
+    ground and stay there. You're now a body, and you're lying there so that somebody finds
     you.</li>
-    <li>Find somebody on the ground? Shout, and everyone stops and comes over. That is a
+    <li>When you find somebody on the ground, shout, and everyone stops and comes over. That's a
     meeting, which is just the whole group standing together working out who did it. Meetings
     you call over a body are free, so have as many as you need.</li>
-    <li>Nobody on the ground, but you still want everyone together? That is an emergency
-    meeting, and you call it on the box. There is only a set number of them and all of you
-    share the same pile, so do not waste them.</li>
+    <li>If nobody is on the ground and you still want everyone together, that's an emergency
+    meeting, and you call it on the box. There's only a set number of them and all of you
+    share the same pile, so don't waste them.</li>
     <li>Every meeting ends in a vote. Point at once on three, most votes is out. Voting is the
-    only way crew ever get rid of an imposter, because crew are not allowed to tag.</li>
+    only way crew ever get rid of an imposter, because crew aren't allowed to tag.</li>
     <li>End every meeting by counting "3, 2, 1, UP!" so anyone who was lying down without
     actually being tagged gets back up at the same moment as everybody else. Then nobody can tag
     for 15 seconds, so people can spread out first.</li>
-    <li>After a tag, an imposter has to wait before tagging anyone else. That wait is called the
+    <li>After a tag, an imposter has to wait before tagging anyone else. That wait's called the
     cooldown. Tap the timer tile on the box the second you tag someone, and let it run to zero
     before you tag again.</li>
   </ul>
   <p><a class="more" href="#tag">All of tag mode, in full &rarr;</a></p>
 </div></section>
 
-<section class="white" id="word"><div class="wrap">
+<section class="white" id="tips"><div class="wrap">
+  <div class="narrow">
+    <span class="tag g">Quick tips</span>
+    <h2>What everything on the screen does.</h2>
+    <p class="intro">Every control on the box, in one place. Nothing is buried in a menu, and you
+    can play a whole game without reading any of this.</p>
+  </div>
+
+  <div class="guide">
+
+    <div>
+      <p class="gtitle">The menu</p>
+      <div class="shot">
+        <div class="frame"><div class="bezel"><div class="screen">
+          <div class="s12 dim" style="left:8px;top:9px">Rules</div>
+          <div style="left:142px;top:8px;width:36px;height:23px">
+            <div style="left:0;top:1px;width:36px;height:3px;background:#868C9C"></div>
+            <div style="left:5px;top:-1px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+            <div style="left:0;top:10px;width:36px;height:3px;background:#868C9C"></div>
+            <div style="left:16px;top:8px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+            <div style="left:0;top:19px;width:36px;height:3px;background:#868C9C"></div>
+            <div style="left:25px;top:17px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+          </div>
+          <div class="s12 dim" style="right:8px;top:9px">OFF</div>
+          <div class="btn" style="left:6px;top:88px;width:150px;height:74px;background:#FFC61A;
+            flex-direction:column;gap:2px">
+            <span class="s24" style="color:#14161C;position:static">Word</span>
+            <span style="color:#14161C;position:static;font-size:13px;font-weight:600">sit down</span></div>
+          <div class="btn" style="left:164px;top:88px;width:150px;height:74px;background:#262B38;
+            border:2px solid #FFC61A;flex-direction:column;gap:2px">
+            <span class="s24" style="position:static">Tag</span>
+            <span class="dim" style="position:static;font-size:13px;font-weight:600">outside</span></div>
+          <div class="ring" style="left:3px;top:4px;width:58px;height:28px"></div>
+          <div class="ring" style="left:136px;top:3px;width:48px;height:32px"></div>
+          <div class="ring" style="left:263px;top:4px;width:51px;height:28px"></div>
+          <div class="call" style="left:67px;top:7px">1</div>
+          <div class="call" style="left:190px;top:7px">2</div>
+          <div class="call" style="left:236px;top:7px">3</div>
+          <div class="call" style="left:128px;top:95px">4</div>
+          <div class="call" style="left:286px;top:95px">5</div>
+        </div></div></div>
+      </div>
+      <ol class="legend">
+        <li><span class="k">1</span><span><b>Rules.</b> Five short pages covering whichever mode
+        you played last, then a QR code that opens this page.</span></li>
+        <li><span class="k">2</span><span><b>Settings.</b> The sliders. Brightness, theme, battery,
+        tips, lock and screen flip all live behind this one.</span></li>
+        <li><span class="k">3</span><span><b>Off.</b> Blanks the screen. Tap the glass to bring it
+        back exactly where you left it. There's no power switch on the box.</span></li>
+        <li><span class="k">4</span><span><b>Word.</b> The sit-down game. Start here.</span></li>
+        <li><span class="k">5</span><span><b>Tag.</b> The outdoor version, played running
+        around.</span></li>
+      </ol>
+    </div>
+
+    <div>
+      <p class="gtitle">The bar along the top</p>
+      <div class="shot">
+        <div class="frame"><div class="bezel"><div class="screen">
+          <div class="back"></div>
+          <div class="s12 dim ctr" style="top:9px">3/8</div>
+          <div class="pad"></div>
+          <div class="home"></div>
+          <div style="left:278px;top:6px;width:36px;height:23px">
+            <div style="left:0;top:1px;width:36px;height:3px;background:#868C9C"></div>
+            <div style="left:5px;top:-1px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+            <div style="left:0;top:10px;width:36px;height:3px;background:#868C9C"></div>
+            <div style="left:16px;top:8px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+            <div style="left:0;top:19px;width:36px;height:3px;background:#868C9C"></div>
+            <div style="left:25px;top:17px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
+          </div>
+          <div class="ring" style="left:2px;top:5px;width:56px;height:30px"></div>
+          <div class="ring" style="left:186px;top:2px;width:26px;height:32px"></div>
+          <div class="ring" style="left:232px;top:3px;width:36px;height:31px"></div>
+          <div class="ring" style="left:273px;top:2px;width:46px;height:32px"></div>
+          <div class="call" style="left:20px;top:46px">1</div>
+          <div class="call" style="left:149px;top:46px">2</div>
+          <div class="call" style="left:188px;top:46px">3</div>
+          <div class="call" style="left:239px;top:46px">4</div>
+          <div class="call" style="left:285px;top:46px">5</div>
+          <div class="s9 dim ctr" style="top:92px">This bar is on every screen</div>
+          <div class="s9 dim ctr" style="top:116px">once a game is under way</div>
+        </div></div></div>
+      </div>
+      <ol class="legend">
+        <li><span class="k">1</span><span><b>Back.</b> One step backwards. It disappears once a
+        round has been dealt, on purpose, because the only thing it could do at that point is
+        throw the round away.</span></li>
+        <li><span class="k">2</span><span><b>Where you are.</b> Player 3 of 8, or which rules page
+        you're on.</span></li>
+        <li><span class="k">3</span><span><b>The padlock.</b> Shut it and nothing else on the
+        screen answers, so the box can't get tapped by accident on its way around the table. Tap it
+        again to open it. Boxes arrive with this turned off.</span></li>
+        <li><span class="k">4</span><span><b>Home.</b> Straight back to the menu.</span></li>
+        <li><span class="k">5</span><span><b>Settings.</b> The same sliders as on the menu. Backing
+        out of settings returns you to the screen you came from.</span></li>
+      </ol>
+    </div>
+
+    <div>
+      <p class="gtitle">Your card</p>
+      <div class="shot">
+        <div class="frame"><div class="bezel"><div class="screen">
+          <div class="back"></div>
+          <div class="s12 dim ctr" style="top:8px">Food</div>
+          <div class="box"></div>
+          <div class="s12 ctr" style="top:44px;color:#A9AFC0">Word</div>
+          <div class="s24 ctr" style="top:66px">Pizza</div>
+          <div class="hold on">HOLD</div>
+          <div class="s18" style="left:8px;top:132px">P3</div>
+          <div class="s9" style="left:216px;top:148px;color:#FFC61A">Next</div>
+          <div class="fwd"></div>
+          <div class="ring" style="left:126px;top:2px;width:68px;height:26px"></div>
+          <div class="ring" style="left:108px;top:114px;width:104px;height:58px"></div>
+          <div class="ring" style="left:210px;top:136px;width:106px;height:34px"></div>
+          <div class="call" style="left:198px;top:4px">1</div>
+          <div class="call" style="left:84px;top:132px">2</div>
+          <div class="call" style="left:288px;top:114px">3</div>
+        </div></div></div>
+      </div>
+      <ol class="legend">
+        <li><span class="k">1</span><span><b>The category.</b> The sort of thing the word is. It
+        isn't a secret, everybody sees it, and the box picks it at random rather than anyone
+        choosing it.</span></li>
+        <li><span class="k">2</span><span><b>Hold to look.</b> The word shows only while your
+        finger is down. Let go and it hides, so you can't leave it sitting on the screen by
+        accident.</span></li>
+        <li><span class="k">3</span><span><b>Next.</b> Hands the box on to the following player.
+        Only this arrow moves things along, so a stray tap anywhere else can't skip
+        somebody.</span></li>
+      </ol>
+    </div>
+
+    <div>
+      <p class="gtitle">Settings</p>
+      <div class="shot">
+        <div class="frame"><div class="bezel"><div class="screen">
+          <div class="back"></div>
+          <div class="home"></div>
+          <div class="tile" style="left:8px;top:44px;width:100px;height:60px"></div>
+          <div class="s9" style="left:8px;top:52px;width:100px;text-align:center;color:#868C9C">Light</div>
+          <div class="s18" style="left:8px;top:66px;width:100px;text-align:center;color:#FFC61A">70%</div>
+          <div class="tile" style="left:110px;top:44px;width:100px;height:60px"></div>
+          <div class="s9" style="left:110px;top:52px;width:100px;text-align:center;color:#868C9C">Theme</div>
+          <div class="s18" style="left:110px;top:66px;width:100px;text-align:center;color:#FFC61A">Night</div>
+          <div class="tile" style="left:212px;top:44px;width:100px;height:60px"></div>
+          <div class="s9" style="left:212px;top:52px;width:100px;text-align:center;color:#868C9C">Battery</div>
+          <div class="s18" style="left:212px;top:66px;width:100px;text-align:center;color:#FFC61A">84%</div>
+          <div class="tile" style="left:8px;top:108px;width:100px;height:60px"></div>
+          <div class="s9" style="left:8px;top:116px;width:100px;text-align:center;color:#868C9C">Tips</div>
+          <div class="s18" style="left:8px;top:130px;width:100px;text-align:center;color:#FFC61A">On</div>
+          <div class="tile" style="left:110px;top:108px;width:100px;height:60px"></div>
+          <div class="s9" style="left:110px;top:116px;width:100px;text-align:center;color:#868C9C">Lock</div>
+          <div class="s18" style="left:110px;top:130px;width:100px;text-align:center;color:#FFC61A">Off</div>
+          <div class="tile" style="left:212px;top:108px;width:100px;height:60px"></div>
+          <div class="s9" style="left:212px;top:116px;width:100px;text-align:center;color:#868C9C">Screen</div>
+          <div class="s12" style="left:212px;top:132px;width:100px;text-align:center;color:#FFC61A">Normal</div>
+        </div></div></div>
+      </div>
+      <ol class="legend">
+        <li><span class="k">&middot;</span><span>Six tiles on one page, and no scrolling. Tap one to
+        change it. <b>Light</b> is brightness, <b>Theme</b> is the colours, <b>Battery</b> shows the
+        charge, <b>Tips</b> turns the helper line on and off, <b>Lock</b> is the padlock, and
+        <b>Screen</b> turns the picture upside down for somebody sitting opposite you.</span></li>
+        <li><span class="k">&middot;</span><span>Players, imposters and meetings aren't in here. You
+        set those on the way into a game instead.
+        <a class="more" href="#ref">Every setting in full &rarr;</a></span></li>
+      </ol>
+    </div>
+
+  </div>
+</div></section>
+
+<section id="word"><div class="wrap">
   <div class="narrow">
     <span class="tag g">Word mode</span>
-    <h2>Sit down, pass it round, find the liar.</h2>
+    <h2>Sit down, pass it around, find the liar.</h2>
     <p class="intro">Everyone sees the same secret word except the imposter, who gets one hint
     and has to fake the rest.</p>
   </div>
@@ -435,12 +627,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <li><div class="n">1</div><b>Set it up</b>
       <span>Choose how many players, then how many imposters, then whether the imposter gets a
       hint. Then press START.</span></li>
-    <li><div class="n">2</div><b>Pass it round</b>
+    <li><div class="n">2</div><b>Pass it around</b>
       <span>The box says who it goes to next. That player taps the arrow, holds the
       <b style="display:inline;font-size:inherit">HOLD</b> button down to see their card, lets
       go, and taps Next.</span></li>
     <li><div class="n">3</div><b>One clue each</b>
-      <span>The box picks who starts. Go round the circle, one word out loud. Then talk, then
+      <span>The box picks who starts. Go around the circle, one word out loud. Then talk, then
       vote, then tap Reveal to see the answer.</span></li>
   </ol>
 
@@ -451,13 +643,13 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <strong>Hint:</strong> with a related word after it, never the answer. Turn the hint off in
       setup and the imposter gets only the category, which makes their job much harder.</p>
       <p>The hint is there so you can bluff, which just means saying something that sounds right
-      when you actually have no idea. It is not there to let you guess the word. If the word is
+      when you actually have no idea. It's not there to let you guess the word. If the word is
       <strong>Dog</strong> you might get <em>collar</em>, <em>walk</em> or <em>loyal</em>. Enough
-      to say something that fits, never enough to know it is a dog.</p>
+      to say something that fits, never enough to know it's a dog.</p>
       <p>Everyone can see the <strong>category</strong>, which is the sort of thing the word is,
-      like Food or Animals. The box picks it at random, so there is nothing for you to choose. It
-      is not secret, and it stays up on the screen while you go round giving clues, so everybody
-      knows what sort of thing they are talking about and a clue like cheese makes sense. That is
+      like Food or Animals. The box picks it at random, so there's nothing for you to choose. It
+      isn't secret, and it stays up on the screen while you go around giving clues, so everybody
+      knows what sort of thing they're talking about and a clue like cheese makes sense. That is
       also what gives the imposter a chance.</p>
       <div class="note">
         <b>Why you hold the button</b>
@@ -509,9 +701,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <h3>The vote</h3>
       <p>Talk it over, then point at once on three. Everyone points at the same moment so that
       nobody can hang back and just follow the crowd. Most votes is out. The device does not
-      run the vote. Arguing about it is half the fun.</p>
+      run the vote. Arguing about it's half the fun.</p>
       <p>The last chance: if you vote the imposter out and they can still name the secret word,
-      they steal the win. Agree before you start whether you are playing it that way, because
+      they steal the win. Agree before you start whether you're playing it that way, because
       that one is between you and not something the box decides.</p>
 
       <h3>Then settle it</h3>
@@ -547,12 +739,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 </div></section>
 
-<section id="tag"><div class="wrap">
+<section class="white" id="tag"><div class="wrap">
   <div class="narrow">
     <span class="tag r">Tag mode</span>
     <h2>Same game, but outside and running.</h2>
-    <p class="intro">There is no secret word in this one. The device only tells each of you
-    whether you are crew or an imposter, and then you go and play. Play somewhere with stuff to
+    <p class="intro">There's no secret word in this one. The device only tells each of you
+    whether you're crew or an imposter, and then you go and play. Play somewhere with stuff to
     hide behind. An open field makes every tag obvious.</p>
   </div>
 
@@ -561,17 +753,17 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <h3>Tagging</h3>
       <p>Imposters knock crew out of the game by tagging them. Only imposters get to tag. If
       you get tagged, <strong>fall over and stay down</strong> right where you are, and no
-      wandering off. A player lying on the ground is what everyone calls a body, and it is what
+      wandering off. A player lying on the ground is what everyone calls a body, and it's what
       starts the next meeting, so if you go and hide instead nobody ever finds out anything.</p>
       <h3>Ghosts</h3>
-      <p>Once you are tagged you are a ghost, which is just the word for being out and watching.
+      <p>Once you're tagged you're a ghost, which is just the word for being out and watching.
       Go quiet, walk off the play area, and never let on who tagged you. You saw them do it, so
       if ghosts were allowed to talk you would say the name and the game would be over on the
       spot.</p>
       <h3>Fake deaths</h3>
-      <p>You are allowed to lie down when nobody has tagged you at all. Crew do it next to
-      somebody they suspect, to see what that person does when they think they are alone.
-      Imposters do it right after a real tag, so it is less obvious who was standing near the
+      <p>You're allowed to lie down when nobody has tagged you at all. Crew do it next to
+      somebody they suspect, to see what that person does when they think they're alone.
+      Imposters do it right after a real tag, so it's less obvious who was standing near the
       body. Everyone faking gets back up at the end of the meeting.</p>
     </div>
     <div class="shot">
@@ -590,20 +782,20 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 
   <h3>The two kinds of meeting</h3>
-  <p>A meeting is everyone stopping what they are doing, coming together in one place, and
+  <p>A meeting is everyone stopping what they're doing, coming together in one place, and
   talking about who they think the imposters are. There are two ways one starts.</p>
   <ul>
     <li><strong>Body meeting.</strong> Anyone who finds somebody lying on the ground shouts,
-    and everyone gathers. You get as many of these as you want, and they do not use up the
+    and everyone gathers. You get as many of these as you want, and they don't use up the
     number on the device.</li>
-    <li><strong>Emergency meeting.</strong> The kind you call when there is no body and you
-    just want everyone in one place. There is only a set number of them and all of you share
+    <li><strong>Emergency meeting.</strong> The kind you call when there's no body and you
+    just want everyone in one place. There's only a set number of them and all of you share
     the same pile, which is why they run out. An imposter is allowed to call one, and calling
     one is a decent way to look innocent.</li>
   </ul>
   <p>Either kind ends in a vote, and voting is the only way crew ever get an imposter out,
-  because crew cannot tag anybody. Argue it out, point at once on three, and whoever has the
-  most votes is out of the game and becomes a ghost. If you cannot agree, send nobody out and
+  because crew can't tag anybody. Argue it out, point at once on three, and whoever has the
+  most votes is out of the game and becomes a ghost. If you can't agree, send nobody out and
   carry on.</p>
   <div class="note">
     <b>End every meeting the same way</b>
@@ -613,9 +805,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 
   <h3>How long to wait between tags</h3>
-  <p>After an imposter tags somebody they have to wait before they are allowed to tag anyone
-  else. That wait is called the cooldown, and without it one imposter could clear the whole
-  field in half a minute. How long it is depends on how many of you are playing.</p>
+  <p>After an imposter tags somebody they have to wait before they're allowed to tag anyone
+  else. That wait's called the cooldown, and without it one imposter could clear the whole
+  field in half a minute. How long it's depends on how many of you're playing.</p>
   <table>
     <tr><th>Players</th><th>Cooldown</th></tr>
     <tr><td>3–6</td><td>45 sec</td></tr>
@@ -665,11 +857,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
 </div></section>
 
-<section class="white" id="lock"><div class="wrap">
+<section id="lock"><div class="wrap">
   <div class="narrow">
     <span class="tag b">The lock</span>
     <h2>So nobody taps their way into your word.</h2>
-    <p class="intro">A touchscreen going round a table gets tapped by accident. By the next
+    <p class="intro">A touchscreen going around a table gets tapped by accident. By the next
     player's thumb, or by the table itself when somebody sets it down. The padlock is there to
     stop that.</p>
   </div>
@@ -677,12 +869,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="split">
     <div>
       <h3>What the padlock does</h3>
-      <p>It sits at the top of the screen, just left of the home icon. While it is shut,
-      <strong>nothing else on the screen answers you</strong>. Holding the button will not bring
-      the word up. The arrow will not move you on. Tap the padlock and everything works again.</p>
+      <p>It sits at the top of the screen, just left of the home icon. While it's shut,
+      <strong>nothing else on the screen answers you</strong>. Holding the button won't bring
+      the word up. The arrow won't move you on. Tap the padlock and everything works again.</p>
       <div class="note">
-        <b>Read this before somebody thinks it is broken</b>
-        <p>A locked screen looks exactly like a frozen one. It is not. Look at the top of the
+        <b>Read this before somebody thinks it's broken</b>
+        <p>A locked screen looks exactly like a frozen one. It's not. Look at the top of the
         screen, tap the padlock, and carry on.</p>
       </div>
       <h3>Off, Manual, Auto</h3>
@@ -697,7 +889,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
         them. Nobody can thumb their way into somebody else's word on the way across.</li>
       </ul>
       <div class="note">
-        <b>It only locks while the cards go round</b>
+        <b>It only locks while the cards go around</b>
         <p>Once everyone has looked, it stops. The talk screen and the tag play screen are
         shared, and locking those would just be in the way. A fresh round never starts
         locked.</p>
@@ -733,11 +925,11 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
     <h2>Every knob on the device.</h2>
     <dl class="ref">
       <div><dt>Players</dt><dd>3 to 15.</dd></div>
-      <div><dt>Imposters</dt><dd>How many of you are secretly lying. Half the players at most,
+      <div><dt>Imposters</dt><dd>How many of you're secretly lying. Half the players at most,
       so 8 players allows 4. One is plenty to start with.</dd></div>
       <div><dt>Hint word</dt><dd>Word mode, in setup. The hint word is the single word an
       imposter gets instead of the real one. On: they get it. Off: they get only the category,
-      which makes it a lot harder for them. The switch says which, so you are never guessing
+      which makes it a lot harder for them. The switch says which, so you're never guessing
       what it does.</dd></div>
       <div><dt>Meetings</dt><dd>Tag mode, in setup. How many emergency meetings the whole group
       gets to share, up to nine, counted down on screen while you play. The meetings you call
@@ -750,20 +942,20 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       says "Locked. Tap the padlock." when you tap a locked box. Leave it on for your first few
       games and turn it off once you know what everything does.</dd></div>
       <div><dt>Lock</dt><dd><strong>Arrives off.</strong> Off, Manual or Auto. Manual puts a padlock at the top of the screen
-      that you shut yourself. Auto shuts it every time the box is handed on. While it is shut,
+      that you shut yourself. Auto shuts it every time the box is handed on. While it's shut,
       nothing answers except the padlock. <a class="more" href="#lock">All of it here &rarr;</a>
       </dd></div>
       <div><dt>Home and settings</dt><dd>Top right of every screen once a game is under way, and
-      on the menu the settings sliders sit in the middle of the top row instead. You are never
+      on the menu the settings sliders sit in the middle of the top row instead. You're never
       more than one tap from either, and Back out of settings returns you to the screen you
       left.</dd></div>
       <div><dt>Rules</dt><dd>Top left of the menu. Seven pages: five short ones for whichever
       mode you tapped last, then this page as a QR code, then the same address written out in
-      plain text for when a phone will not read the code.</dd></div>
+      plain text for when a phone won't read the code.</dd></div>
       <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu once it is
-      down to 20. Charge it with any USB-C cable. While it is plugged in that same tile says
-      Charging, and Charged once it is full. The box dims after a minute of nobody touching it
-      and blanks after ten, and a tap wakes it right where it was. It will not do either in the
+      down to 20. Charge it with any USB-C cable. While it's plugged in that same tile says
+      Charging, and Charged once it's full. The box dims after a minute of nobody touching it
+      and blanks after ten, and a tap wakes it right where it was. It won't do either in the
       middle of a tag cooldown, because that screen is the game at that moment.</dd></div>
       <div><dt>Screen</dt><dd>Says Normal or Flipped. Tap it to turn the picture upside down. The charging socket is on one end,
       so with a cable plugged in the box only reads the right way up from one side of the table.
@@ -774,17 +966,17 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       blanks after five minutes instead of ten. Worth it on a long night out, unnecessary at a
       table. It stays how you left it.</dd></div>
       <div><dt>Off</dt><dd>Top right of the menu. Tapping it turns the backlight off and blanks
-      the screen, and a tap on the glass brings it back exactly where you left it. There is no
-      power switch on this one, so that is what off means here. It is still sipping a little in
+      the screen, and a tap on the glass brings it back exactly where you left it. There's no
+      power switch on this one, so that's what off means here. It's still sipping a little in
       the background, so plug it in between game nights the way you would anything else with a
       battery in it.</dd></div>
       <div><dt>Reveal</dt><dd>End of a round. In word mode it shows the word and which players
-      were lying. In tag mode there is no word, so it just names the imposters.</dd></div>
+      were lying. In tag mode there's no word, so it just names the imposters.</dd></div>
     </dl>
     <div class="note">
       <b>The six tiles behind the sliders</b>
-      <p>Light, Theme, Battery, Tips, Lock and Screen. That is the whole settings page, and it is
-      one page, not a list you scroll. Players, imposters, the hint switch and meetings are not in
+      <p>Light, Theme, Battery, Tips, Lock and Screen. That's the whole settings page, and it is
+      one page, not a list you scroll. Players, imposters, the hint switch and meetings aren't in
       here, because you set those on the way into a game instead.</p>
     </div>
     <div class="note">
@@ -792,7 +984,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <p>Eighteen categories and 450 words, the everyday sort a room full of people all know
       without explaining: animals, food, places, sports, jobs, school and plenty more. Every
       word carries five possible hints and each hint is a single word, so nothing gets cut off
-      on a screen this small. The box will not deal a word it has already dealt in the last 16
+      on a screen this small. The box won't deal a word it has already dealt in the last 16
       rounds.</p>
     </div>
   </div>
@@ -808,7 +1000,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <h3>What you need</h3>
   <ul>
-    <li>A laptop or a desktop running <strong>Chrome or Edge</strong>. Firefox cannot do this
+    <li>A laptop or a desktop running <strong>Chrome or Edge</strong>. Firefox can't do this
     and neither can Safari.</li>
     <li>A <strong>USB-C cable that carries data</strong>, not just power. A charging cable looks
     exactly the same and does nothing here. If you have one that came with a phone or a pair of
@@ -817,22 +1009,22 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </ul>
 
   <div class="note">
-    <b>It will not work on a phone</b>
-    <p>There is no way round it. Not an iPhone, not an Android, not a tablet, and not Safari on
+    <b>It won't work on a phone</b>
+    <p>There's no way round it. Not an iPhone, not an Android, not a tablet, and not Safari on
     anything. Talking to a plugged-in gadget is something only a proper computer's browser can
-    do. Go and borrow a laptop. Once you are sat at one the whole thing takes about a minute.</p>
+    do. Go and borrow a laptop. Once you're sat at one the whole thing takes about a minute.</p>
   </div>
 
   <div id="upgo">
     <esp-web-install-button manifest="firmware/manifest.json">
       <button class="flashbtn" slot="activate">Update my box</button>
-      <span class="warn" slot="unsupported">This browser cannot talk to the box. Open this page
+      <span class="warn" slot="unsupported">This browser can't talk to the box. Open this page
       in Chrome or Edge on a computer and the button will be here.</span>
       <span class="warn" slot="not-allowed">This page has to be opened over a secure connection
       for the button to work.</span>
     </esp-web-install-button>
   </div>
-  <p class="warn" id="upwait" hidden>There is nothing new to put on it right now. When there is,
+  <p class="warn" id="upwait" hidden>There's nothing new to put on it right now. When there is,
   the button turns up here on its own.</p>
 
   <!-- Nothing here until an update is actually running. It stays out of the
@@ -852,10 +1044,10 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <span>One end in the box, the other in the computer. The screen should come on.</span></li>
     <li><div class="n">2</div><b>Press the button</b>
       <span>A small window asks which device you mean. Unplug the box and plug it back in while
-      you are looking at that list, and the one that appears is yours. Pick it.</span></li>
+      you're looking at that list, and the one that appears is yours. Pick it.</span></li>
     <li><div class="n">3</div><b>Leave it alone</b>
-      <span>A bar fills up on this page and tells you how far along it is. Do not unplug it while
-      that is happening. The box restarts by itself when it is done and you are finished.</span></li>
+      <span>A bar fills up on this page and tells you how far along it is. Don't unplug it while
+      that's happening. The box restarts by itself when it's done and you're finished.</span></li>
   </ol>
 
   <div class="note">
@@ -868,8 +1060,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <div class="note">
     <b>If nothing happens</b>
-    <p>Try a different cable first, that is nearly always what it is. Then try the other socket
-    on the computer. If the window opens but the box is not in the list, the cable you are using
+    <p>Try a different cable first, that's nearly always what it is. Then try the other socket
+    on the computer. If the window opens but the box isn't in the list, the cable you're using
     only carries power.</p>
   </div>
 </div></div></section>
@@ -878,49 +1070,49 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   <div class="narrow">
     <span class="tag b">Common questions</span>
     <h2>The things people ask first.</h2>
-    <p class="intro">Short answers. If yours is not here, there is a form at the bottom of this
+    <p class="intro">Short answers. If yours isn't here, there's a form at the bottom of this
     page and it comes straight to me.</p>
 
     <dl class="ref">
       <div><dt>The screen has stopped answering me</dt><dd>Look at the top of the screen for a
-      shut padlock. That is the lock, and while it is shut nothing else responds. Tap the
+      shut padlock. That's the lock, and while it's shut nothing else responds. Tap the
       padlock and everything works again. Boxes leave here with the lock switched off, so if
-      you are seeing this, somebody turned it on in settings.
+      you're seeing this, somebody turned it on in settings.
       <a class="more" href="#lock">What the lock is for &rarr;</a></dd></div>
 
-      <div><dt>It went dark on its own</dt><dd>That is meant to happen. It dims after a minute
+      <div><dt>It went dark on its own</dt><dd>That's meant to happen. It dims after a minute
       of nobody touching it and blanks after ten. Tap the glass and it comes straight back to
-      the screen you were on. It will not do it in the middle of a tag cooldown.</dd></div>
+      the screen you were on. It won't do it in the middle of a tag cooldown.</dd></div>
 
-      <div><dt>How do I turn it off?</dt><dd>There is no power switch. Off is the top right of
+      <div><dt>How do I turn it off?</dt><dd>There's no power switch. Off is the top right of
       the menu: it blanks the screen and a tap wakes it. Between game nights, plug it in the way
       you would anything else with a battery in it.</dd></div>
 
       <div><dt>How do I charge it, and where is the cable?</dt><dd>Any USB-C phone charger. There
       is no cable in the box, on purpose, because everybody already has a drawer full of them.
-      The battery tile says Charging while it is plugged in and Charged when it is done.</dd></div>
+      The battery tile says Charging while it's plugged in and Charged when it's done.</dd></div>
 
       <div><dt>Do I need an app, an account or wifi?</dt><dd>No, none of the three. Everything is
-      on the box. This page is the only thing on the internet, and it is optional.</dd></div>
+      on the box. This page is the only thing on the internet, and it's optional.</dd></div>
 
       <div><dt>How many people can play?</dt><dd>Three to fifteen, and you choose how many of
-      them are imposters. Two people does not work: there is nobody to hide among.</dd></div>
+      them are imposters. Two people doesn't work: there's nobody to hide among.</dd></div>
 
-      <div><dt>Does the imposter know they are the imposter?</dt><dd>Yes. Their card says so, and
+      <div><dt>Does the imposter know they're the imposter?</dt><dd>Yes. Their card says so, and
       gives them a one word hint instead of the real word. Turn the hint word off in setup if
       you want to make their life much harder.</dd></div>
 
       <div><dt>Can I put my own words in it?</dt><dd>Not yet. It has 450 words across eighteen
-      categories built in, and it will not repeat one inside sixteen rounds.</dd></div>
+      categories built in, and it won't repeat one inside sixteen rounds.</dd></div>
 
-      <div><dt>Can it get wet?</dt><dd>No. It is not water resistant and there is a battery in
+      <div><dt>Can it get wet?</dt><dd>No. It's not water resistant and there's a battery in
       it. Keep it dry, and keep it out of a hot car.</dd></div>
 
       <div><dt>It got warm while charging</dt><dd>Normal, and it should be mildly warm at most.
-      If it is ever hot enough to be unpleasant to hold, unplug it and message me.</dd></div>
+      If it's ever hot enough to be unpleasant to hold, unplug it and message me.</dd></div>
 
       <div><dt>Something is actually broken</dt><dd>Tell me. The form at the bottom of this page
-      reaches me directly, and there is a box to tick if you want a reply.
+      reaches me directly, and there's a box to tick if you want a reply.
       <a class="more" href="#report">Go to the form &rarr;</a></dd></div>
     </dl>
   </div>
@@ -966,13 +1158,13 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 
   <div class="note">
     <b>Why I ask for your email</b>
-    <p>Your message does not get sent from your email address, and it does not go on any list.
+    <p>Your message doesn't get sent from your email address, and it doesn't go on any list.
     It comes along with what you wrote so I can tell messages apart, and see when three of them
-    came from one person instead of from three different people. That is the whole reason. Tick
+    came from one person instead of from three different people. That's the whole reason. Tick
     the box above and I will hit reply and write back. Leave it unticked and I will still read
-    it, you just will not hear anything back.</p>
+    it, you just won't hear anything back.</p>
   </div>
-  <p class="small">One more thing: you can send three of these a day. That is plenty for one
+  <p class="small">One more thing: you can send three of these a day. That's plenty for one
   person and it keeps the junk out.</p>
 </div></div></section>
 
@@ -1087,12 +1279,12 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   var reasons = {
     failed_initialize:
       'The computer could not get the box to answer. Unplug it, plug it back in, and press ' +
-      'Update my box to go again. When it keeps doing this it is nearly always the cable.',
+      'Update my box to go again. When it keeps happening, the cable is nearly always the reason.',
     not_supported:
       'Whatever is on the end of that cable is not a Pocket Imposter. Check you picked the ' +
       'right thing in the little window.',
     failed_firmware_download:
-      'The new version would not come down to your computer. Check you are still online, then ' +
+      'The new version failed to download. Check that you are still online, then ' +
       'press Update my box to go again.',
     write_failed:
       'It lost the box part way through writing. Leave it plugged in, press Update my box, and ' +
