@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#14161C">
+<title>Pocket Imposter: Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* The device's own Night palette, colour for colour, so the phone and the box
+   read as the same game. Dark on purpose: this gets passed around a room. */
+:root{
+  --bg:#14161C; --surf:#262B38; --surf2:#1C1F29; --text:#F2F4F8; --mut:#868C9C;
+  --acc:#FFC61A; --imp:#FF4436; --crew:#3AC75A; --line:#323849;
+  --disp:"Fredoka",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--disp);
+  -webkit-font-smoothing:antialiased;height:100%}
+body{display:flex;justify-content:center}
+#app{width:100%;max-width:480px;min-height:100%;display:flex;flex-direction:column;
+  padding:max(16px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+
+.top{display:flex;align-items:center;justify-content:space-between;min-height:44px;
+  margin-bottom:10px}
+.icon{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;color:var(--mut)}
+.icon:hover{color:var(--text)}
+.count{font-weight:600;color:var(--mut);font-size:17px}
+.grow{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px}
+h1{font-weight:700;font-size:44px;line-height:1;margin:0;text-align:center;letter-spacing:.01em}
+.wm{color:var(--imp);-webkit-text-stroke:5px var(--text);paint-order:stroke fill;
+  font-size:clamp(40px,12vw,56px)}
+h2{font-weight:700;font-size:28px;margin:0;text-align:center;text-wrap:balance}
+p{margin:0}
+.mut{color:var(--mut)}
+.c{text-align:center}
+.small{font-size:15px;line-height:1.45}
+
+.big{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  border-radius:18px;min-height:120px;width:100%;font-weight:700;font-size:40px}
+.big small{font-size:15px;font-weight:600;opacity:.85}
+.big.y{background:var(--acc);color:#14161C}
+.big.o{background:var(--surf);border:2px solid var(--acc)}
+.bar{width:100%;min-height:58px;border-radius:14px;background:var(--acc);color:#14161C;
+  font-weight:700;font-size:21px;letter-spacing:.04em}
+.bar.ghost{background:var(--surf);color:var(--text)}
+.bar:disabled{opacity:.45}
+
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--surf);border-radius:16px;padding:14px 14px 14px 18px}
+.row b{font-size:19px;font-weight:600}
+.row .sub{font-size:14px;color:var(--mut);font-weight:500}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:48px;height:48px;border-radius:12px;background:var(--surf2);font-size:28px;
+  font-weight:600;line-height:1}
+.step button:disabled{opacity:.3}
+.step output{min-width:40px;text-align:center;font-size:26px;font-weight:700;color:var(--acc)}
+.tog{min-width:96px;height:48px;border-radius:12px;background:var(--surf2);font-weight:700;
+  font-size:18px;color:var(--mut)}
+.tog.on{background:var(--acc);color:#14161C}
+
+/* the card */
+.card{background:var(--surf);border-radius:20px;min-height:200px;padding:22px 16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  text-align:center}
+.card .lbl{font-weight:600;font-size:20px;color:var(--mut)}
+.card .lbl.imp{color:var(--imp)}
+.card .word{font-weight:700;font-size:52px;line-height:1.05;white-space:nowrap;max-width:100%}
+.card .role{font-weight:700;font-size:48px}
+.cat{text-align:center;font-weight:600;font-size:22px;color:var(--mut)}
+.hold{align-self:center;width:170px;height:84px;border-radius:42px;background:var(--text);
+  color:#14161C;font-weight:700;font-size:26px;letter-spacing:.06em;touch-action:none;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  border:4px solid var(--text);transition:background .1s}
+.hold.on{background:var(--crew);color:#fff}
+.who{font-size:48px;font-weight:700;text-align:center;line-height:1.05}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surf);border-radius:16px;min-height:130px;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px}
+.tile .n{font-size:52px;font-weight:700;color:var(--acc);line-height:1}
+.tile .k{font-size:15px;font-weight:600;color:var(--mut);letter-spacing:.06em}
+.tile.live .n{color:var(--imp)}
+.tile:disabled{opacity:.45}
+
+.code{width:100%;height:68px;border-radius:14px;border:2px solid var(--line);background:var(--surf2);
+  color:var(--text);text-align:center;font:700 30px/1 var(--disp);letter-spacing:.14em;
+  text-transform:uppercase}
+.code::placeholder{color:#4A5063;letter-spacing:.14em}
+.err{color:var(--imp);font-weight:600;min-height:22px;text-align:center}
+.where{background:var(--surf);border-radius:14px;padding:14px 16px;font-size:15px;line-height:1.5}
+.where b{color:var(--acc);font-weight:600}
+a{color:var(--acc)}
+.spin{width:26px;height:26px;border-radius:50%;border:3px solid var(--line);
+  border-top-color:var(--acc);animation:sp 0.8s linear infinite;margin:0 auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}.hold{transition:none}}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+
+<noscript><p style="padding:24px">The game needs JavaScript turned on.</p></noscript>
+<script src="units.js"></script>
+<script src="words.enc.js"></script>
+<script>
+"use strict";
+/* ======================================================================
+   Pocket Imposter, web edition.
+
+   The words are encrypted. A code from a real box unwraps the key, the key
+   unlocks the words, and nothing else can - editing this page to skip the
+   check leaves you a game with nothing in it. See tools/webunlock.py.
+
+   Rules are the device's, line for line: same caps, same cooldown table,
+   same wording on the cards, same 16-round no-repeat.
+   ====================================================================== */
+
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const te = new TextEncoder(), td = new TextDecoder();
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const normCode = s => (s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+// Storage can be missing or throw (private windows, blocked site data). The
+// game must still run with nothing remembered.
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (_) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
+  del(k)    { try { localStorage.removeItem(k); } catch (_) {} }
+};
+
+const rnd = n => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; };
+
+/* ---------------------------------------------------------------- unlock */
+async function unlock(code) {
+  const U = window.IMP_UNITS, W = window.IMP_WORDS;
+  if (!U || !W || !U.keys) throw new Error("files");
+  const base = await crypto.subtle.importKey("raw", te.encode(normCode(code)),
+                                             "PBKDF2", false, ["deriveKey"]);
+  const kek = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: b64d(U.salt), iterations: U.rounds, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  for (const e of U.keys) {
+    let raw;
+    try {
+      raw = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: b64d(e.i), additionalData: te.encode("imposter-unit-v1") },
+        kek, b64d(e.c));
+    } catch (_) { continue; }                 // not this box's entry
+    const K = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+    const pt = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: b64d(W.iv), additionalData: te.encode("imposter-words-v1") },
+      K, b64d(W.ct));
+    return JSON.parse(td.decode(pt)).cats;
+  }
+  return null;
+}
+
+/* ---------------------------------------------------------------- state */
+let CATS = null;
+const S = Object.assign({ word: true, players: 8, imps: 2, hint: true, meetings: 3 },
+                        store.get("imp_setup", {}));
+const clampSetup = () => {
+  S.players  = Math.min(15, Math.max(3, S.players | 0));
+  S.imps     = Math.min(Math.max(1, Math.floor(S.players / 2)), Math.max(1, S.imps | 0));
+  S.meetings = Math.min(9, Math.max(0, S.meetings | 0));
+};
+clampSetup();
+const saveSetup = () => store.set("imp_setup", S);
+
+let G = null;           // the round in play
+let coolTimer = null;
+
+function deal() {
+  const imp = new Array(S.players).fill(false);
+  let placed = 0;
+  for (let g = 0; placed < S.imps && g < 2000; g++) {
+    const i = rnd(S.players);
+    if (!imp[i]) { imp[i] = true; placed++; }
+  }
+  // Category is random, and the word is never one of the last 16 dealt.
+  const recent = store.get("imp_recent", []);
+  let cat, w;
+  for (let t = 0; t < 40; t++) {
+    cat = CATS[rnd(CATS.length)];
+    w = cat.words[rnd(cat.words.length)];
+    if (!recent.includes(w[0])) break;
+  }
+  recent.push(w[0]);
+  store.set("imp_recent", recent.slice(-16));
+  G = { imp, cat: cat.name, word: w[0], hint: w[1][rnd(5)], first: rnd(S.players),
+        idx: 0, meet: S.meetings, coolEnd: 0 };
+}
+
+// Device table: 45 s up to 6 players, 30 s up to 10, 20 s beyond, plus 10 s
+// for every imposter after the first.
+const coolSecs = () => (S.players <= 6 ? 45 : S.players <= 10 ? 30 : 20) + (S.imps - 1) * 10;
+
+/* ---------------------------------------------------------------- icons */
+const I = {
+  back: '<svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M11 2 2 11l9 9M3 11h21" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  home: '<svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M2 11 12 2l10 9M5 9v11h14V9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+const topBar = (back, count, home) =>
+  `<div class="top">${back ? `<button class="icon" data-a="${back}" aria-label="Back">${I.back}</button>` : '<span style="width:44px"></span>'}
+   <span class="count">${count || ""}</span>
+   ${home ? `<button class="icon" data-a="home" aria-label="Home">${I.home}</button>` : '<span style="width:44px"></span>'}</div>`;
+
+// Long words shrink to fit on one line. They never break or hyphenate.
+function fitWord() {
+  document.querySelectorAll("[data-fit]").forEach(el => {
+    let px = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > el.clientWidth && px > 20) { px -= 2; el.style.fontSize = px + "px"; }
+  });
+}
+
+/* ---------------------------------------------------------------- screens */
+function gate(msg) {
+  const saved = store.get("imp_code", "");
+  app.innerHTML = `
+    <div class="grow">
+      <h1 class="wm">IMPOSTER</h1>
+      <h2>Play on your phone</h2>
+      <p class="c mut small">This is for people who own a Pocket Imposter. Type in the code
+      from your box to unlock the game.</p>
+      <form id="f" autocomplete="off" style="display:flex;flex-direction:column;gap:12px">
+        <label for="code" class="c" style="font-weight:600">Your code</label>
+        <input id="code" class="code" inputmode="text" autocapitalize="characters"
+               spellcheck="false" maxlength="11" placeholder="XXXX-XXXX" value="${saved}">
+        <p class="err" id="err">${msg || ""}</p>
+        <button class="bar" id="go">Unlock</button>
+      </form>
+      <div class="where"><b>Where is my code?</b><br>On your box, tap <b>Rules</b> at the top
+      left of the menu, then keep tapping the arrow until the last page. It says
+      <b>Play on your phone</b>, with your code underneath.</div>
+      <p class="c small"><a href="../#faq">Questions</a> &nbsp;·&nbsp; <a href="../">How to play</a></p>
+    </div>`;
+  const inp = $("#code");
+  inp.addEventListener("input", () => {
+    const n = normCode(inp.value).slice(0, 8);
+    inp.value = n.length > 4 ? n.slice(0, 4) + "-" + n.slice(4) : n;
+  });
+  $("#f").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const c = normCode(inp.value);
+    if (c.length !== 8) { $("#err").textContent = "Codes are 8 letters and numbers."; return; }
+    $("#go").disabled = true;
+    $("#err").innerHTML = '<span class="spin"></span>';
+    try {
+      const cats = await unlock(c);
+      if (!cats) {
+        $("#err").textContent = "That code didn't work. Check it against your box.";
+        $("#go").disabled = false;
+        return;
+      }
+      CATS = cats;
+      store.set("imp_code", inp.value);
+      home();
+    } catch (e) {
+      $("#err").textContent = window.isSecureContext
+        ? "Something went wrong loading the game. Refresh and try again."
+        : "Open this page over https to play.";
+      $("#go").disabled = false;
+    }
+  });
+}
+
+function home() {
+  clearCool();
+  app.innerHTML = `
+    ${topBar("", "", "")}
+    <div class="grow">
+      <h1 class="wm">IMPOSTER</h1>
+      <button class="big y" data-a="pick-word">Word<small>sit down</small></button>
+      <button class="big o" data-a="pick-tag">Tag<small class="mut">outside</small></button>
+      <p class="c small"><a href="../#howto">How to play</a> &nbsp;·&nbsp;
+        <button data-a="forget" style="color:var(--mut);text-decoration:underline">Use a different code</button></p>
+    </div>`;
+}
+
+function setup() {
+  clampSetup();
+  const maxImp = Math.max(1, Math.floor(S.players / 2));
+  const stepper = (key, v, lo, hi) =>
+    `<div class="step"><button data-a="dec" data-k="${key}" ${v <= lo ? "disabled" : ""} aria-label="Fewer">&minus;</button>
+     <output>${v}</output>
+     <button data-a="inc" data-k="${key}" ${v >= hi ? "disabled" : ""} aria-label="More">+</button></div>`;
+  app.innerHTML = `
+    ${topBar("home", S.word ? "Word" : "Tag", "")}
+    <div class="grow" style="justify-content:flex-start;gap:12px">
+      <div class="row"><div><b>Players</b><div class="sub">3 to 15</div></div>${stepper("players", S.players, 3, 15)}</div>
+      <div class="row"><div><b>Imposters</b><div class="sub">up to half the players</div></div>${stepper("imps", S.imps, 1, maxImp)}</div>
+      ${S.word
+        ? `<div class="row"><div><b>Hint word</b><div class="sub">${S.hint ? "Imposter gets a hint" : "Imposter: no hint"}</div></div>
+           <button class="tog ${S.hint ? "on" : ""}" data-a="hint" aria-pressed="${S.hint}">${S.hint ? "On" : "Off"}</button></div>`
+        : `<div class="row"><div><b>Meetings</b><div class="sub">shared by everyone</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>`}
+    </div>
+    <button class="bar" data-a="start">START</button>`;
+}
+
+function pass() {
+  clearCool();
+  app.innerHTML = `
+    ${topBar(G.idx === 0 ? "setup" : "", `${G.idx + 1}/${S.players}`, "home")}
+    <div class="grow">
+      <p class="c mut" style="font-size:20px;font-weight:600">Hand the phone to</p>
+      <p class="who">Player ${G.idx + 1}</p>
+      <p class="c mut" style="font-size:18px">${G.idx + 1} of ${S.players}</p>
+    </div>
+    <button class="bar" data-a="view">Then tap here</button>`;
+}
+
+function card() {
+  const imp = G.imp[G.idx];
+  let inner;
+  if (S.word && !imp)
+    inner = `<p class="lbl">Word</p><p class="word" data-fit>${G.word}</p>`;
+  else if (imp && S.word && S.hint)
+    inner = `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${G.hint}</p>`;
+  else
+    inner = `<p class="role" style="color:var(${imp ? "--imp" : "--crew"})">${imp ? "IMPOSTER" : "CREW"}</p>
+             <p class="mut small">${imp ? (S.word ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
+  const last = G.idx === S.players - 1;
+  app.innerHTML = `
+    ${topBar("", `${G.idx + 1}/${S.players}`, "")}
+    <p class="cat">${S.word ? G.cat : "Tag"}</p>
+    <div class="grow">
+      <div class="card" id="card" aria-live="off">
+        <p class="lbl">Hold the button</p><p class="mut small">to see your card.</p>
+      </div>
+      <button class="hold" id="hold" aria-label="Hold to see your card">HOLD</button>
+    </div>
+    <button class="bar" data-a="next">${last ? "Everyone has looked" : "Next player"}</button>`;
+
+  // ⚠ The card must hide the instant the finger stops pressing, by ANY route.
+  // A touch the browser cancels (a scroll, a system gesture, a notification)
+  // fires pointercancel, not pointerup - the watch version missed that and left
+  // one player's word on screen for the next person to read.
+  const hold = $("#hold"), box = $("#card");
+  const blank = box.innerHTML;
+  const show = e => { e.preventDefault(); hold.classList.add("on"); box.innerHTML = inner; fitWord(); };
+  const hide = () => { hold.classList.remove("on"); box.innerHTML = blank; };
+  hold.addEventListener("pointerdown", show);
+  ["pointerup", "pointercancel", "pointerleave", "lostpointercapture"].forEach(t => hold.addEventListener(t, hide));
+  hold.addEventListener("contextmenu", e => e.preventDefault());
+  window.onblur = hide;
+  document.onvisibilitychange = () => { if (document.hidden) hide(); };
+}
+
+function started() {
+  window.onblur = null; document.onvisibilitychange = null;
+  if (!S.word) return play();
+  app.innerHTML = `
+    ${topBar("", "", "home")}
+    <div class="grow">
+      <p class="c" style="font-size:22px;font-weight:700;color:var(--acc)">Game started</p>
+      <p class="c mut" style="font-size:18px">Category: <b style="color:var(--text)">${G.cat}</b></p>
+      <div class="card" style="min-height:0">
+        <p style="font-size:22px;font-weight:600">Player ${G.first + 1} starts.</p>
+        <p class="mut">One clue each. ${S.imps} imposter${S.imps === 1 ? "" : "s"}.</p>
+      </div>
+      <p class="c mut small">Go around the circle, one word each. Talk it over, then point on
+      three. Tap Reveal when you've voted.</p>
+    </div>
+    <button class="bar" data-a="reveal">Reveal</button>`;
+}
+
+function play() {
+  window.onblur = null; document.onvisibilitychange = null;
+  const left = coolLeft();
+  app.innerHTML = `
+    ${topBar("", "", "home")}
+    <p class="c" style="font-size:22px;font-weight:700;color:var(--acc);margin-bottom:12px">Game on</p>
+    <div class="tiles">
+      <button class="tile" data-a="meet" ${G.meet <= 0 ? "disabled" : ""}>
+        <span class="n">${G.meet}</span><span class="k">MEETINGS</span></button>
+      <button class="tile ${left ? "live" : ""}" data-a="cool" id="cool">
+        <span class="n" id="cooln">${left || coolSecs()}</span>
+        <span class="k" id="coolk">${left ? "COOLDOWN" : "TAP AFTER A TAG"}</span></button>
+    </div>
+    <div class="grow">
+      <p class="c mut small">Emergency meetings come out of the shared pile. Meetings over a body
+      are free and don't touch it. Imposters: tap the timer the moment you tag someone, and
+      don't tag again until it hits zero.</p>
+    </div>
+    <button class="bar" data-a="reveal">Reveal</button>`;
+  if (left) runCool();
+}
+const coolLeft = () => G && G.coolEnd ? Math.max(0, Math.ceil((G.coolEnd - Date.now()) / 1000)) : 0;
+function clearCool() { if (coolTimer) { clearInterval(coolTimer); coolTimer = null; } }
+function runCool() {
+  clearCool();
+  coolTimer = setInterval(() => {
+    const l = coolLeft(), n = $("#cooln"), k = $("#coolk"), t = $("#cool");
+    if (!n) return clearCool();
+    if (l <= 0) {
+      G.coolEnd = 0; clearCool();
+      n.textContent = coolSecs(); k.textContent = "TAP AFTER A TAG"; t.classList.remove("live");
+      if (navigator.vibrate) navigator.vibrate(200);
+    } else n.textContent = l;
+  }, 250);
+}
+
+function reveal() {
+  clearCool();
+  const who = G.imp.map((v, i) => v ? "P" + (i + 1) : null).filter(Boolean);
+  app.innerHTML = `
+    ${topBar("", "", "home")}
+    <div class="grow">
+      ${S.word ? `<p class="c mut" style="font-size:18px;font-weight:600">The word was</p>
+                  <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${G.word}</p>` : ""}
+      <p class="c mut" style="font-size:20px;font-weight:600;margin-top:10px">${who.length === 1 ? "Imposter" : "Imposters"}</p>
+      <p class="c" style="font-size:40px;font-weight:700;color:var(--imp);text-wrap:balance">${who.join(", ")}</p>
+    </div>
+    <button class="bar" data-a="again">NEW GAME</button>`;
+  fitWord();
+}
+
+/* ---------------------------------------------------------------- actions */
+app.addEventListener("click", e => {
+  const b = e.target.closest("[data-a]");
+  if (!b || b.disabled) return;
+  const a = b.dataset.a;
+  if (a === "home")     return home();
+  if (a === "pick-word"){ S.word = true;  saveSetup(); return setup(); }
+  if (a === "pick-tag") { S.word = false; saveSetup(); return setup(); }
+  if (a === "setup")    return setup();
+  if (a === "inc" || a === "dec") {
+    S[b.dataset.k] += a === "inc" ? 1 : -1; clampSetup(); saveSetup(); return setup();
+  }
+  if (a === "hint")     { S.hint = !S.hint; saveSetup(); return setup(); }
+  if (a === "start")    { deal(); return pass(); }
+  if (a === "view")     return card();
+  if (a === "next")     { G.idx++; return G.idx >= S.players ? started() : pass(); }
+  if (a === "reveal")   return reveal();
+  if (a === "again")    { deal(); return pass(); }
+  if (a === "meet")     { if (G.meet > 0) { G.meet--; play(); } return; }
+  if (a === "cool")     { if (!coolLeft()) { G.coolEnd = Date.now() + coolSecs() * 1000; play(); } return; }
+  if (a === "forget")   { store.del("imp_code"); CATS = null; return gate(); }
+});
+
+/* ---------------------------------------------------------------- boot */
+(async () => {
+  if (!window.crypto || !crypto.subtle) {
+    app.innerHTML = '<div class="grow"><h2>This browser is too old to play.</h2><p class="c mut">Try Chrome, Safari or Firefox.</p></div>';
+    return;
+  }
+  const saved = store.get("imp_code", "");
+  if (saved) {
+    app.innerHTML = '<div class="grow"><div class="spin"></div><p class="c mut">Unlocking…</p></div>';
+    try { const c = await unlock(saved); if (c) { CATS = c; return home(); } } catch (_) {}
+    return gate("Your saved code no longer works. Type it in again.");
+  }
+  gate();
+})();
+</script>
+</body>
+</html>

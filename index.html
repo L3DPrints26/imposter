@@ -52,6 +52,7 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);
   box-shadow:0 6px 0 #fff}
 .bar nav{margin-left:auto;display:flex;gap:4px;min-width:0;overflow-x:auto;scrollbar-width:none}
 .bar nav::-webkit-scrollbar{display:none}
+.bar nav a.navplay{background:var(--ink);color:#fff;border-radius:999px;padding:4px 14px}
 .bar nav a{flex:0 0 auto;font-family:var(--disp);font-weight:600;font-size:16px;
   color:var(--mut);text-decoration:none;padding:8px 13px;border-radius:999px}
 .bar nav a:hover{color:var(--ink);background:#fff}
@@ -76,6 +77,11 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);
 .hero{background:var(--gold);border-bottom:2px solid var(--line);padding:52px 0 56px}
 .hero .grid{display:grid;gap:36px;align-items:center}
 @media(min-width:880px){.hero .grid{grid-template-columns:1fr auto;gap:52px}}
+.heroplay{margin:22px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.playbtn{display:inline-block;background:var(--ink);color:#fff;font-family:var(--disp);
+  font-weight:700;font-size:19px;padding:13px 22px;border-radius:14px;text-decoration:none}
+.playbtn:hover{filter:brightness(1.25)}
+.heroplay span{font-size:15px;opacity:.8}
 .pill{display:inline-block;background:var(--ink);color:#fff;font-family:var(--disp);
   font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;margin:0 0 18px}
 h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line-height:1;
@@ -305,6 +311,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 <div class="bar"><div class="wrap">
   <a class="brand" href="#top"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
   <nav>
+    <a href="play/" class="navplay">Play</a>
     <a href="#howto">Start here</a>
     <a href="#tips">Quick tips</a>
     <a href="#word">Word</a>
@@ -329,6 +336,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <div><dt>A round</dt><dd>~5 min</dd></div>
       <div><dt>You need</dt><dd>The box</dd></div>
     </dl>
+    <p class="heroplay"><a class="playbtn" href="play/">Play on your phone &rarr;</a>
+    <span>Needs the code from your box.</span></p>
   </div>
   <div class="shot">
     <div class="frame"><div class="bezel"><div class="screen">
@@ -1092,8 +1101,14 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       is no cable in the box, on purpose, because everybody already has a drawer full of them.
       The battery tile says Charging while it's plugged in and Charged when it's done.</dd></div>
 
-      <div><dt>Do I need an app, an account or wifi?</dt><dd>No, none of the three. Everything is
-      on the box. This page is the only thing on the internet, and it's optional.</dd></div>
+      <div><dt>Do I need an app, an account or wifi?</dt><dd>No app and no account. The box works
+      on its own with no wifi at all. If you'd rather play on a phone, there's a web version, and
+      that one needs the internet.</dd></div>
+
+      <div><dt>Can I play it on my phone?</dt><dd>Yes, if you own a box. Tap <a href="play/">Play</a>
+      at the top of this page and type in your box's code. To find the code, open <b>Rules</b> on the
+      box and keep tapping the arrow until the last page. You only type it once per phone. It's the
+      same game, same words, and the phone gets passed around instead of the box.</dd></div>
 
       <div><dt>How many people can play?</dt><dd>Three to fifteen, and you choose how many of
       them are imposters. Two people doesn't work: there's nobody to hide among.</dd></div>
