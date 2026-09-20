@@ -72,7 +72,10 @@ p{margin:0}
 .card .lbl.imp{color:var(--imp)}
 .card .word{font-weight:700;font-size:52px;line-height:1.05;white-space:nowrap;max-width:100%}
 .card .role{font-weight:700;font-size:48px}
-.cat{text-align:center;font-weight:600;font-size:22px;color:var(--mut)}
+.cat{text-align:center;margin:2px 0 12px}
+.cat .k{display:block;font-size:13px;font-weight:600;letter-spacing:.2em;color:var(--mut);
+  text-transform:uppercase;margin-bottom:2px}
+.cat .v{display:block;font-size:40px;font-weight:700;line-height:1.05;color:var(--acc)}
 .hold{align-self:center;width:170px;height:84px;border-radius:42px;background:var(--text);
   color:#14161C;font-weight:700;font-size:26px;letter-spacing:.06em;touch-action:none;
   user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
@@ -100,6 +103,42 @@ a{color:var(--acc)}
   border-top-color:var(--acc);animation:sp 0.8s linear infinite;margin:0 auto}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}.hold{transition:none}}
+
+/* Wide mode, for a laptop. The phone column is deliberately narrow because a
+   phone gets passed hand to hand; a laptop sits on a table with everyone round
+   it, so everything grows and the two mode buttons sit side by side. Driven by
+   a class, not a media query, because it is the player's choice - a big screen
+   still gets the normal layout unless they ask for the roomy one. */
+body.wide #app{max-width:1000px;padding:24px 40px 34px}
+body.wide h1{font-size:76px}
+body.wide .wm{font-size:clamp(56px,9vw,92px);-webkit-text-stroke:8px var(--text)}
+body.wide h2{font-size:38px}
+body.wide .modes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+body.wide .big{min-height:190px;font-size:62px}
+body.wide .big small{font-size:20px}
+body.wide .bar{min-height:76px;font-size:27px;border-radius:18px}
+body.wide .row{padding:20px 20px 20px 26px}
+body.wide .row b{font-size:25px}
+body.wide .row .sub{font-size:17px}
+body.wide .step button{width:62px;height:62px;font-size:34px}
+body.wide .step output{font-size:34px;min-width:56px}
+body.wide .tog{min-width:124px;height:62px;font-size:23px}
+body.wide .cat .v{font-size:60px}
+body.wide .cat .k{font-size:16px}
+body.wide .card{min-height:320px;border-radius:26px}
+body.wide .card .lbl{font-size:27px}
+body.wide .card .word{font-size:88px}
+body.wide .card .role{font-size:80px}
+body.wide .hold{width:260px;height:116px;font-size:34px;border-radius:58px}
+body.wide .who{font-size:80px}
+body.wide .tile{min-height:200px}
+body.wide .tile .n{font-size:86px}
+body.wide .tile .k{font-size:19px}
+body.wide .small{font-size:18px}
+body.wide .code{height:86px;font-size:40px}
+body.wide .where{font-size:18px}
+body.wide .grow{gap:24px}
+body.wide .hold{margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -136,6 +175,30 @@ const store = {
 };
 
 const rnd = n => { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; };
+
+/* Wide mode and real full screen are kept as one switch, because to a player
+   they are one thing. The class is what actually changes the layout, so it
+   still works where the Fullscreen API is refused - an iPhone browser, or a
+   page that is not allowed to go full screen. */
+const isWide = () => document.body.classList.contains("wide");
+function setWide(on) {
+  document.body.classList.toggle("wide", on);
+  store.set("imp_wide", on);
+  if (on && document.documentElement.requestFullscreen && !document.fullscreenElement)
+    document.documentElement.requestFullscreen().catch(() => {});
+  if (!on && document.fullscreenElement && document.exitFullscreen)
+    document.exitFullscreen().catch(() => {});
+}
+// Leaving full screen with Escape has to put the layout back, or the page is
+// left claiming to be full screen when it plainly is not.
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && isWide()) {
+    document.body.classList.remove("wide");
+    store.set("imp_wide", false);
+    if (typeof redraw === "function") redraw();
+  }
+});
+let redraw = () => {};
 
 /* ---------------------------------------------------------------- unlock */
 async function unlock(code) {
@@ -205,12 +268,17 @@ const coolSecs = () => (S.players <= 6 ? 45 : S.players <= 10 ? 30 : 20) + (S.im
 /* ---------------------------------------------------------------- icons */
 const I = {
   back: '<svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M11 2 2 11l9 9M3 11h21" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  home: '<svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M2 11 12 2l10 9M5 9v11h14V9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  home: '<svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M2 11 12 2l10 9M5 9v11h14V9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  expand: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M8 2H2v6M14 2h6v6M8 20H2v-6M14 20h6v-6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  shrink: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M2 8h6V2M20 8h-6V2M2 14h6v6M20 14h-6v6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
+const fsBtn = () =>
+  `<button class="icon" data-a="fs" aria-label="${isWide() ? "Leave full screen" : "Full screen"}"
+    title="${isWide() ? "Leave full screen" : "Full screen"}">${isWide() ? I.shrink : I.expand}</button>`;
 const topBar = (back, count, home) =>
   `<div class="top">${back ? `<button class="icon" data-a="${back}" aria-label="Back">${I.back}</button>` : '<span style="width:44px"></span>'}
    <span class="count">${count || ""}</span>
-   ${home ? `<button class="icon" data-a="home" aria-label="Home">${I.home}</button>` : '<span style="width:44px"></span>'}</div>`;
+   <span style="display:flex">${fsBtn()}${home ? `<button class="icon" data-a="home" aria-label="Home">${I.home}</button>` : ""}</span></div>`;
 
 // Long words shrink to fit on one line. They never break or hyphenate.
 function fitWord() {
@@ -222,6 +290,7 @@ function fitWord() {
 
 /* ---------------------------------------------------------------- screens */
 function gate(msg) {
+  redraw = () => gate(msg);
   const saved = store.get("imp_code", "");
   app.innerHTML = `
     <div class="grow">
@@ -272,19 +341,23 @@ function gate(msg) {
 }
 
 function home() {
+  redraw = home;
   clearCool();
   app.innerHTML = `
     ${topBar("", "", "")}
     <div class="grow">
       <h1 class="wm">IMPOSTER</h1>
-      <button class="big y" data-a="pick-word">Word<small>sit down</small></button>
-      <button class="big o" data-a="pick-tag">Tag<small class="mut">outside</small></button>
+      <div class="modes">
+        <button class="big y" data-a="pick-word">Word<small>sit down</small></button>
+        <button class="big o" data-a="pick-tag">Tag<small class="mut">outside</small></button>
+      </div>
       <p class="c small"><a href="../#howto">How to play</a> &nbsp;·&nbsp;
         <button data-a="forget" style="color:var(--mut);text-decoration:underline">Use a different code</button></p>
     </div>`;
 }
 
 function setup() {
+  redraw = setup;
   clampSetup();
   const maxImp = Math.max(1, Math.floor(S.players / 2));
   const stepper = (key, v, lo, hi) =>
@@ -305,6 +378,7 @@ function setup() {
 }
 
 function pass() {
+  redraw = pass;
   clearCool();
   app.innerHTML = `
     ${topBar(G.idx === 0 ? "setup" : "", `${G.idx + 1}/${S.players}`, "home")}
@@ -317,6 +391,7 @@ function pass() {
 }
 
 function card() {
+  redraw = card;
   const imp = G.imp[G.idx];
   let inner;
   if (S.word && !imp)
@@ -329,7 +404,7 @@ function card() {
   const last = G.idx === S.players - 1;
   app.innerHTML = `
     ${topBar("", `${G.idx + 1}/${S.players}`, "")}
-    <p class="cat">${S.word ? G.cat : "Tag"}</p>
+    <p class="cat"><span class="k">Category</span><span class="v">${S.word ? G.cat : "Tag mode"}</span></p>
     <div class="grow">
       <div class="card" id="card" aria-live="off">
         <p class="lbl">Hold the button</p><p class="mut small">to see your card.</p>
@@ -354,13 +429,14 @@ function card() {
 }
 
 function started() {
+  redraw = started;
   window.onblur = null; document.onvisibilitychange = null;
   if (!S.word) return play();
   app.innerHTML = `
     ${topBar("", "", "home")}
     <div class="grow">
       <p class="c" style="font-size:22px;font-weight:700;color:var(--acc)">Game started</p>
-      <p class="c mut" style="font-size:18px">Category: <b style="color:var(--text)">${G.cat}</b></p>
+      <p class="cat"><span class="k">Category</span><span class="v">${G.cat}</span></p>
       <div class="card" style="min-height:0">
         <p style="font-size:22px;font-weight:600">Player ${G.first + 1} starts.</p>
         <p class="mut">One clue each. ${S.imps} imposter${S.imps === 1 ? "" : "s"}.</p>
@@ -372,6 +448,7 @@ function started() {
 }
 
 function play() {
+  redraw = play;
   window.onblur = null; document.onvisibilitychange = null;
   const left = coolLeft();
   app.innerHTML = `
@@ -408,6 +485,7 @@ function runCool() {
 }
 
 function reveal() {
+  redraw = reveal;
   clearCool();
   const who = G.imp.map((v, i) => v ? "P" + (i + 1) : null).filter(Boolean);
   app.innerHTML = `
@@ -427,6 +505,7 @@ app.addEventListener("click", e => {
   const b = e.target.closest("[data-a]");
   if (!b || b.disabled) return;
   const a = b.dataset.a;
+  if (a === "fs")       { setWide(!isWide()); return redraw(); }
   if (a === "home")     return home();
   if (a === "pick-word"){ S.word = true;  saveSetup(); return setup(); }
   if (a === "pick-tag") { S.word = false; saveSetup(); return setup(); }
@@ -451,6 +530,7 @@ app.addEventListener("click", e => {
     app.innerHTML = '<div class="grow"><h2>This browser is too old to play.</h2><p class="c mut">Try Chrome, Safari or Firefox.</p></div>';
     return;
   }
+  if (store.get("imp_wide", false)) document.body.classList.add("wide");
   const saved = store.get("imp_code", "");
   if (saved) {
     app.innerHTML = '<div class="grow"><div class="spin"></div><p class="c mut">Unlocking…</p></div>';
