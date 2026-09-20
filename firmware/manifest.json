@@ -1,6 +1,6 @@
 {
   "name": "Pocket Imposter",
-  "version": "21",
+  "version": "22",
   "new_install_prompt_erase": false,
   "new_install_improv_wait_time": 0,
   "builds": [
