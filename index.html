@@ -160,6 +160,14 @@ h1{font-family:var(--disp);font-weight:700;font-size:clamp(42px,8.5vw,72px);line
 .home::after{content:"";position:absolute;left:5px;top:10px;width:18px;height:13px;background:#868C9C}
 
 /* ---------- sections ---------- */
+/* Version banner. Slim, above everything, and it names the newest build
+   rather than pretending to know what the reader is running - the page has no
+   way to ask their box. Telling them where to look is the useful half. */
+.vbar{background:var(--ink);color:#fff;font-family:var(--disp);font-weight:500;
+  font-size:15px;line-height:1.45;padding:9px 18px;text-align:center}
+.vbar b{font-weight:700;color:var(--yellow,#FFC61A)}
+.vbar a{color:#fff;text-underline-offset:3px}
+@media(max-width:560px){.vbar{font-size:13.5px;padding:8px 12px}}
 section{padding:72px 0}
 section.white{background:var(--paper);border-top:2px solid var(--line);
   border-bottom:2px solid var(--line)}
@@ -307,7 +315,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
-
+<div class="vbar">Newest firmware is <b>v24</b>. On your box: <b>Info</b>, then keep tapping
+the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</a>.</div>
 <div class="bar"><div class="wrap">
   <a class="brand" href="#top"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
   <nav>
@@ -341,7 +350,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
   </div>
   <div class="shot">
     <div class="frame"><div class="bezel"><div class="screen">
-      <div class="s12 dim" style="left:8px;top:9px">Rules</div>
+      <div class="s12 dim" style="left:8px;top:9px">Info</div>
       <div style="left:142px;top:8px;width:36px;height:23px">
         <div style="left:0;top:1px;width:36px;height:3px;background:#868C9C"></div>
         <div style="left:5px;top:-1px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
@@ -465,7 +474,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       <p class="gtitle">The menu</p>
       <div class="shot">
         <div class="frame"><div class="bezel"><div class="screen">
-          <div class="s12 dim" style="left:8px;top:9px">Rules</div>
+          <div class="s12 dim" style="left:8px;top:9px">Info</div>
           <div style="left:142px;top:8px;width:36px;height:23px">
             <div style="left:0;top:1px;width:36px;height:3px;background:#868C9C"></div>
             <div style="left:5px;top:-1px;width:8px;height:8px;border-radius:50%;background:#868C9C"></div>
@@ -494,8 +503,9 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
         </div></div></div>
       </div>
       <ol class="legend">
-        <li><span class="k">1</span><span><b>Rules.</b> Five short pages covering whichever mode
-        you played last, then a QR code that opens this page.</span></li>
+        <li><span class="k">1</span><span><b>Info.</b> Five short rule pages for whichever mode you
+        played last, then your code for the web game, the version your box is on, and a QR code
+        that opens this page.</span></li>
         <li><span class="k">2</span><span><b>Settings.</b> The sliders. Brightness, theme, battery,
         tips, lock and screen flip all live behind this one.</span></li>
         <li><span class="k">3</span><span><b>Off.</b> Blanks the screen. Tap the glass to bring it
@@ -958,7 +968,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       on the menu the settings sliders sit in the middle of the top row instead. You're never
       more than one tap from either, and Back out of settings returns you to the screen you
       left.</dd></div>
-      <div><dt>Rules</dt><dd>Top left of the menu. Seven pages: five short ones for whichever
+      <div><dt>Info</dt><dd>Top left of the menu. Nine pages: five short ones for whichever
       mode you tapped last, then this page as a QR code, then the same address written out in
       plain text for when a phone won't read the code.</dd></div>
       <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu once it is
@@ -1106,8 +1116,8 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
       that one needs the internet.</dd></div>
 
       <div><dt>Can I play it on my phone?</dt><dd>Yes, if you own a box. Tap <a href="play/">Play</a>
-      at the top of this page and type in your box's code. To find the code, open <b>Rules</b> on the
-      box and keep tapping the arrow until the last page. You only type it once per phone. It's the
+      at the top of this page and type in your box's code. To find the code, open <b>Info</b> on the
+      box and tap the arrow past the rule pages until you reach <b>Play on your phone</b>. You only type it once per phone. It's the
       same game, same words, and the phone gets passed around instead of the box.</dd></div>
 
       <div><dt>How many people can play?</dt><dd>Three to fifteen, and you choose how many of
