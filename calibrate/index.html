@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FFC61A">
+<title>Fix touch on your box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FFF8E7; --ink:#14161C; --mut:#5B6070; --card:#FFFFFF; --line:#E6DFC9;
+  --acc:#FFC61A; --imp:#E5392B; --ok:#2E9E4F; --warn:#B26A00;
+  --disp:"Fredoka",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --cream:#14161C; --ink:#F2F4F8; --mut:#9AA0B0; --card:#1F2330; --line:#323849;
+  }
+}
+:root[data-theme="dark"]{
+  --cream:#14161C; --ink:#F2F4F8; --mut:#9AA0B0; --card:#1F2330; --line:#323849;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--disp);font-size:18px;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:34px;line-height:1.1;margin:6px 0 10px;text-wrap:balance}
+h2{font-size:22px;margin:0 0 8px}
+p{margin:0 0 12px}
+.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0}
+.steps{list-style:none;padding:0;margin:0;counter-reset:s}
+.steps li{counter-increment:s;position:relative;padding:12px 0 12px 48px;border-top:1px solid var(--line)}
+.steps li:first-child{border-top:0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:12px;width:34px;height:34px;border-radius:50%;
+  background:var(--acc);color:var(--ink);font-weight:700;display:grid;place-items:center}
+.btn{display:block;width:100%;min-height:58px;border-radius:14px;border:0;font:inherit;font-weight:700;
+  font-size:19px;cursor:pointer;margin:10px 0;padding:10px 16px;text-align:center}
+.btn.y{background:var(--acc);color:var(--ink)}
+.btn.o{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn small{display:block;font-size:14px;font-weight:500;opacity:.85;margin-top:2px}
+.status{font-weight:700;font-size:20px;min-height:28px}
+.status.ok{color:var(--ok)} .status.bad{color:var(--imp)} .status.wait{color:var(--warn)}
+.dots{position:relative;width:100%;aspect-ratio:320/172;background:#14161C;border-radius:12px;margin:14px 0;overflow:hidden}
+.dot{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;
+  background:var(--acc);box-shadow:0 0 0 6px rgba(255,198,26,.25)}
+.dot::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#14161C}
+.dot.done{background:var(--ok);box-shadow:0 0 0 6px rgba(46,158,79,.25)}
+.dot.done::after{background:#fff}
+.log{font-family:Consolas,monospace;font-size:14px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:12px;min-height:60px;max-height:200px;overflow:auto;white-space:pre-wrap;color:var(--mut)}
+.note{border-left:4px solid var(--acc);padding:8px 0 8px 14px;margin:14px 0}
+a{color:var(--ink)}
+.hidden{display:none}
+@media (max-width:460px){body{font-size:17px}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<a href="../#update" class="mut" style="font-size:16px">&larr; Back to the update page</a>
+<h1>Fix touch on your box</h1>
+<p class="mut">Use this if the screen isn't where you're tapping, or taps land on the wrong things.
+It takes about two minutes, and you can't make things worse: the reset button always brings
+back the factory setting.</p>
+
+<div id="nosupport" class="card hidden">
+  <h2>Open this in Chrome or Edge</h2>
+  <p>This page talks to your box through the browser. Chrome and Edge on a computer can do it.
+  Phones, tablets, Firefox and Safari can't.</p>
+</div>
+
+<div id="app">
+  <div class="card">
+    <h2>1. Plug the box into this computer</h2>
+    <ol class="steps">
+      <li>Use a USB-C cable that carries data. A charging-only cable won't work.</li>
+      <li>Turn the box on. The screen should light up.</li>
+      <li>Press the button below, then pick the box from the list.</li>
+    </ol>
+    <button class="btn y" id="connect">Connect my box</button>
+    <div class="status" id="conStatus"></div>
+  </div>
+
+  <div class="card" id="choose" style="opacity:.5">
+    <h2>2. Pick one</h2>
+    <p><strong>Reset to factory</strong> is the safe choice. It puts back the setting every box
+    shipped with, and it's the one to try first.</p>
+    <button class="btn y" id="auto" disabled>Reset to factory<small>Fixes most touch problems. Takes a second.</small></button>
+    <p style="margin-top:14px"><strong>Calibrate by hand</strong> is for when the reset isn't enough.
+    You'll tap three dots on the box.</p>
+    <button class="btn o" id="manual" disabled>Calibrate by hand<small>Tap three dots on the box screen.</small></button>
+  </div>
+
+  <div class="card hidden" id="manualCard">
+    <h2>Tap the three dots on the box</h2>
+    <p>Tap each dot once with a finger, in order. The guide below shows where they are.</p>
+    <div class="dots" id="dots">
+      <div class="dot" style="left:10.6%;top:18.6%" id="d0"></div>
+      <div class="dot" style="left:89.4%;top:18.6%" id="d1"></div>
+      <div class="dot" style="left:10.6%;top:81.4%" id="d2"></div>
+    </div>
+    <p class="mut" id="manualHint">Waiting for the box to show the first dot…</p>
+    <button class="btn o" id="cancel">Cancel and keep what I had</button>
+  </div>
+
+  <div class="card">
+    <h2>What happened</h2>
+    <div class="log" id="log">Nothing yet.</div>
+  </div>
+
+  <div class="note mut">
+    <strong>Can't get it working?</strong> Reset to factory first. If the screen is still wrong,
+    try the calibration once more, and then message the shop with what you tried.
+  </div>
+</div>
+
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const enc = new TextEncoder(), dec = new TextDecoder();
+let port = null, writer = null, readingDone = null, buf = "";
+const logEl = $("log");
+
+function say(line){
+  const t = new Date().toLocaleTimeString([], {hour:"numeric", minute:"2-digit", second:"2-digit"});
+  logEl.textContent = (logEl.textContent === "Nothing yet." ? "" : logEl.textContent + "\n") + t + "  " + line;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function setStatus(text, kind){
+  const el = $("conStatus"); el.textContent = text; el.className = "status " + (kind || "");
+}
+
+// Turns the box's plain serial lines into things a person can act on.
+let heard = false;
+function handle(line){
+  heard = true;
+  say(line);
+  if (line.startsWith("CAL OK auto")) {
+    setStatus("Reset to factory. Try the box now.", "ok");
+  } else if (line.startsWith("CAL OK manual")) {
+    setStatus("Calibrated by hand. Try the box now.", "ok");
+    markDots(3);
+    $("manualHint").textContent = "Done. The box is calibrated.";
+  } else if (line.startsWith("CAL START")) {
+    markDots(0);
+    $("manualHint").textContent = "Tap the first dot on the box.";
+  } else if (line.startsWith("CAL FAIL")) {
+    markDots(0);
+    $("manualHint").textContent = "That didn't take. Start again: tap the first dot.";
+  } else if (line.startsWith("CAL CANCELLED") || line.startsWith("CAL TIMEOUT")) {
+    $("manualCard").classList.add("hidden");
+    setStatus("Stopped. Your old setting is still in place.", "wait");
+  }
+}
+function markDots(n){
+  for (let i = 0; i < 3; i++) $("d" + i).classList.toggle("done", i < n);
+}
+
+async function send(cmd){
+  if (!writer) return;
+  await writer.write(enc.encode(cmd + "\n"));
+}
+
+async function readLoop(){
+  const reader = port.readable.getReader();
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value);
+      let i;
+      while ((i = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, i).replace(/\r/g, "").trim();
+        buf = buf.slice(i + 1);
+        if (line) handle(line);
+      }
+    }
+  } catch (e) {
+    say("Lost the connection. Unplug, plug back in, and connect again.");
+    setStatus("Disconnected.", "bad");
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+$("connect").addEventListener("click", async () => {
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+    writer = port.writable.getWriter();
+    readingDone = readLoop();
+    setStatus("Connected to your box.", "ok");
+    $("choose").style.opacity = "1";
+    $("auto").disabled = false;
+    $("manual").disabled = false;
+    $("connect").textContent = "Connected";
+    $("connect").disabled = true;
+    say("Connected. Checking the current setting…");
+    heard = false;
+    await send("CAL?");
+    // A box still on an older version never answers this. Say so, rather than
+    // leaving the page looking broken.
+    setTimeout(() => {
+      if (!heard) {
+        say("No answer from the box. It needs the newest version first. Update it on the Update page, then come back here.");
+        setStatus("No answer from the box.", "bad");
+      }
+    }, 4000);
+  } catch (e) {
+    const msg = (e && e.name === "NotFoundError")
+      ? "No box was picked. Try again and choose the one that appears."
+      : "Couldn't open the box. If it's open in the Arduino app, close that first.";
+    setStatus(msg, "bad");
+  }
+});
+
+$("auto").addEventListener("click", async () => {
+  setStatus("Resetting to factory…", "wait");
+  await send("CAL AUTO");
+});
+
+$("manual").addEventListener("click", async () => {
+  $("manualCard").classList.remove("hidden");
+  markDots(0);
+  $("manualHint").textContent = "Starting…";
+  await send("CAL MANUAL");
+});
+
+$("cancel").addEventListener("click", async () => {
+  await send("CAL CANCEL");
+});
+
+if (!("serial" in navigator)) $("nosupport").classList.remove("hidden");
+</script>
+</body>
+</html>

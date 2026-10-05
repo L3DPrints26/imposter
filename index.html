@@ -315,7 +315,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
-<div class="vbar">Newest firmware is <b>v26</b>. On your box: <b>Info</b>, then keep tapping
+<div class="vbar">Newest firmware is <b>v29</b>. On your box: <b>Info</b>, then keep tapping
 the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</a>.</div>
 <div class="bar"><div class="wrap">
   <a class="brand" href="#top"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
@@ -1013,26 +1013,17 @@ the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</
 
 <section id="update"><div class="wrap"><div class="narrow">
   <span class="tag b">Update your box</span>
-  <h2>Plug it into a computer and update it here.</h2>
-  <p class="intro">New words and fixes go out through this page. Nothing to download, nothing to
-  install on your computer, no account to make.</p>
+  <h2>Update in three steps.</h2>
+  <p class="intro">Plug the box into a computer, press one button, wait. Nothing to download and
+  no account to make.</p>
 
-  <h3>What you need</h3>
+  <h3>You need</h3>
   <ul>
-    <li>A laptop or a desktop running <strong>Chrome or Edge</strong>. Firefox can't do this
-    and neither can Safari.</li>
-    <li>A <strong>USB-C cable that carries data</strong>, not just power. A charging cable looks
-    exactly the same and does nothing here. If you have one that came with a phone or a pair of
-    headphones, use that one.</li>
-    <li>The box, awake, with something on the screen.</li>
+    <li>A <strong>laptop or desktop</strong> with <strong>Chrome or Edge</strong>.
+    Phones, tablets, Firefox and Safari won't work.</li>
+    <li>A <strong>data cable</strong> (USB-C). Charging-only cables look the same and won't
+    connect.</li>
   </ul>
-
-  <div class="note">
-    <b>It won't work on a phone</b>
-    <p>There's no way round it. Not an iPhone, not an Android, not a tablet, and not Safari on
-    anything. Talking to a plugged-in gadget is something only a proper computer's browser can
-    do. Go and borrow a laptop. Once you're sat at one the whole thing takes about a minute.</p>
-  </div>
 
   <div id="upgo">
     <esp-web-install-button manifest="firmware/manifest.json">
@@ -1060,14 +1051,19 @@ the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</
 
   <ol class="steps">
     <li><div class="n">1</div><b>Plug it in</b>
-      <span>One end in the box, the other in the computer. The screen should come on.</span></li>
-    <li><div class="n">2</div><b>Press the button</b>
-      <span>A small window asks which device you mean. Unplug the box and plug it back in while
-      you're looking at that list, and the one that appears is yours. Pick it.</span></li>
-    <li><div class="n">3</div><b>Leave it alone</b>
-      <span>A bar fills up on this page and tells you how far along it is. Don't unplug it while
-      that's happening. The box restarts by itself when it's done and you're finished.</span></li>
+      <span>Box to computer with the data cable. The screen should light up.</span></li>
+    <li><div class="n">2</div><b>Press Update my box</b>
+      <span>Pick your box from the list. If it isn't there, unplug it, plug it back in, and
+      try again.</span></li>
+    <li><div class="n">3</div><b>Wait for the bar</b>
+      <span>Don't unplug it while the bar is filling. The box restarts by itself when it's done.</span></li>
   </ol>
+
+  <div class="note">
+    <b>Something still wrong after updating?</b>
+    <p>Touch off, or taps going to the wrong place? <a href="calibrate/">Fix touch on your box</a>
+    walks you through it. It has a reset that always works.</p>
+  </div>
 
   <div class="note">
     <b>What an update actually does</b>
