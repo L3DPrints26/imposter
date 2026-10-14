@@ -20,7 +20,6 @@
 <a href="../update/">Update it here</a>.</div>
 <div class="bar"><div class="wrap">
   <a class="brand" href="../"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
-  <a href="../play/" class="quickplay">Play</a>
   <button class="menubtn" type="button" aria-expanded="false" aria-controls="sitenav"><span class="ico"></span>Menu</button>
   <nav id="sitenav">
     <a href="../play/" class="navplay">Play</a>
@@ -39,76 +38,42 @@
 <!-- /shell:top -->
 
 <main>
-<section class="white" id="ref"><div class="wrap">
+<section id="ref"><div class="wrap">
   <div class="narrow">
     <span class="tag b">Settings</span>
-    <h2>Every knob on the device.</h2>
-    <dl class="ref">
-      <div><dt>Players</dt><dd>3 to 15.</dd></div>
-      <div><dt>Imposters</dt><dd>How many of you're secretly lying. Half the players at most,
-      so 8 players allows 4. One is plenty to start with.</dd></div>
-      <div><dt>Hint word</dt><dd>Word mode, in setup. The hint word is the single word an
-      imposter gets instead of the real one. On: they get it. Off: they get only the category,
-      which makes it a lot harder for them. The switch says which, so you're never guessing
-      what it does.</dd></div>
-      <div><dt>Meetings</dt><dd>Tag mode, in setup. How many emergency meetings the whole group
-      gets to share, up to nine, counted down on screen while you play. The meetings you call
-      because you found somebody on the ground are free and never touch this number.</dd></div>
-      <div><dt>Light</dt><dd>Screen brightness, ten steps.</dd></div>
-      <div><dt>Theme</dt><dd>Nine looks to pick from, three on screen at a time with arrows to
-      page through the rest. Paper and Frost are the light ones, and Mono is black on white,
-      which is the one that holds up in bright sun.</dd></div>
-      <div><dt>Tips</dt><dd>The little helper line along the bottom of the screen, the one that
-      says "Locked. Tap the padlock." when you tap a locked box. Leave it on for your first few
-      games and turn it off once you know what everything does.</dd></div>
-      <div><dt>Lock</dt><dd><strong>Arrives off.</strong> Off, Manual or Auto. Manual puts a padlock at the top of the screen
-      that you shut yourself. Auto shuts it every time the box is handed on. While it's shut,
-      nothing answers except the padlock. Turning the lock on or off asks you to confirm first. <a class="more" href="../lock/">All of it here &rarr;</a>
-      </dd></div>
-      <div><dt>Home and settings</dt><dd>Top right of every screen once a game is under way, and
-      on the menu the settings sliders sit in the middle of the top row instead. You're never
-      more than one tap from either, and Back out of settings returns you to the screen you
-      left.</dd></div>
-      <div><dt>Info</dt><dd>Top left of the menu. Nine pages: five short rule pages for whichever
-      mode you tapped last, then your code for playing on a phone, the version your box is on,
-      this page as a QR code, and the same address written out for when a phone won't read the
-      code.</dd></div>
-      <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu once it is
-      down to 20. Charge it with any USB-C cable. While it's plugged in that same tile says
-      Charging, and the percentage comes back once you unplug it. The box dims after a minute of nobody touching it
-      and blanks after ten, and a tap wakes it right where it was. It won't do either in the
-      middle of a tag cooldown, because that screen is the game at that moment.</dd></div>
-      <div><dt>Screen</dt><dd>Says Normal or Flipped. Tap it to turn the picture upside down. The charging socket is on one end,
-      so with a cable plugged in the box only reads the right way up from one side of the table.
-      Flip it and it reads correctly from the other. Taps follow the picture, so everything stays
-      where it looks like it is.</dd></div>
-      <div><dt>Power saver</dt><dd>A bar underneath the percentage on the battery screen. Tap
-      it and the box gets less patient: it dims after thirty seconds instead of a minute, and
-      blanks after five minutes instead of ten. Worth it on a long night out, unnecessary at a
-      table. It stays how you left it.</dd></div>
-      <div><dt>Off</dt><dd>Top right of the menu. Tapping it turns the backlight off and blanks
-      the screen, and a tap on the glass brings it back exactly where you left it. There's no
-      power switch on this one, so that's what off means here. It's still sipping a little in
-      the background, so plug it in between game nights the way you would anything else with a
-      battery in it.</dd></div>
-      <div><dt>Reveal</dt><dd>End of a round. In word mode it shows the word and which players
-      were lying. In tag mode there's no word, so it just names the imposters.</dd></div>
-    </dl>
-    <div class="note">
-      <b>The six tiles behind the sliders</b>
-      <p>Light, Theme, Battery, Tips, Lock and Screen. That's the whole settings page, and it is
-      one page, not a list you scroll. Players, imposters, the hint switch and meetings aren't in
-      here, because you set those on the way into a game instead.</p>
-    </div>
-    <div class="note">
-      <b>The word bank</b>
-      <p>Eighteen categories and 450 words, the everyday sort a room full of people all know
-      without explaining: animals, food, places, sports, jobs, school and plenty more. Every
-      word carries five possible hints and each hint is a single word, so nothing gets cut off
-      on a screen this small. The box won't deal a word it has already dealt in the last 16
-      rounds.</p>
-    </div>
+    <h2>Every setting on the box.</h2>
+    <p class="intro">Tap the sliders icon to open settings. It's six tiles on one page.</p>
   </div>
+
+  <dl class="ref">
+    <div><dt>Light</dt><dd>Brightness, 10 steps.</dd></div>
+    <div><dt>Theme</dt><dd>9 color themes. Mono (black on white) is easiest to read in bright sun.</dd></div>
+    <div><dt>Battery</dt><dd>Shows the charge. Says Charging while plugged in. Tap it for Power saver.</dd></div>
+    <div><dt>Power saver</dt><dd>On the battery screen. Dims after 30 seconds and turns the screen off
+    after 5 minutes, instead of 1 minute and 10.</dd></div>
+    <div><dt>Tips</dt><dd>Shows "Locked. Tap the padlock." when someone taps a locked screen.</dd></div>
+    <div><dt>Lock</dt><dd>Off, Manual or Auto. <a class="more" href="../lock/">About the lock &rarr;</a></dd></div>
+    <div><dt>Screen</dt><dd>Normal or Flipped. Flip it to read it from the other side, like when a
+    charger cable is in the way.</dd></div>
+  </dl>
+
+  <h3>Set when you start a game</h3>
+  <dl class="ref">
+    <div><dt>Players</dt><dd>3 to 15.</dd></div>
+    <div><dt>Imposters</dt><dd>Up to half the players.</dd></div>
+    <div><dt>Hint</dt><dd>Word mode. On or off for the imposter.</dd></div>
+    <div><dt>Meetings</dt><dd>Tag mode. 0 to 9 emergency meetings, shared by everyone.</dd></div>
+  </dl>
+
+  <h3>Around the box</h3>
+  <dl class="ref">
+    <div><dt>Info</dt><dd>Top left of the menu. The rules, your code for playing on a phone, the
+    version number, and a QR code to this site.</dd></div>
+    <div><dt>Off</dt><dd>Top right of the menu. Turns the screen off. Tap to wake it.</dd></div>
+    <div><dt>Sleep</dt><dd>Dims after 1 minute and turns off after 10. Tap to wake it right where
+    you were. It never sleeps during a tag cooldown.</dd></div>
+    <div><dt>Low battery</dt><dd>A red badge on the menu at 20%.</dd></div>
+  </dl>
 </div></section>
 </main>
 
