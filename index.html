@@ -315,7 +315,7 @@ footer a{color:var(--gold);text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
-<div class="vbar">Newest firmware is <b>v31</b>. On your box: <b>Info</b>, then keep tapping
+<div class="vbar">Newest firmware is <b>v32</b>. On your box: <b>Info</b>, then keep tapping
 the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</a>.</div>
 <div class="bar"><div class="wrap">
   <a class="brand" href="#top"><span class="mark"></span><span class="bname">Pocket Imposter</span></a>
@@ -898,7 +898,8 @@ the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</
       </div>
       <h3>Off, Manual, Auto</h3>
       <p>The Lock tile in settings cycles through all three. <strong>It arrives switched
-      off</strong>, so nothing locks until you decide you want it to.</p>
+      off</strong>, so nothing locks until you decide you want it to. Turning it on from Off, or
+      back off from Auto, asks you to confirm first, so a stray tap can't change it.</p>
       <ul>
         <li><strong>Off.</strong> No padlock at all, and nothing ever locks.</li>
         <li><strong>Manual.</strong> The padlock is there and you shut it and open it
@@ -962,18 +963,19 @@ the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</
       games and turn it off once you know what everything does.</dd></div>
       <div><dt>Lock</dt><dd><strong>Arrives off.</strong> Off, Manual or Auto. Manual puts a padlock at the top of the screen
       that you shut yourself. Auto shuts it every time the box is handed on. While it's shut,
-      nothing answers except the padlock. <a class="more" href="#lock">All of it here &rarr;</a>
+      nothing answers except the padlock. Turning the lock on or off asks you to confirm first. <a class="more" href="#lock">All of it here &rarr;</a>
       </dd></div>
       <div><dt>Home and settings</dt><dd>Top right of every screen once a game is under way, and
       on the menu the settings sliders sit in the middle of the top row instead. You're never
       more than one tap from either, and Back out of settings returns you to the screen you
       left.</dd></div>
-      <div><dt>Info</dt><dd>Top left of the menu. Nine pages: five short ones for whichever
-      mode you tapped last, then this page as a QR code, then the same address written out in
-      plain text for when a phone won't read the code.</dd></div>
+      <div><dt>Info</dt><dd>Top left of the menu. Nine pages: five short rule pages for whichever
+      mode you tapped last, then your code for playing on a phone, the version your box is on,
+      this page as a QR code, and the same address written out for when a phone won't read the
+      code.</dd></div>
       <div><dt>Battery</dt><dd>A percentage in settings, and a red badge on the menu once it is
       down to 20. Charge it with any USB-C cable. While it's plugged in that same tile says
-      Charging, and Charged once it's full. The box dims after a minute of nobody touching it
+      Charging, and the percentage comes back once you unplug it. The box dims after a minute of nobody touching it
       and blanks after ten, and a tap wakes it right where it was. It won't do either in the
       middle of a tag cooldown, because that screen is the game at that moment.</dd></div>
       <div><dt>Screen</dt><dd>Says Normal or Flipped. Tap it to turn the picture upside down. The charging socket is on one end,
@@ -1103,9 +1105,15 @@ the arrow to <b>Version</b>. Older than that? <a href="#update">Update it here</
       the menu: it blanks the screen and a tap wakes it. Between game nights, plug it in the way
       you would anything else with a battery in it.</dd></div>
 
-      <div><dt>How do I charge it, and where is the cable?</dt><dd>Any USB-C phone charger. There
-      is no cable in the box, on purpose, because everybody already has a drawer full of them.
-      The battery tile says Charging while it's plugged in and Charged when it's done.</dd></div>
+      <div><dt>How do I charge it, and where is the cable?</dt><dd>Any USB-C phone charger works.
+      A cable isn't included. The battery tile says Charging while it's plugged in, and shows the
+      percentage again once you unplug it.</dd></div>
+
+      <div><dt>Why does the battery percentage move around?</dt><dd>The box works out its charge
+      from the battery's voltage, and that voltage dips while the screen is bright and recovers
+      when it dims. So it can read a little lower while you're playing and a little higher a
+      minute after you stop. It's a guide, not an exact count. While it's charging the box can't
+      tell the level at all, which is why it just says Charging.</dd></div>
 
       <div><dt>Do I need an app, an account or wifi?</dt><dd>No app and no account. The box works
       on its own with no wifi at all. If you'd rather play on a phone, there's a web version, and
