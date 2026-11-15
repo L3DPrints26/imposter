@@ -123,9 +123,17 @@ a{color:var(--acc)}
 .go .arr{color:var(--mut);font-size:28px;line-height:1}
 .list{flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:12px}
 .names{display:grid;gap:8px}
-.names label{display:flex;align-items:center;gap:10px;background:var(--surf);border-radius:14px;padding:6px 6px 6px 14px}
-.names span{width:26px;color:var(--mut);font-weight:700;text-align:right}
-.ftxt{flex:1;min-width:0;width:100%;height:48px;border-radius:10px;border:2px solid var(--line);background:var(--surf2);
+/* Name lists read as one list, like a phone's contacts: rows on one card with
+   thin lines between, and the typing happens right in the row - no box inside
+   a box. */
+.names:has(> label){gap:0;background:var(--surf);border-radius:16px;overflow:hidden}
+.names label{display:flex;align-items:center;gap:12px;min-height:50px;padding:0 8px 0 16px;border-top:1px solid var(--line)}
+.names label:first-child{border-top:0}
+.names span{width:22px;color:var(--mut);font-weight:600;font-size:15px;text-align:right}
+.names .ftxt{height:48px;border:0;border-radius:0;background:none;padding:0;font-size:18px;font-weight:500}
+.names .ftxt::placeholder{color:#565D70}
+.names label:focus-within span{color:var(--acc)}
+.ftxt{flex:1;min-width:0;width:100%;height:50px;border-radius:14px;border:1.5px solid var(--line);background:var(--surf);
   color:var(--text);font:600 18px var(--disp);padding:0 12px}
 .ftxt:focus{outline:none;border-color:var(--acc)}
 textarea.ftxt{height:auto;min-height:150px;padding:10px 12px;resize:vertical;font-weight:500;line-height:1.4}
@@ -496,7 +504,7 @@ function namesScreen() {
     <div class="list">
       <p class="c mut small">Type everyone's name in the order you're sitting. Blank ones stay Player 1, Player 2 and so on.</p>
       <div class="names">${rows}</div>
-      <button class="bar ghost slim" data-a="names-clear">Clear names</button>
+      <button class="mut small" data-a="names-clear" style="align-self:center;text-decoration:underline;padding:8px">Clear all names</button>
     </div>
     <button class="bar" data-a="setup">Done</button>`;
   app.querySelectorAll("input[data-i]").forEach(inp => {
