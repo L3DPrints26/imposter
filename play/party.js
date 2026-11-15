@@ -27,7 +27,13 @@
   const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   const coolFor = (n, imps) => (n <= 6 ? 45 : n <= 10 ? 30 : 20) + (imps - 1) * 10;
   const SET_KEY = "imp_party_set";
-  const loadSet = () => Object.assign({ word: true, imps: 1, hint: true, meetings: 3, each: 0 }, store.get(SET_KEY, {}));
+  const loadSet = () => Object.assign({ word: true, imps: 1, hint: true, meetings: 3, each: 0, far: false, rounds: 1, vote: "phone" }, store.get(SET_KEY, {}));
+  // The invite: a link to the website's game with the code in it. Opening it
+  // (in any phone's browser) goes straight to "What's your name?" and then
+  // into the party.
+  const SITE = "https://l3dprints26.github.io/imposter/play/";
+  const inviteUrl = () => SITE + "?join=" + P.code;
+  const inviteText = () => `Join my Pocket Imposter game! Tap the link, type your name, and you're in: ${inviteUrl()} (party code ${P.code})`;
   const saveSet = () => store.set(SET_KEY, P.set);
   function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
 
@@ -161,6 +167,9 @@
     const pid = conn.pid;
     if (!pid) return;
     if (m.t === "meet") return callMeeting(pid, !!m.body);
+    if (m.t === "clue") return takeClue(pid, String(m.text || ""));
+    if (m.t === "vote") return takeVote(pid, String(m.for || ""));
+    if (m.t === "mvote") return takeMvote(pid, String(m.v || ""));
     if (m.t === "leave") {
       const pl = P.players.find(p => p.id === pid);
       P.conns.delete(pid);
@@ -192,18 +201,33 @@
         ${p.kind === "host" ? "" : `<button class="icon" data-a="p-kick" data-id="${p.id}" aria-label="Remove ${esc(p.name)}">&times;</button>`}</label>`).join("");
     view(`${bar("p-end", "Your party")}
       <div class="list">
-        <p class="c mut small">Everyone else opens Play, taps Play together, then Join, and types:</p>
+        <div class="btns"><button class="tog ${S2.far ? "" : "on"}" data-a="p-where" data-v="here">Same room</button>
+          <button class="tog ${S2.far ? "on" : ""}" data-a="p-where" data-v="far">Far apart</button></div>
+        <p class="c mut small">${S2.far ? "Send everyone the invite. They tap it, type their name, and they're in." : "Everyone else opens Play, taps Play together, then Join, and types:"}</p>
         <p class="pcode">${P.code}</p>
+        <div class="btns">
+          <button class="bar slim" data-a="p-share">Share invite</button>
+          <a class="bar ghost slim" style="display:grid;place-items:center;text-decoration:none" href="sms:?&body=${encodeURIComponent(inviteText())}">Text it</a>
+        </div>
+        <div class="btns">
+          <a class="bar ghost slim" style="display:grid;place-items:center;text-decoration:none" href="mailto:?subject=${encodeURIComponent("Join my Pocket Imposter game")}&body=${encodeURIComponent(inviteText())}">Email it</a>
+          <button class="bar ghost slim" data-a="p-copy">Copy link</button>
+        </div>
+        <p class="c mut small" id="pshare"></p>
         <div class="names">${rows}</div>
         <button class="bar ghost slim" data-a="p-add">+ Add someone without a phone</button>
-        <div class="btns"><button class="tog ${S2.word ? "on" : ""}" data-a="p-mode" data-v="word">Word</button>
-          <button class="tog ${S2.word ? "" : "on"}" data-a="p-mode" data-v="tag">Tag</button></div>
+        ${S2.far ? `<div class="row"><div><b>Word mode</b><div class="sub">typed clues, then everyone votes</div></div></div>
+          <div class="row"><div><b>Clue rounds</b><div class="sub">clues each player gives</div></div>${step("rounds", S2.rounds, 1, 3)}</div>`
+        : `<div class="btns"><button class="tog ${S2.word ? "on" : ""}" data-a="p-mode" data-v="word">Word</button>
+          <button class="tog ${S2.word ? "" : "on"}" data-a="p-mode" data-v="tag">Tag</button></div>`}
         <div class="row"><div><b>Imposters</b><div class="sub">up to half the players</div></div>${step("imps", S2.imps, 1, maxImp)}</div>
-        ${S2.word
+        ${S2.word || S2.far
           ? `<div class="row"><div><b>Hint word</b><div class="sub">${S2.hint ? "Imposter gets a hint" : "Imposter: no hint"}</div></div>
              <button class="tog ${S2.hint ? "on" : ""}" data-a="p-hint">${S2.hint ? "On" : "Off"}</button></div>`
           : `<div class="row"><div><b>Meetings</b><div class="sub">total for the group</div></div>${step("meetings", S2.meetings, 0, 9)}</div>
-             <div class="row"><div><b>Per player</b><div class="sub">${S2.each ? "most one player can call" : "no limit per player"}</div></div>${step("each", S2.each, 0, 3, "Off")}</div>`}
+             <div class="row"><div><b>Per player</b><div class="sub">${S2.each ? "most one player can call" : "no limit per player"}</div></div>${step("each", S2.each, 0, 3, "Off")}</div>
+             <div class="row"><div><b>Voting</b><div class="sub">${S2.vote === "loud" ? "talk it out, then you tap who's out" : "everyone votes on their phone"}</div></div>
+               <button class="tog on" data-a="p-vmode">${S2.vote === "loud" ? "Out loud" : "On phones"}</button></div>`}
         <p class="err">${esc(msg || "")}</p>
       </div>
       <button class="bar" data-a="p-go" ${n >= 3 ? "" : "disabled"}>${n >= 3 ? "START" : "Need 3 players"}</button>`, () => lobby(), "lobby");
@@ -236,7 +260,8 @@
     const impIds = new Set();
     while (impIds.size < imps) impIds.add(ps[rnd(n)].id);
     let cat = null, w = null, hint = "";
-    if (P.set.word) {
+    const far = !!P.set.far;
+    if (P.set.word || far) {
       const recent = store.get("imp_recent", []), pool = liveCats();
       for (let t = 0; t < 40; t++) { cat = pool[rnd(pool.length)]; w = cat.words[rnd(cat.words.length)]; if (!recent.includes(w[0])) break; }
       recent.push(w[0]); store.set("imp_recent", recent.slice(-16));
@@ -247,9 +272,13 @@
       const imp = impIds.has(p.id);
       cards[p.id] = { imp, word: !imp && w ? w[0] : "", hint: imp ? hint : "" };
     });
-    P.round = { mode: P.set.word ? "word" : "tag", cards, cat: cat ? cat.name : "", word: w ? w[0] : "",
-      imps: ps.filter(p => impIds.has(p.id)).map(p => p.name), first: ps[rnd(n)].name, n, impCount: imps,
-      meetLeft: P.set.meetings, each: P.set.each, used: {}, phase: "on", startedAt: Date.now(),
+    // Far apart: clues go round the group in a fixed order, starting with a
+    // random player, so everyone sees whose turn it is.
+    const start = rnd(n), order = ps.map((_, i) => ps[(start + i) % n].id);
+    P.round = { mode: P.set.word || far ? "word" : "tag", cards, far, order, turn: 0, rounds: P.set.rounds || 1,
+      clues: [], votes: {}, out: {}, mv: null, result: null, graceEnd: 0, cat: cat ? cat.name : "", word: w ? w[0] : "",
+      imps: ps.filter(p => impIds.has(p.id)).map(p => p.name), first: ps[start].name, n, impCount: imps,
+      meetLeft: P.set.meetings, each: P.set.each, used: {}, phase: far ? "clues" : "on", startedAt: Date.now(),
       cool: coolFor(n, imps), coolEnd: 0, caller: "", body: false,
       queue: ps.filter(p => p.kind !== "phone").map(p => p.id) };
     P.conns.forEach((c, id) => { if (cards[id]) send(c, roundFor(id)); });
@@ -259,7 +288,12 @@
     const R = P.round;
     return { t: "round", mode: R.mode, card: R.cards[id] || null, cat: R.cat, first: R.first, n: R.n,
       impCount: R.impCount, meetLeft: R.meetLeft, each: R.each, used: R.used[id] || 0, startedAt: R.startedAt,
-      cool: R.cool, phase: R.phase, caller: R.caller, body: R.body };
+      cool: R.cool, phase: R.phase, caller: R.caller, body: R.body,
+      far: R.far, rounds: R.rounds, clues: R.clues, turnId: turnId(), turnName: nameOf(turnId()),
+      people: R.order.map(i => ({ id: i, name: nameOf(i) })), votesIn: Object.keys(R.votes).length,
+      votesNeeded: R.order.length, myVote: R.votes[id] || null,
+      out: Object.keys(R.out || {}), mv: R.mv ? { inn: Object.keys(R.mv.votes).length, need: R.mv.voters.length, voters: R.mv.voters } : null,
+      myMv: !!(R.mv && R.mv.votes[id]), result: R.result, graceLeft: Math.max(0, (R.graceEnd || 0) - Date.now()), vote: P.set.vote };
   }
   // The host's own card, then anyone playing on the host's phone, one by one.
   function nextHostCard() {
@@ -274,6 +308,49 @@
       </div>
       <button class="bar" data-a="p-handed">Then tap here</button>`, () => {}, "pass");
     P.afterHand = () => showCard(R.cards[id], esc(pl.name) + "'s card", nextHostCard, R);
+  }
+
+  /* ------------------------------------------------------------ far apart: clues and votes (host) */
+  const nameOf = id => { const pl = P.players.find(p => p.id === id); return pl ? pl.name : (P.round && P.round.people ? (P.round.people.find(x => x.id === id) || {}).name || "" : ""); };
+  function turnId() {
+    const R = P.round;
+    if (!R || !R.far || R.phase !== "clues") return "";
+    return R.order[R.turn % R.order.length];
+  }
+  // Every phone gets the whole state after each change; screens redraw from it.
+  function syncAll() {
+    P.conns.forEach((c, id) => { if (P.round.cards[id]) send(c, roundFor(id)); });
+    if (["on", "meeting", "mvote", "result"].includes(P.screen)) gameOn();
+  }
+  function takeClue(pid, text) {
+    const R = P.round;
+    if (!R || !R.far || R.phase !== "clues" || turnId() !== pid) return;
+    const t = text.replace(/\s+/g, " ").trim().slice(0, 30);
+    if (!t || !NameCheck.clean(t)) return;
+    R.clues.push({ id: pid, name: nameOf(pid), text: t });
+    R.turn++;
+    if (R.turn >= R.order.length * R.rounds) R.phase = "vote";
+    syncAll();
+  }
+  function takeVote(pid, target) {
+    const R = P.round;
+    if (!R || !R.far || R.phase !== "vote" || R.votes[pid] || !R.order.includes(pid) || !R.order.includes(target) || pid === target) return;
+    R.votes[pid] = target;
+    if (Object.keys(R.votes).length >= R.order.length) return countVotes();
+    syncAll();
+  }
+  function countVotes() {
+    const R = P.round, tally = {};
+    Object.values(R.votes).forEach(t => { tally[t] = (tally[t] || 0) + 1; });
+    const ranked = R.order.map(id => ({ id, name: nameOf(id), votes: tally[id] || 0 })).sort((a, b) => b.votes - a.votes);
+    const top = ranked[0] && ranked[0].votes ? ranked.filter(x => x.votes === ranked[0].votes) : [];
+    const out = top.length === 1 ? top[0] : null;              // a tie means nobody is out
+    const caught = !!(out && R.cards[out.id] && R.cards[out.id].imp);
+    R.phase = "reveal";
+    const r = { t: "reveal", mode: "word", word: R.word, cat: R.cat, imps: R.imps, far: true,
+      tally: ranked.filter(x => x.votes), out: out ? out.name : "", caught };
+    broadcast(r); Siren.stop();
+    reveal(r);
   }
 
   /* ------------------------------------------------------------ cards */
@@ -311,6 +388,9 @@
     const R = P.round, isHost = P.role === "host";
     if (R.phase === "meeting") return meeting(false);
     if (R.phase === "reveal") return;
+    if (R.phase === "mvote") return mvoteScreen();
+    if (R.phase === "result") return resultScreen();
+    if (R.far) return farScreen();
     const peek = myCard() ? `<button class="peek" id="hold">Hold to check your card</button>
       <div class="card peekcard" id="card" aria-live="off"></div>` : "";
     let body;
@@ -321,11 +401,12 @@
         <p class="c mut small">Go around, one word each. Talk it over, then point on three.</p>`;
     } else {
       const myUsed = isHost ? 0 : (R.used || 0);
-      const canEm = R.meetLeft > 0 && (!R.each || isHost || myUsed < R.each);
+      const meOut = isOut(isHost ? "host" : P.me.id);
+      const canEm = !meOut && R.meetLeft > 0 && (!R.each || isHost || myUsed < R.each);
       body = `<div class="calls">
           <button class="call em" data-a="p-meet" ${canEm ? "" : "disabled"}>${I.alarm}<span class="k">Emergency meeting</span>
             <span class="s">${R.meetLeft} left${R.each ? ", " + R.each + " each" : ""}</span></button>
-          <button class="call body" data-a="p-body">${I.alert}<span class="k">Report a body</span><span class="s">free, any time</span></button>
+          <button class="call body" data-a="p-body" ${meOut ? "disabled" : ""}>${I.alert}<span class="k">Report a body</span><span class="s">${meOut ? "you're out" : "free, any time"}</span></button>
         </div>
         ${coolTile(R)}`;
     }
@@ -337,7 +418,60 @@
     if (peek) holdWire(cardInner(myCard(), R));
     startTick();
   }
+  // Far apart. Clues: whose turn it is, everything said so far, and a box when
+  // it's your turn (or the turn of someone playing on the host's phone).
+  // Vote: tap who you think it is; the host's phone also votes for its people.
+  function farScreen() {
+    const R = P.round, isHost = P.role === "host";
+    const me = isHost ? "host" : P.me.id;
+    const people = R.people || R.order.map(i => ({ id: i, name: nameOf(i) }));
+    const tid = isHost ? turnId() : R.turnId, tname = isHost ? nameOf(tid) : R.turnName;
+    const clues = (R.clues || []).map(c => `<div><i>${esc(c.name.slice(0, 2))}</i><span>${esc(c.text)}</span><small class="mut">${esc(c.name)}</small></div>`).join("");
+    const peek = myCard() ? `<button class="peek" id="hold">Hold to check your card</button><div class="card peekcard" id="card" aria-live="off"></div>` : "";
+    let body = "";
+    if (R.phase === "clues") {
+      const mine = tid === me || (isHost && (P.players.find(p => p.id === tid) || {}).kind === "local");
+      const total = people.length * (R.rounds || 1), done = (R.clues || []).length;
+      body = `<p class="c mut small">Clue ${Math.min(done + 1, total)} of ${total}. One word or two, about the secret word.</p>
+        ${mine ? `<div class="names" style="margin-top:6px"><label><input id="pclue" class="ftxt" maxlength="30" autocomplete="off"
+            enterkeyhint="send" placeholder="${tid === me ? "Your clue" : esc(tname) + "'s clue"}"></label></div>
+          <p class="err" id="perr"></p>
+          <button class="bar" data-a="p-clue" data-id="${tid}">Send${tid === me ? "" : " for " + esc(tname)}</button>`
+        : `<p class="c" style="font-size:20px;font-weight:700;margin:8px 0">${esc(tname)} is thinking...</p>`}`;
+    } else if (R.phase === "vote") {
+      // who still needs a vote on this phone
+      const here = isHost ? P.players.filter(p => p.kind !== "phone" && R.order.includes(p.id)).map(p => p.id) : [me];
+      const voted = id => isHost ? !!R.votes[id] : !!R.myVote;
+      const next = here.find(id => !voted(id));
+      if (next) {
+        const opts = people.filter(x => x.id !== next).map(x =>
+          `<button class="go" data-a="p-vote" data-by="${next}" data-for="${x.id}"><span><b>${esc(x.name)}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+        body = `<h2 style="margin:6px 0">${next === me ? "Who's the imposter?" : esc(nameOf(next)) + ", who's the imposter?"}</h2>
+          <div class="names">${opts}</div>`;
+      } else {
+        const inn = isHost ? Object.keys(R.votes).length : R.votesIn, need = isHost ? R.order.length : R.votesNeeded;
+        body = `<p class="c" style="font-size:20px;font-weight:700;margin:8px 0">Votes in: ${inn} of ${need}</p>
+          ${isHost ? '<button class="bar ghost slim" data-a="p-count">Count the votes now</button>' : '<p class="c mut small">Waiting for everyone to vote.</p>'}`;
+      }
+    }
+    view(`${bar("", "")}
+      <p class="cat"><span class="k">Category</span><span class="v">${esc(R.cat)}</span></p>
+      <div class="chat">${clues || '<p class="c mut small">No clues yet. ' + esc(R.first) + " goes first.</p>"}</div>
+      ${body}
+      <div class="grow" style="justify-content:flex-end">${peek}</div>`, farScreen, "on");
+    if (peek) holdWire(cardInner(myCard(), R));
+    const inp = $p("#pclue");
+    if (inp) {
+      inp.focus();
+      inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $p('[data-a="p-clue"]').click(); } });
+    }
+  }
+
   function coolTile(R) {
+    const gl = graceLeft(R);
+    if (gl) return graceTile(gl);
+    // Someone playing on the host's phone would be seen tapping it.
+    if (P.role === "host" && P.players.some(p => p.kind === "local")) return coolNote(R.cool);
     const left = R.coolEnd ? Math.max(0, Math.ceil((R.coolEnd - Date.now()) / 1000)) : 0;
     return ringTile(left, R.cool, "p-cool");
   }
@@ -347,6 +481,12 @@
       const R = P && P.round, c = $p("#clock");
       if (!R || !c) return stopTick();
       c.textContent = mmss(Date.now() - R.startedAt);
+      if (R.graceEnd) {
+        const gl = graceLeft(R);
+        if (gl > 0) return graceSet(gl);
+        R.graceEnd = 0; if (navigator.vibrate) navigator.vibrate(200);
+        return gameOn();
+      }
       if (R.coolEnd) {
         const l = Math.max(0, Math.ceil((R.coolEnd - Date.now()) / 1000));
         ringSet(l, R.cool);
@@ -359,7 +499,7 @@
   // Only the host decides; everyone else asks it.
   function callMeeting(pid, body) {
     const R = P.round;
-    if (!R || R.mode !== "tag" || R.phase !== "on") return;
+    if (!R || R.mode !== "tag" || R.phase !== "on" || isOut(pid)) return;
     if (!body) {
       if (R.meetLeft <= 0) return;
       if (R.each && (R.used[pid] || 0) >= R.each) return;
@@ -375,7 +515,7 @@
     const mine = P.players.filter(p => p.kind !== "phone");
     if (mine.length === 1) return callMeeting("host", false);
     const rows = mine.map(p => {
-      const ok = !R.each || (R.used[p.id] || 0) < R.each;
+      const ok = !isOut(p.id) && (!R.each || (R.used[p.id] || 0) < R.each);
       return `<button class="go" data-a="p-meet-by" data-id="${p.id}" ${ok ? "" : "disabled"}><span><b>${esc(p.name)}</b>
         <span class="sub">${R.each ? (ok ? (R.each - (R.used[p.id] || 0)) + " left" : "used up") : ""}</span></span></button>`;
     }).join("");
@@ -391,24 +531,130 @@
         <p class="c mut" style="font-size:18px">${R.body ? "found a body" : "called it"}</p>
         <div class="card" style="min-height:0;gap:6px">
           <p style="font-size:19px;font-weight:600">Everyone come together.</p>
-          <p class="mut small">Talk it over, then point at once on three. Most votes is out.
-          Finish with &ldquo;3, 2, 1, UP!&rdquo;, then no tagging for 15 seconds.</p>
+          <p class="mut small">${P.set && P.set.vote === "loud" || R.vote === "loud" ? "Talk it over, then point at once on three. Most votes is out."
+            : "Talk it over. Then everyone votes on their phone."}</p>
         </div>
         <p class="c mut small">${R.meetLeft} emergency meeting${R.meetLeft === 1 ? "" : "s"} left</p>
         <button class="bar ghost slim" data-a="p-hush">Stop the siren</button>
       </div>
-      ${isHost ? `<button class="bar" data-a="p-meetover">Meeting's over</button>` : '<p class="c mut small" style="margin:8px 0">The host ends the meeting.</p>'}`,
+      ${isHost ? (P.set.vote === "loud" ? '<button class="bar" data-a="p-mv-loud">Who got voted out?</button>' : '<button class="bar" data-a="p-mv-start">Start the vote</button>')
+        : `<p class="c mut small" style="margin:8px 0">${(R.vote || P.set.vote) === "loud" ? "Talk it over. The host taps who's voted out." : "Talk it over. The vote opens on your phone."}</p>`}`,
       () => meeting(false), "meeting");
     if (loud) Siren.play(8);
   }
 
+  /* ------------------------------------------------------------ meeting votes (Tag) */
+  const isOut = id => { const R = P.round; return !!R && (Array.isArray(R.out) ? R.out.includes(id) : !!(R.out && R.out[id])); };
+  const aliveIds = () => P.round.order.filter(id => !isOut(id));
+  function startVote() {
+    const R = P.round;
+    R.phase = "mvote"; R.mv = { voters: aliveIds(), votes: {} };
+    Siren.stop(); syncAll();
+  }
+  function takeMvote(pid, v) {
+    const R = P.round;
+    if (!R || R.phase !== "mvote" || !R.mv.voters.includes(pid) || R.mv.votes[pid]) return;
+    if (v !== "skip" && v !== "tagged" && (!aliveIds().includes(v) || v === pid)) return;
+    R.mv.votes[pid] = v;
+    if (v === "tagged") R.out[pid] = true;
+    if (Object.keys(R.mv.votes).length >= R.mv.voters.length) return mvCount();
+    syncAll();
+  }
+  function tagWinnerP() {
+    const R = P.round; let imp = 0, crew = 0;
+    R.order.forEach(id => { if (!isOut(id)) (R.cards[id] && R.cards[id].imp) ? imp++ : crew++; });
+    return imp === 0 ? "crew" : imp >= crew ? "imp" : "";
+  }
+  function mvCount() {
+    const R = P.round, t = {}; let skips = 0;
+    Object.values(R.mv.votes).forEach(v => { if (v === "skip") skips++; else if (v !== "tagged") t[v] = (t[v] || 0) + 1; });
+    const ranked = Object.entries(t).map(([id, n]) => ({ id, n })).filter(x => !isOut(x.id)).sort((a, b) => b.n - a.n);
+    let out = "";
+    if (ranked.length && (ranked.length === 1 || ranked[0].n > ranked[1].n) && ranked[0].n > skips) out = ranked[0].id;
+    if (out) R.out[out] = true;
+    R.mv = null;
+    finishVote(out, ranked.map(x => nameOf(x.id) + " " + x.n).concat(skips ? ["Skip " + skips] : []));
+  }
+  function finishVote(outId, tally) {
+    const R = P.round;
+    R.result = { out: outId ? nameOf(outId) : "", tally: tally || [], win: tagWinnerP() };
+    R.phase = "result";
+    syncAll();
+  }
+  function mvoteScreen() {
+    const R = P.round, isHost = P.role === "host", me = isHost ? "host" : P.me.id;
+    const voters = isHost ? R.mv.voters : (R.mv ? R.mv.voters : []);
+    const here = isHost ? P.players.filter(p => p.kind !== "phone" && voters.includes(p.id)).map(p => p.id) : (voters.includes(me) ? [me] : []);
+    const done = id => isHost ? !!R.mv.votes[id] : !!R.myMv;
+    const next = here.find(id => !done(id));
+    let body;
+    if (next) {
+      const ids = R.order || (R.people || []).map(x => x.id);
+      const opts = ids.filter(id => !isOut(id) && id !== next).map(id =>
+        `<button class="go" data-a="p-mv" data-by="${next}" data-v="${id}"><span><b>${esc(nameOf(id))}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+      body = `<h2>${next === me ? "Who do you vote out?" : esc(nameOf(next)) + ", who do you vote out?"}</h2>
+        ${next !== me ? '<p class="c mut small">Hand the phone over. Votes are secret.</p>' : ""}
+        <div class="names">${opts}</div>
+        <div class="btns"><button class="bar ghost slim" data-a="p-mv" data-by="${next}" data-v="skip">Skip vote</button>
+          <button class="bar ghost slim" data-a="p-mv" data-by="${next}" data-v="tagged">I got tagged</button></div>`;
+    } else {
+      const inn = isHost ? Object.keys(R.mv.votes).length : (R.mv ? R.mv.inn : 0), need = isHost ? R.mv.voters.length : (R.mv ? R.mv.need : 0);
+      body = `<div class="grow"><p class="c" style="font-size:22px;font-weight:700">Votes in: ${inn} of ${need}</p>
+        <p class="c mut small">${isOut(me) ? "You're out, so you don't vote." : "Waiting for everyone else."}</p></div>
+        ${isHost ? '<button class="bar ghost" data-a="p-mv-count">Count the votes now</button>' : ""}`;
+    }
+    view(`${bar("", "Vote")}<div class="list">${body}</div>`, mvoteScreen, "mvote");
+  }
+  function loudPick() {
+    const R = P.round;
+    const opts = aliveIds().map(id =>
+      `<button class="go" data-a="p-mv-out" data-v="${id}"><span><b>${esc(nameOf(id))}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+    view(`${bar("", "")}<div class="list"><h2>Who got voted out?</h2><div class="names">${opts}</div>
+      <button class="bar ghost slim" data-a="p-mv-out" data-v="none">Nobody (skipped or a tie)</button></div>`, loudPick, "loudpick");
+  }
+  function resultScreen() {
+    const R = P.round, isHost = P.role === "host", r = R.result || {};
+    view(`${bar("", "")}
+      <div class="grow">
+        <p class="c" style="font-size:20px;font-weight:700;color:var(--acc);letter-spacing:.08em">VOTE RESULT</p>
+        <p class="who">${r.out ? esc(r.out) : "No one"}</p>
+        <p class="c mut" style="font-size:18px">was voted out</p>
+        ${r.tally && r.tally.length ? `<p class="c mut small">${r.tally.map(esc).join(" &nbsp;·&nbsp; ")}</p>` : ""}
+        ${r.win ? `<p class="c" style="font-size:22px;font-weight:700;color:var(${r.win === "crew" ? "--crew" : "--imp"})">${
+            r.win === "crew" ? "That was the last imposter. Crew win!" : "Imposters win! There are as many of them as crew left."}</p>`
+          : `<div class="card" style="min-height:0;gap:6px"><p style="font-size:19px;font-weight:600">Everyone: &ldquo;3, 2, 1, UP!&rdquo;</p>
+             <p class="mut small">Then no tagging for 15 seconds. Every phone counts it down.</p></div>`}
+      </div>
+      ${isHost ? (r.win ? '<button class="bar" data-a="p-reveal-yes">Reveal</button>' : '<button class="bar" data-a="p-mv-done">Back to the game</button>')
+        : `<p class="c mut small" style="margin:8px 0">${r.win ? "The host reveals who the imposters were." : "The host takes everyone back to the game."}</p>`}`, resultScreen, "result");
+  }
+  // Reveal asks first in Tag, so a double tap can't end the round.
+  function revealAsk() {
+    view(`${bar("p-on", "")}
+      <div class="grow">
+        <h2>End the round?</h2>
+        <p class="c mut">This shows everyone who the imposters were.</p>
+        <button class="bar ghost" data-a="p-reveal-yes" style="margin-top:8px">Yes, reveal</button>
+      </div>
+      <button class="bar" data-a="p-on">Keep playing</button>`, revealAsk, "ask");
+  }
+
   /* ------------------------------------------------------------ reveal */
+  function revealNow() {
+    const R = P.round; R.phase = "reveal";
+    const r = { t: "reveal", mode: R.mode, word: R.word, cat: R.cat, imps: R.imps };
+    broadcast(r); Siren.stop();
+    return reveal(r);
+  }
   function reveal(r) {
     const isHost = P.role === "host";
     view(`${bar("")}
       <div class="grow">
         ${r.mode === "word" ? `<p class="c mut" style="font-size:18px;font-weight:600">The word was</p>
           <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${esc(r.word)}</p>` : ""}
+        ${r.far ? `<p class="c" style="font-size:22px;font-weight:700;color:${r.caught ? "var(--crew)" : "var(--imp)"}">${
+            r.out ? esc(r.out) + " was voted out. " + (r.caught ? "Crew win!" : "Wrong one. Imposters win!") : "It's a tie, so nobody's out. Imposters win!"}</p>
+          <p class="c mut small">${(r.tally || []).map(x => esc(x.name) + " " + x.votes).join(" &nbsp;·&nbsp; ")}</p>` : ""}
         <p class="c mut" style="font-size:20px;font-weight:600;margin-top:10px">${r.imps.length === 1 ? "Imposter" : "Imposters"}</p>
         <p class="c" style="font-size:36px;font-weight:700;color:var(--imp);text-wrap:balance">${r.imps.map(esc).join(", ")}</p>
       </div>
@@ -487,7 +733,9 @@
     }
     if (m.t === "round") {
       const fresh = !P.round || P.round.startedAt !== m.startedAt;
-      P.round = Object.assign({}, m, { coolEnd: P.round && !fresh ? P.round.coolEnd : 0 });
+      P.round = Object.assign({}, m, { coolEnd: P.round && !fresh ? P.round.coolEnd : 0,
+        graceEnd: m.graceLeft ? Date.now() + m.graceLeft : 0 });
+      if (!fresh && P.screen === "card") return;          // they'll see it after "Got it"
       if (m.phase === "meeting") return meeting(false);
       if (fresh && m.card) return showCard(m.card, "Your card", gameOn, P.round);
       return gameOn();
@@ -557,10 +805,30 @@
       P.conns.delete(id); P.players = P.players.filter(p => p.id !== id);
       shareLobby(); return lobby();
     }
+    if (a === "p-where") { P.set.far = b.dataset.v === "far"; if (P.set.far) P.set.word = true; saveSet(); shareLobby(); return lobby(); }
+    if (a === "p-share") {
+      if (navigator.share) { navigator.share({ title: "Pocket Imposter", text: inviteText(), url: inviteUrl() }).catch(() => {}); return; }
+      return copyInvite();
+    }
+    if (a === "p-copy")  return copyInvite();
+    if (a === "p-clue") {
+      const inp = $p("#pclue"), t = inp ? inp.value.replace(/\s+/g, " ").trim() : "";
+      if (!t) return;
+      if (!NameCheck.clean(t)) return ($p("#perr").textContent = "Try a different clue.");
+      if (P.role === "host") return takeClue(b.dataset.id, t);
+      inp.disabled = true; b.disabled = true;
+      return send(P.conn, { t: "clue", text: t });
+    }
+    if (a === "p-vote") {
+      if (P.role === "host") return takeVote(b.dataset.by, b.dataset.for);
+      P.round.myVote = b.dataset.for; farScreen();
+      return send(P.conn, { t: "vote", for: b.dataset.for });
+    }
+    if (a === "p-count") return countVotes();
     if (a === "p-mode")  { P.set.word = b.dataset.v === "word"; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-hint")  { P.set.hint = !P.set.hint; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-inc" || a === "p-dec") {
-      const k = b.dataset.k, lim = { imps: [1, 7], meetings: [0, 9], each: [0, 3] }[k];
+      const k = b.dataset.k, lim = { imps: [1, 7], meetings: [0, 9], each: [0, 3], rounds: [1, 3] }[k];
       P.set[k] = Math.min(lim[1], Math.max(lim[0], P.set[k] + (a === "p-inc" ? 1 : -1)));
       saveSet(); shareLobby(); return lobby();
     }
@@ -588,12 +856,26 @@
       if (!R.coolEnd || R.coolEnd <= Date.now()) { R.coolEnd = Date.now() + R.cool * 1000; ringSet(R.cool, R.cool); }
       return;
     }
-    if (a === "p-reveal") {
-      const R = P.round; R.phase = "reveal";
-      const r = { t: "reveal", mode: R.mode, word: R.word, cat: R.cat, imps: R.imps };
-      broadcast(r); Siren.stop();
-      return reveal(r);
+    if (a === "p-vmode") { P.set.vote = P.set.vote === "loud" ? "phone" : "loud"; saveSet(); shareLobby(); return lobby(); }
+    if (a === "p-mv-start") return startVote();
+    if (a === "p-mv") {
+      if (P.role === "host") return takeMvote(b.dataset.by, b.dataset.v);
+      P.round.myMv = true; mvoteScreen();
+      return send(P.conn, { t: "mvote", v: b.dataset.v });
     }
+    if (a === "p-mv-count") return mvCount();
+    if (a === "p-mv-loud") { Siren.stop(); return loudPick(); }
+    if (a === "p-mv-out") {
+      const v = b.dataset.v;
+      if (v !== "none") P.round.out[v] = true;
+      return finishVote(v === "none" ? "" : v, []);
+    }
+    if (a === "p-mv-done") {
+      const R = P.round; R.phase = "on"; R.result = null; R.graceEnd = Date.now() + GRACE * 1000;
+      return syncAll();
+    }
+    if (a === "p-reveal") return P.round && P.round.mode === "tag" ? revealAsk() : revealNow();
+    if (a === "p-reveal-yes") return revealNow();
     if (a === "p-again") {
       P.round = null;
       P.players = P.players.filter(p => p.on || p.kind === "local");
@@ -601,5 +883,25 @@
     }
   });
 
-  window.Party = { start, active: () => !!P };
+  function copyInvite() {
+    const msg = $p("#pshare");
+    const ok = () => { if (msg) msg.textContent = "Link copied. Paste it in a text or email."; };
+    try { navigator.clipboard.writeText(inviteText()).then(ok, () => { if (msg) msg.textContent = inviteUrl(); }); }
+    catch (_) { if (msg) msg.textContent = inviteUrl(); }
+  }
+  // Opened from an invite: just a name, then straight in.
+  function fromLink(code) {
+    nameScreen(name => {
+      P = { role: "guest", me: { id: "", name }, players: [], set: {}, round: null, code, peer: null, conn: null, tries: 0 };
+      store.set("imp_party_code", code);
+      view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Joining ${esc(code)}...</p></div>`);
+      connectGuest();
+    });
+  }
+
+  window.Party = { start, fromLink, active: () => !!P };
+
+  // Opened from an invite link (?join=ABCD): straight to the name, then in.
+  const inv = (new URLSearchParams(location.search).get("join") || "").toUpperCase().replace(/[^A-Z]/g, "");
+  if (inv.length === 4) { try { history.replaceState(null, "", location.pathname); } catch (_) {} fromLink(inv); }
 })();

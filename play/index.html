@@ -170,6 +170,12 @@ textarea.ftxt{height:auto;min-height:150px;padding:10px 12px;resize:vertical;fon
 .peek.on{background:var(--crew);color:#fff}
 .peekcard{min-height:0;padding:0;background:none}
 .peekcard:not(:empty){padding:16px;background:var(--surf);margin-top:10px}
+.chat{display:grid;gap:6px;margin:4px 0 10px}
+.chat div{display:flex;align-items:center;gap:10px}
+.chat i{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--surf2);
+  font-style:normal;font-weight:700;font-size:13px;text-transform:uppercase}
+.chat span{background:var(--surf);border-radius:16px 16px 16px 4px;padding:8px 14px;font-weight:600;font-size:17px}
+.chat small{font-size:13px}
 .pcode{font-size:64px;font-weight:700;letter-spacing:.14em;color:var(--acc);text-align:center;line-height:1;margin:2px 0 8px}
 .names label b small{font-size:13px;font-weight:500}
 .names .icon{width:36px;height:36px;font-size:24px}
@@ -300,13 +306,14 @@ async function unlock(code) {
 
 /* ---------------------------------------------------------------- state */
 let CATS = null;
-const S = Object.assign({ word: true, players: 8, imps: 2, hint: true, meetings: 3, each: 0 },
+const S = Object.assign({ word: true, players: 8, imps: 2, hint: true, meetings: 3, each: 0, vote: "phone", timer: false },
                         store.get("imp_setup", {}));
 const clampSetup = () => {
   S.players  = Math.min(15, Math.max(3, S.players | 0));
   S.imps     = Math.min(Math.max(1, Math.floor(S.players / 2)), Math.max(1, S.imps | 0));
   S.meetings = Math.min(9, Math.max(0, S.meetings | 0));
   S.each     = Math.min(3, Math.max(0, S.each | 0));     // 0 = no limit per player
+  S.vote     = S.vote === "loud" ? "loud" : "phone";
 };
 clampSetup();
 const saveSetup = () => store.set("imp_setup", S);
@@ -355,7 +362,8 @@ function deal() {
   recent.push(w[0]);
   store.set("imp_recent", recent.slice(-16));
   G = { imp, cat: cat.name, word: w[0], hint: w[1].length ? w[1][rnd(w[1].length)] : "", first: rnd(S.players),
-        idx: 0, meet: S.meetings, used: new Array(S.players).fill(0), caller: "", coolEnd: 0 };
+        idx: 0, meet: S.meetings, used: new Array(S.players).fill(0), caller: "", coolEnd: 0,
+        out: new Array(S.players).fill(false), mv: null, graceEnd: 0 };
 }
 
 // Device table: 45 s up to 6 players, 30 s up to 10, 20 s beyond, plus 10 s
@@ -481,7 +489,11 @@ function setup() {
         ? `<div class="row"><div><b>Hint word</b><div class="sub">${S.hint ? "Imposter gets a hint" : "Imposter: no hint"}</div></div>
            <button class="tog ${S.hint ? "on" : ""}" data-a="hint" aria-pressed="${S.hint}">${S.hint ? "On" : "Off"}</button></div>`
         : `<div class="row"><div><b>Meetings</b><div class="sub">total for the group</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>
-           <div class="row"><div><b>Per player</b><div class="sub">${S.each ? "most one player can call" : "no limit per player"}</div></div>${stepper("each", S.each, 0, 3, "Off")}</div>`}
+           <div class="row"><div><b>Per player</b><div class="sub">${S.each ? "most one player can call" : "no limit per player"}</div></div>${stepper("each", S.each, 0, 3, "Off")}</div>
+           <div class="row"><div><b>Voting</b><div class="sub">${S.vote === "loud" ? "talk it out, then tap who's out" : "pass the phone, everyone votes"}</div></div>
+             <button class="tog on" data-a="vote-mode">${S.vote === "loud" ? "Out loud" : "On phone"}</button></div>
+           <div class="row"><div><b>Tag timer</b><div class="sub">${S.timer ? "imposters tap it after a tag" : "off: tapping it would give them away"}</div></div>
+             <button class="tog ${S.timer ? "on" : ""}" data-a="timer-mode">${S.timer ? "On" : "Off"}</button></div>`}
       ${S.word ? `<button class="go" data-a="cats"><span><b>Categories</b><span class="sub">${catsLabel()}</span></span><span class="arr">&rsaquo;</span></button>` : ""}
       <button class="go" data-a="names"><span><b>Player names</b><span class="sub">${namedCount() ? namedCount() + " of " + S.players + " named" : "Optional"}</span></span><span class="arr">&rsaquo;</span></button>
     </div>
@@ -635,9 +647,9 @@ function play() {
         <span class="s">${G.meet} left${S.each ? ", " + S.each + " each" : ""}</span></button>
       <button class="call body" data-a="body">${I.alert}<span class="k">Report a body</span><span class="s">free, any time</span></button>
     </div>
-    ${ringTile(left, coolSecs(), "cool")}
-    <div class="grow"><p class="c mut small">Leave the phone where everyone can reach it.</p></div>
-    <button class="bar" data-a="reveal">Reveal</button>`;
+    ${graceLeft(G) ? graceTile(graceLeft(G)) : S.timer ? ringTile(left, coolSecs(), "cool") : coolNote(coolSecs())}
+    <div class="grow"><p class="c mut small">${G.out.some(Boolean) ? "Out: " + G.out.map((o, i) => o ? esc(pname(i)) : "").filter(Boolean).join(", ") + ". " : ""}Leave the phone where everyone can reach it.</p></div>
+    <button class="bar" data-a="reveal-ask">Reveal</button>`;
   runCool();
 }
 // The tag cooldown as a ring that empties. Used here and by party.js.
@@ -664,6 +676,31 @@ function ringSet(left, total) {
   k.textContent = left ? "No tagging yet" : "Tag cooldown";
   sub.textContent = left ? "Wait for zero." : "Imposters: tap right after a tag.";
 }
+// After a meeting: 15 seconds when nobody may tag. The cooldown button is
+// locked for real until it runs out. Shared with party.js.
+const GRACE = 15;
+const graceLeft = st => st && st.graceEnd ? Math.max(0, Math.ceil((st.graceEnd - Date.now()) / 1000)) : 0;
+function graceTile(left) {
+  return `<button class="coolring live" id="cool" disabled style="opacity:1">
+    <svg viewBox="0 0 92 92" aria-hidden="true">
+      <circle cx="46" cy="46" r="38" fill="none" stroke="var(--surf2)" stroke-width="10"/>
+      <circle id="coolarc" cx="46" cy="46" r="38" fill="none" stroke="var(--acc)" stroke-width="10" stroke-linecap="round"
+        stroke-dasharray="${RING}" stroke-dashoffset="${RING * (1 - left / GRACE)}" transform="rotate(-90 46 46)"/>
+      <text id="cooln" x="46" y="55" text-anchor="middle" font-size="26" font-weight="700" fill="currentColor">${left}</text>
+    </svg>
+    <span><b style="color:var(--acc)">No tagging yet</b><span class="sub">Everyone's just back from the meeting.</span></span></button>`;
+}
+// With the timer off: the rule, without a button anyone can be seen tapping.
+function coolNote(secs) {
+  return `<div class="coolring" style="grid-template-columns:1fr">
+    <span><b>Tag cooldown: ${secs} seconds</b><span class="sub">Imposters, count it in your head after each tag. On a shared phone, tapping a timer would give you away.</span></span></div>`;
+}
+function graceSet(left) {
+  const n = $("#cooln"), arc = $("#coolarc");
+  if (!n) return;
+  n.textContent = left;
+  arc.setAttribute("stroke-dashoffset", RING * (1 - left / GRACE));
+}
 const coolLeft = () => G && G.coolEnd ? Math.max(0, Math.ceil((G.coolEnd - Date.now()) / 1000)) : 0;
 function meetPick() {
   redraw = meetPick;
@@ -671,8 +708,9 @@ function meetPick() {
   for (let i = 0; i < S.players; i++) {
     const sub = S.each === 0 ? (G.used[i] ? "called " + G.used[i] : "")
               : canCall(i) ? (S.each - G.used[i]) + " left" : "used up";
-    rows += `<button class="go" data-a="meet-by" data-i="${i}" ${canCall(i) ? "" : "disabled"}>
-      <span><b>${esc(pname(i))}</b><span class="sub">${sub}</span></span></button>`;
+    const ok = canCall(i) && !G.out[i];
+    rows += `<button class="go" data-a="meet-by" data-i="${i}" ${ok ? "" : "disabled"}>
+      <span><b>${esc(pname(i))}</b><span class="sub">${G.out[i] ? "out" : sub}</span></span></button>`;
   }
   app.innerHTML = `
     ${topBar("play", "Meeting", "")}
@@ -692,14 +730,103 @@ function meeting() {
       ${G.caller ? `<p class="who">${esc(G.caller)}</p><p class="c mut" style="font-size:18px">called it</p>` : ""}
       <div class="card" style="min-height:0;gap:6px">
         <p style="font-size:19px;font-weight:600">Everyone come together.</p>
-        <p class="mut small">Talk it over, then point at once on three. Most votes is out.
-        Finish with &ldquo;3, 2, 1, UP!&rdquo;, then no tagging for 15 seconds.</p>
+        <p class="mut small">${S.vote === "loud" ? "Talk it over, then point at once on three. Most votes is out."
+          : "Talk it over. Then pass the phone around and everyone votes in secret."}</p>
       </div>
       <p class="c mut small">${G.meet} emergency meeting${G.meet === 1 ? "" : "s"} left</p>
       <button class="bar ghost slim" data-a="hush">Stop the siren</button>
     </div>
-    <button class="bar" data-a="play">Meeting's over</button>`;
+    <button class="bar" data-a="${S.vote === "loud" ? "mv-loud" : "mv-start"}">${S.vote === "loud" ? "Who got voted out?" : "Start the vote"}</button>`;
 }
+/* ---------------------------------------------------------------- meeting votes */
+const alive = () => G.out.map((o, i) => o ? -1 : i).filter(i => i >= 0);
+function tagWinner() {
+  let imp = 0, crew = 0;
+  G.imp.forEach((v, i) => { if (!G.out[i]) v ? imp++ : crew++; });
+  return imp === 0 ? "crew" : imp >= crew ? "imp" : "";
+}
+function mvPass() {
+  const M = G.mv;
+  if (M.i >= M.order.length) return mvCount();
+  redraw = mvPass;
+  app.innerHTML = `
+    ${topBar("", "Vote " + (M.i + 1) + " of " + M.order.length, "")}
+    <div class="grow">
+      <p class="c mut" style="font-size:20px;font-weight:600">Hand the phone to</p>
+      <p class="who">${esc(pname(M.order[M.i]))}</p>
+      <p class="c mut small">Votes are secret.</p>
+    </div>
+    <button class="bar" data-a="mv-ready">Then tap here</button>`;
+}
+function mvVote() {
+  const M = G.mv, who = M.order[M.i];
+  redraw = mvVote;
+  const opts = alive().filter(i => i !== who).map(i =>
+    `<button class="go" data-a="mv-pick" data-v="${i}"><span><b>${esc(pname(i))}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+  app.innerHTML = `
+    ${topBar("", "", "")}
+    <div class="list">
+      <h2>${esc(pname(who))}, who do you vote out?</h2>
+      <div class="names">${opts}</div>
+      <div class="btns"><button class="bar ghost slim" data-a="mv-pick" data-v="skip">Skip vote</button>
+        <button class="bar ghost slim" data-a="mv-pick" data-v="tagged">I got tagged</button></div>
+    </div>`;
+}
+function mvCount() {
+  const M = G.mv, t = {}; let skips = 0;
+  Object.values(M.votes).forEach(v => { if (v === "skip") skips++; else if (v !== "tagged") t[v] = (t[v] || 0) + 1; });
+  const ranked = Object.entries(t).map(([i, n]) => ({ i: +i, n })).filter(x => !G.out[x.i]).sort((a, b) => b.n - a.n);
+  // Most votes is out, unless it's a tie or more people skipped.
+  let outIdx = -1;
+  if (ranked.length && (ranked.length === 1 || ranked[0].n > ranked[1].n) && ranked[0].n > skips) outIdx = ranked[0].i;
+  if (outIdx >= 0) G.out[outIdx] = true;
+  G.mv = null;
+  mvResult({ outIdx, tally: ranked.map(x => esc(pname(x.i)) + " " + x.n).concat(skips ? ["Skip " + skips] : []) });
+}
+function mvLoud() {
+  redraw = mvLoud;
+  const opts = alive().map(i =>
+    `<button class="go" data-a="mv-out" data-v="${i}"><span><b>${esc(pname(i))}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+  app.innerHTML = `
+    ${topBar("", "", "")}
+    <div class="list">
+      <h2>Who got voted out?</h2>
+      <div class="names">${opts}</div>
+      <button class="bar ghost slim" data-a="mv-out" data-v="none">Nobody (skipped or a tie)</button>
+    </div>`;
+}
+function mvResult(res) {
+  redraw = () => mvResult(res);
+  clearCool(); Siren.stop();
+  const win = tagWinner();
+  app.innerHTML = `
+    ${topBar("", "", "")}
+    <div class="grow">
+      <p class="c" style="font-size:20px;font-weight:700;color:var(--acc);letter-spacing:.08em">VOTE RESULT</p>
+      <p class="who">${res.outIdx >= 0 ? esc(pname(res.outIdx)) : "No one"}</p>
+      <p class="c mut" style="font-size:18px">was voted out</p>
+      ${res.tally && res.tally.length ? `<p class="c mut small">${res.tally.join(" &nbsp;·&nbsp; ")}</p>` : ""}
+      ${win ? `<p class="c" style="font-size:22px;font-weight:700;color:var(${win === "crew" ? "--crew" : "--imp"})">${
+          win === "crew" ? "That was the last imposter. Crew win!" : "Imposters win! There are as many of them as crew left."}</p>`
+        : `<div class="card" style="min-height:0;gap:6px"><p style="font-size:19px;font-weight:600">Everyone: &ldquo;3, 2, 1, UP!&rdquo;</p>
+           <p class="mut small">Then no tagging for 15 seconds. The phone counts it down.</p></div>`}
+    </div>
+    ${win ? '<button class="bar" data-a="reveal">Reveal</button>' : '<button class="bar" data-a="mv-done">Back to the game</button>'}`;
+}
+// Reveal asks first in Tag: the button sits where "Back to the game" was.
+function revealAsk() {
+  redraw = revealAsk;
+  clearCool();
+  app.innerHTML = `
+    ${topBar("play", "", "")}
+    <div class="grow">
+      <h2>End the round?</h2>
+      <p class="c mut">This shows who the imposters were.</p>
+      <button class="bar ghost" data-a="reveal" style="margin-top:8px">Yes, reveal</button>
+    </div>
+    <button class="bar" data-a="play">Keep playing</button>`;
+}
+
 function clearCool() { if (coolTimer) { clearInterval(coolTimer); coolTimer = null; } }
 function runCool() {
   clearCool();
@@ -707,6 +834,12 @@ function runCool() {
     const c = $("#clock");
     if (!c) return clearCool();
     c.textContent = clockText();
+    if (G.graceEnd) {
+      const gl = graceLeft(G);
+      if (gl > 0) return graceSet(gl);
+      G.graceEnd = 0; if (navigator.vibrate) navigator.vibrate(200);
+      return play();
+    }
     if (G.coolEnd) {
       const l = coolLeft();
       ringSet(l, coolSecs());
@@ -784,7 +917,25 @@ app.addEventListener("click", e => {
   if (a === "body")     { G.caller = ""; G.body = true; meeting(); Siren.play(8); return; }
   if (a === "hush")     return Siren.stop();
   if (a === "play")     { Siren.stop(); return play(); }
-  if (a === "cool")     { if (!coolLeft()) { G.coolEnd = Date.now() + coolSecs() * 1000; ringSet(coolSecs(), coolSecs()); } return; }
+  if (a === "reveal-ask") return revealAsk();
+  if (a === "timer-mode") { S.timer = !S.timer; saveSetup(); return setup(); }
+  if (a === "vote-mode") { S.vote = S.vote === "loud" ? "phone" : "loud"; saveSetup(); return setup(); }
+  if (a === "mv-start") { Siren.stop(); G.mv = { order: alive(), i: 0, votes: {} }; return mvPass(); }
+  if (a === "mv-ready") return mvVote();
+  if (a === "mv-pick")  {
+    const M = G.mv, who = M.order[M.i], v = b.dataset.v;
+    M.votes[who] = v;
+    if (v === "tagged") G.out[who] = true;
+    M.i++; return mvPass();
+  }
+  if (a === "mv-loud")  { Siren.stop(); return mvLoud(); }
+  if (a === "mv-out")   {
+    const v = b.dataset.v, i = v === "none" ? -1 : +v;
+    if (i >= 0) G.out[i] = true;
+    return mvResult({ outIdx: i });
+  }
+  if (a === "mv-done")  { G.graceEnd = Date.now() + GRACE * 1000; return play(); }
+  if (a === "cool")     { if (graceLeft(G)) return; if (!coolLeft()) { G.coolEnd = Date.now() + coolSecs() * 1000; ringSet(coolSecs(), coolSecs()); } return; }
   if (a === "forget")   { store.del("imp_code"); CATS = null; return gate(); }
 });
 
@@ -794,7 +945,12 @@ app.addEventListener("click", e => {
     app.innerHTML = '<div class="grow"><h2>This browser is too old to play.</h2><p class="c mut">Try Chrome, Safari or Firefox.</p></div>';
     return;
   }
-  if (IN_APP) { CATS = window.IMP_PLAIN.cats; return home(); }
+  // An invite link (?join=ABCD) goes straight into that party; no code needed
+  // to join someone else's game.
+  const inv = (new URLSearchParams(location.search).get("join") || "").toUpperCase().replace(/[^A-Z]/g, "");
+  if (IN_APP) CATS = window.IMP_PLAIN.cats;
+  if (inv.length === 4) return;          // party.js (loaded next) opens the invite
+  if (IN_APP) return home();
   if (store.get("imp_wide", false)) document.body.classList.add("wide");
   const saved = store.get("imp_code", "");
   if (saved) {

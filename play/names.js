@@ -52,5 +52,15 @@
     return pick(ADJ) + " " + pick(NOUN);
   }
 
-  window.NameCheck = { check, random };
+  // Clues go to everyone's phone, so they get the same word check (no length
+  // or letters-only rules: "hot sauce" and "50s" are fine clues).
+  function clean(raw) {
+    const n = norm(String(raw || ""));
+    const flat = n.replace(/[^a-z]/g, "");
+    const words = n.split(/[^a-z]+/).filter(Boolean);
+    return !(ANY_LIST.some(w => flat.includes(w) || squash(flat).includes(w)) ||
+             words.some(w => WORD_SET.has(w) || WORD_SET.has(squash(w))));
+  }
+
+  window.NameCheck = { check, random, clean };
 })();
