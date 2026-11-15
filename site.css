@@ -35,10 +35,8 @@ body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);
 .bar .wrap{display:flex;align-items:center;gap:12px;height:66px;min-width:0}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);
   font-family:var(--disp);font-weight:700;font-size:20px;white-space:nowrap;flex:0 0 auto}
-.mark{width:32px;height:32px;border-radius:10px;background:var(--red);flex:none;
-  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(0,0,0,.15)}
-.mark::before{content:"";width:15px;height:6px;border-radius:3px;background:#fff;
-  box-shadow:0 6px 0 #fff}
+.mark{width:32px;height:32px;border-radius:9px;flex:none;
+  background:#14161C url(logo.png) center/cover;box-shadow:0 2px 0 rgba(0,0,0,.15)}
 /* ⚠ No sideways scrolling, at any width - he called it out by name. The old
    bar squeezed ten links into a row that could never hold them and let it
    scroll. Now: a single row when there's genuinely room for every link, and
