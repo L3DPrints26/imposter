@@ -19,6 +19,18 @@
   let P = null;                       // the party this phone is in
   let tick = null;                    // clock + cooldown on the game screen
   let lobbyMore = false;              // "More rules" stays open across redraws
+  let shareOpen = false;              // Text / Email / Copy, when the phone has no share sheet
+  // Everyone gets a colored bubble with their first letter.
+  const AV = ["#FFC61A", "#35E8FF", "#3AC75A", "#FF8A3D", "#8E7CFF", "#4DA3FF", "#F2F4F8"];
+  const avColor = name => AV[[...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % AV.length];
+  function bubbles(list, canKick, meId) {
+    return list.map(p => `<div class="av ${p.on || p.kind === "local" ? "" : "off"}">
+        <i style="background:${avColor(p.name)}">${esc(p.name[0].toUpperCase())}</i><span>${esc(p.name)}</span>
+        <em>${p.kind === "host" ? "host" : p.kind === "local" ? "your phone" : p.id === meId ? "you" : p.on ? "&nbsp;" : "offline"}</em>
+        ${canKick && p.kind !== "host" ? `<button class="x" data-a="p-kick" data-id="${p.id}" aria-label="Remove ${esc(p.name)}">&times;</button>` : ""}
+      </div>`).join("");
+  }
+  const modeOf = s => s.far ? "far" : s.word ? "word" : "tag";
 
   /* ------------------------------------------------------------ helpers */
   const $p = s => app.querySelector(s);
@@ -197,35 +209,40 @@
       `<div class="step"><button data-a="p-dec" data-k="${k}" ${v <= lo ? "disabled" : ""} aria-label="Fewer">&minus;</button>
        <output>${v === 0 && zero ? zero : v}</output>
        <button data-a="p-inc" data-k="${k}" ${v >= hi ? "disabled" : ""} aria-label="More">+</button></div>`;
-    const rows = P.players.map(p => `<label><span>${p.kind === "host" ? "&#9733;" : p.kind === "local" ? "&#9742;" : p.on ? "&#9679;" : "&#9675;"}</span>
-        <b style="flex:1;font-weight:600">${esc(p.name)}${p.kind === "local" ? ' <small class="mut">on your phone</small>' : ""}${p.on || p.kind === "local" ? "" : ' <small class="mut">offline</small>'}</b>
-        ${p.kind === "host" ? "" : `<button class="icon" data-a="p-kick" data-id="${p.id}" aria-label="Remove ${esc(p.name)}">&times;</button>`}</label>`).join("");
+    const mode = modeOf(S2), mini = (k, v, lo, hi, zero) => step(k, v, lo, hi, zero);
+    const tile = (v, icon, name, sub) => `<button class="gm ${mode === v ? "on" : ""}" data-a="p-gmode" data-v="${v}">${icon}${name}<small>${sub}</small></button>`;
+    const rules = [`<div class="rcard"><span class="rl">Imposters</span>${mini("imps", S2.imps, 1, maxImp)}</div>`];
+    if (mode !== "tag") rules.push(`<div class="rcard"><span class="rl">Imposter hint</span>${seg("p-hint", [["on", "On"], ["off", "Off"]], S2.hint ? "on" : "off")}</div>`);
+    if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues each</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
+    if (mode === "tag") rules.push(`<div class="rcard"><span class="rl">Meetings</span>${mini("meetings", S2.meetings, 0, 9)}</div>`,
+      `<div class="rcard"><span class="rl">Voting</span>${seg("p-vmode", [["phone", "Phones"], ["loud", "Out loud"]], S2.vote === "loud" ? "loud" : "phone")}</div>`,
+      `<div class="rcard"><span class="rl">Meetings each</span>${mini("each", S2.each, 0, 3, "Any")}</div>`);
     view(`${bar("p-end", "Your party")}
-      <div class="list">
-        <div class="codecard">
-          <p class="mut small">${S2.far ? "Send the invite. They tap it, type a name, and they're in." : "Everyone else taps Play together, then Join, and types"}</p>
+      <div class="list" style="gap:8px">
+        <div class="hero">
+          <small>PARTY CODE</small>
           <p class="pcode">${P.code}</p>
-          <button class="bar slim" data-a="p-share">Share invite</button>
-          <div class="minis">
-            <a href="sms:?&body=${encodeURIComponent(inviteText())}">Text</a>
-            <a href="mailto:?subject=${encodeURIComponent("Join my Pocket Imposter game")}&body=${encodeURIComponent(inviteText())}">Email</a>
-            <button data-a="p-copy">Copy link</button>
+          <div class="apps">
+            <a class="app msg" href="sms:?&body=${encodeURIComponent(inviteText())}"><i>${I.msgIcon}</i>Messages</a>
+            <a class="app mail" href="mailto:?subject=${encodeURIComponent("Join my Pocket Imposter game")}&body=${encodeURIComponent(inviteText())}"><i>${I.mailIcon}</i>Mail</a>
+            <button class="app link" data-a="p-copy"><i>${I.linkIcon}</i>Copy link</button>
+            <button class="app more" data-a="p-share"><i>${I.share}</i>More</button>
           </div>
-          <p class="mut small" id="pshare"></p>
+          <p class="hint" id="pshare">${mode === "far" ? "They tap the link, type a name, and they're in." : "Or they tap Play together, Join, and type the code."}</p>
         </div>
-        <div class="names">${rows}<button class="addrow" data-a="p-add">+ Add someone without a phone</button></div>
-        <div class="row"><b>Where</b>${seg("p-where", [["here", "Same room"], ["far", "Far apart"]], S2.far ? "far" : "here")}</div>
-        ${S2.far ? "" : `<div class="row"><b>Game</b>${seg("p-mode", [["word", "Word"], ["tag", "Tag"]], S2.word ? "word" : "tag")}</div>`}
-        <div class="row"><div><b>Imposters</b><div class="sub">fewer than the crew</div></div>${step("imps", S2.imps, 1, maxImp)}</div>
-        ${S2.far ? `<div class="row"><div><b>Clue rounds</b><div class="sub">clues each player types</div></div>${step("rounds", S2.rounds, 1, 3)}</div>` : ""}
-        ${S2.word || S2.far
-          ? `<div class="row"><div><b>Hint</b><div class="sub">for the imposter</div></div>${seg("p-hint", [["on", "On"], ["off", "Off"]], S2.hint ? "on" : "off")}</div>`
-          : `<div class="row"><div><b>Meetings</b><div class="sub">total for the group</div></div>${step("meetings", S2.meetings, 0, 9)}</div>
-             <details class="more" ${lobbyMore ? "open" : ""}><summary><span><b>More rules</b>
-               <small>${S2.vote === "loud" ? "Vote out loud" : "Vote on phones"}${S2.each ? ", " + S2.each + " meeting" + (S2.each === 1 ? "" : "s") + " each" : ""}</small></span></summary>
-               <div class="row"><div><b>Voting</b></div>${seg("p-vmode", [["phone", "Phones"], ["loud", "Out loud"]], S2.vote === "loud" ? "loud" : "phone")}</div>
-               <div class="row"><div><b>Meetings each</b><div class="sub">most one player can call</div></div>${step("each", S2.each, 0, 3, "Any")}</div>
-             </details>`}
+
+        <p class="sec">Players <span>${P.players.length}</span></p>
+        <div class="avs">${bubbles(P.players, true)}<button class="av add" data-a="p-add"><i>+</i><span>Add</span><em>no phone</em></button></div>
+
+        <p class="sec">Game</p>
+        <div class="gmodes">
+          ${tile("word", I.bubble, "Word", "sit and talk")}
+          ${tile("tag", I.run, "Tag", "play outside")}
+          ${tile("far", I.globe, "Far apart", "type clues")}
+        </div>
+
+        <p class="sec">Rules</p>
+        <div class="rgrid">${rules.join("")}</div>
         <p class="err">${esc(msg || "")}</p>
       </div>
       <button class="bar" data-a="p-go" ${n >= 3 ? "" : "disabled"}>${n >= 3 ? "START" : "Need 3 players"}</button>`, () => lobby(), "lobby");
@@ -759,13 +776,18 @@
       return view(`${bar("home")}<div class="grow"><h2>The party ended</h2><p class="c mut">The host closed it.</p></div>`); }
   }
   function guestLobby() {
-    const rows = P.players.map(p => `<label><span>${p.kind === "host" ? "&#9733;" : p.kind === "local" ? "&#9742;" : p.on ? "&#9679;" : "&#9675;"}</span>
-      <b style="flex:1;font-weight:600">${esc(p.name)}${p.id === P.me.id ? ' <small class="mut">you</small>' : ""}</b></label>`).join("");
-    view(`${bar("p-leave", "Party " + esc(P.code))}
-      <div class="list">
-        <h2>You're in</h2>
-        <p class="c mut small">Waiting for the host to start. ${P.set.word ? "Word" : "Tag"} mode.</p>
-        <div class="names">${rows}</div>
+    const s = P.set || {}, mode = modeOf(s);
+    const what = mode === "far" ? "Far apart: type your clues" : mode === "word" ? "Word: sit and talk" : "Tag: play outside";
+    view(`${bar("p-leave", "Party")}
+      <div class="list" style="gap:8px">
+        <div class="hero">
+          <small>YOU'RE IN</small>
+          <p class="pcode">${esc(P.code)}</p>
+          <p class="hint">${esc(what)}</p>
+        </div>
+        <p class="sec">Players <span>${P.players.length}</span></p>
+        <div class="avs">${bubbles(P.players, false, P.me.id)}</div>
+        <div class="wait" style="margin-top:12px"><div class="spin"></div>Waiting for the host to start</div>
       </div>`, guestLobby, "lobby");
   }
 
@@ -809,7 +831,12 @@
     if (a === "p-where") { P.set.far = b.dataset.v === "far"; if (P.set.far) P.set.word = true; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-share") {
       if (navigator.share) { navigator.share({ title: "Pocket Imposter", text: inviteText(), url: inviteUrl() }).catch(() => {}); return; }
-      return copyInvite();
+      return copyInvite();                        // no share sheet: copy it instead
+    }
+    if (a === "p-gmode") {
+      const v = b.dataset.v;
+      P.set.far = v === "far"; P.set.word = v !== "tag";
+      saveSet(); shareLobby(); return lobby();
     }
     if (a === "p-copy")  return copyInvite();
     if (a === "p-clue") {
