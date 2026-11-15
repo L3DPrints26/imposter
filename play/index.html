@@ -113,6 +113,28 @@ a{color:var(--acc)}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}.hold{transition:none}}
 
+/* setup links, names, categories */
+.go{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
+  background:var(--surf);border-radius:16px;padding:14px 16px 14px 18px}
+.go b{display:block;font-size:19px;font-weight:600}
+.go .sub{font-size:14px;color:var(--mut);font-weight:500}
+.go .arr{color:var(--mut);font-size:28px;line-height:1}
+.list{flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:12px}
+.names{display:grid;gap:8px}
+.names label{display:flex;align-items:center;gap:10px;background:var(--surf);border-radius:14px;padding:6px 6px 6px 14px}
+.names span{width:26px;color:var(--mut);font-weight:700;text-align:right}
+.ftxt{flex:1;min-width:0;width:100%;height:48px;border-radius:10px;border:2px solid var(--line);background:var(--surf2);
+  color:var(--text);font:600 18px var(--disp);padding:0 12px}
+.ftxt:focus{outline:none;border-color:var(--acc)}
+textarea.ftxt{height:auto;min-height:150px;padding:10px 12px;resize:vertical;font-weight:500;line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 14px;border-radius:999px;background:var(--surf);color:var(--mut);font-weight:600;
+  font-size:16px;border:2px solid var(--line)}
+.chip.on{background:var(--acc);color:#14161C;border-color:var(--acc)}
+.chip.mine{border-style:dashed}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bar.slim{min-height:48px;font-size:17px;letter-spacing:0}
+
 /* Wide mode, for a laptop. The phone column is deliberately narrow because a
    phone gets passed hand to hand; a laptop sits on a table with everyone round
    it, so everything grows and the two mode buttons sit side by side. Driven by
@@ -246,6 +268,22 @@ const clampSetup = () => {
 clampSetup();
 const saveSetup = () => store.set("imp_setup", S);
 
+// Player names, your own category, and which categories are switched off.
+// All kept on this phone only; nothing here is sent anywhere.
+let NAMES = store.get("imp_names", []);
+let CUSTOM = store.get("imp_custom", { name: "", words: "" });
+let OFF = store.get("imp_off", []);
+const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const pname = i => (NAMES[i] || "").trim() || "Player " + (i + 1);
+const namedCount = () => NAMES.slice(0, S.players).filter(n => (n || "").trim()).length;
+// Your own words have no hints: the imposter gets the category name only.
+const customCat = () => {
+  const words = [...new Set(CUSTOM.words.split(/[\n,]+/).map(w => w.trim()).filter(Boolean))].slice(0, 200);
+  return words.length >= 2 ? { name: CUSTOM.name.trim() || "Our words", words: words.map(w => [w, []]), mine: true } : null;
+};
+const allCats = () => { const c = customCat(); return c ? CATS.concat([c]) : CATS; };
+const liveCats = () => { const on = allCats().filter(c => !OFF.includes(c.name)); return on.length ? on : allCats(); };
+
 let G = null;           // the round in play
 let coolTimer = null;
 
@@ -259,14 +297,15 @@ function deal() {
   // Category is random, and the word is never one of the last 16 dealt.
   const recent = store.get("imp_recent", []);
   let cat, w;
+  const pool = liveCats();
   for (let t = 0; t < 40; t++) {
-    cat = CATS[rnd(CATS.length)];
+    cat = pool[rnd(pool.length)];
     w = cat.words[rnd(cat.words.length)];
     if (!recent.includes(w[0])) break;
   }
   recent.push(w[0]);
   store.set("imp_recent", recent.slice(-16));
-  G = { imp, cat: cat.name, word: w[0], hint: w[1][rnd(5)], first: rnd(S.players),
+  G = { imp, cat: cat.name, word: w[0], hint: w[1].length ? w[1][rnd(w[1].length)] : "", first: rnd(S.players),
         idx: 0, meet: S.meetings, coolEnd: 0 };
 }
 
@@ -281,7 +320,10 @@ const I = {
   expand: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M8 2H2v6M14 2h6v6M8 20H2v-6M14 20h6v-6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   shrink: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M2 8h6V2M20 8h-6V2M2 14h6v6M20 14h-6v6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 };
-const fsBtn = () =>
+// The iPhone app ships the words with it and needs no code (see
+// ios-app/scripts/build-web.js); the website still asks for one.
+const IN_APP = !!window.IMP_PLAIN;
+const fsBtn = () => IN_APP ? "" :
   `<button class="icon" data-a="fs" aria-label="${isWide() ? "Leave full screen" : "Full screen"}"
     title="${isWide() ? "Leave full screen" : "Full screen"}">${isWide() ? I.shrink : I.expand}</button>`;
 const topBar = (back, count, home) =>
@@ -362,8 +404,8 @@ function home() {
         <button class="big y" data-a="pick-word">Word<small>sit down</small></button>
         <button class="big o" data-a="pick-tag">Tag<small class="mut">outside</small></button>
       </div>
-      <p class="c small"><a href="../how-to-play/">How to play</a> &nbsp;·&nbsp;
-        <button data-a="forget" style="color:var(--mut);text-decoration:underline">Use a different code</button></p>
+      <p class="c small"><a href="../how-to-play/">How to play</a>${IN_APP ? "" : ` &nbsp;·&nbsp;
+        <button data-a="forget" style="color:var(--mut);text-decoration:underline">Use a different code</button>`}</p>
     </div>`;
 }
 
@@ -384,8 +426,74 @@ function setup() {
         ? `<div class="row"><div><b>Hint word</b><div class="sub">${S.hint ? "Imposter gets a hint" : "Imposter: no hint"}</div></div>
            <button class="tog ${S.hint ? "on" : ""}" data-a="hint" aria-pressed="${S.hint}">${S.hint ? "On" : "Off"}</button></div>`
         : `<div class="row"><div><b>Meetings</b><div class="sub">shared by everyone</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>`}
+      ${S.word ? `<button class="go" data-a="cats"><span><b>Categories</b><span class="sub">${catsLabel()}</span></span><span class="arr">&rsaquo;</span></button>` : ""}
+      <button class="go" data-a="names"><span><b>Player names</b><span class="sub">${namedCount() ? namedCount() + " of " + S.players + " named" : "Optional"}</span></span><span class="arr">&rsaquo;</span></button>
     </div>
     <button class="bar" data-a="start">START</button>`;
+}
+
+function catsLabel() {
+  const all = allCats(), on = liveCats();
+  return on.length === all.length ? "All " + all.length : on.length + " of " + all.length;
+}
+
+function namesScreen() {
+  redraw = namesScreen;
+  let rows = "";
+  for (let i = 0; i < S.players; i++)
+    rows += `<label><span>${i + 1}</span><input class="ftxt" data-i="${i}" maxlength="14" autocomplete="off"
+      autocapitalize="words" enterkeyhint="next" placeholder="Player ${i + 1}" value="${esc(NAMES[i] || "")}"></label>`;
+  app.innerHTML = `
+    ${topBar("setup", "Names", "")}
+    <div class="list">
+      <p class="c mut small">Type everyone's name in the order you're sitting. Blank ones stay Player 1, Player 2 and so on.</p>
+      <div class="names">${rows}</div>
+      <button class="bar ghost slim" data-a="names-clear">Clear names</button>
+    </div>
+    <button class="bar" data-a="setup">Done</button>`;
+  app.querySelectorAll("input[data-i]").forEach(inp => {
+    inp.addEventListener("input", () => { NAMES[+inp.dataset.i] = inp.value; store.set("imp_names", NAMES); });
+    inp.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const nx = app.querySelector(`input[data-i="${+inp.dataset.i + 1}"]`);
+      nx ? nx.focus() : inp.blur();
+    });
+  });
+}
+
+function catsScreen() {
+  redraw = catsScreen;
+  const all = allCats(), mine = customCat();
+  const chip = c => `<button class="chip ${OFF.includes(c.name) ? "" : "on"} ${c.mine ? "mine" : ""}"
+      data-a="cat" data-n="${esc(c.name)}" aria-pressed="${!OFF.includes(c.name)}">${esc(c.name)}</button>`;
+  app.innerHTML = `
+    ${topBar("setup", "Categories", "")}
+    <div class="list">
+      <p class="c mut small">Tap to switch a category on or off. The word comes from one that's on.</p>
+      <div class="btns"><button class="bar ghost slim" data-a="cats-all">All on</button>
+        <button class="bar ghost slim" data-a="cats-none">All off</button></div>
+      <div class="chips">${all.map(chip).join("")}</div>
+      <button class="go" data-a="custom"><span><b>${mine ? "Edit your words" : "Make your own"}</b>
+        <span class="sub">${mine ? esc(mine.name) + ", " + mine.words.length + " words" : "Your own category, like inside jokes or your teachers"}</span></span><span class="arr">&rsaquo;</span></button>
+    </div>
+    <button class="bar" data-a="setup" ${liveCats().length && all.some(c => !OFF.includes(c.name)) ? "" : "disabled"}>Done</button>`;
+}
+
+function customScreen(msg) {
+  redraw = () => customScreen();
+  app.innerHTML = `
+    ${topBar("cats", "Your words", "")}
+    <div class="list">
+      <label class="mut small" for="cn">Category name</label>
+      <input id="cn" class="ftxt" maxlength="24" autocomplete="off" placeholder="Our words" value="${esc(CUSTOM.name)}">
+      <label class="mut small" for="cw">Words, one per line (at least 2)</label>
+      <textarea id="cw" class="ftxt" autocomplete="off" placeholder="Pizza night&#10;The lake house&#10;Grandma's dog">${esc(CUSTOM.words)}</textarea>
+      <p class="mut small">The imposter doesn't get a hint for these, just the category name.</p>
+      <p class="err">${msg || ""}</p>
+      ${customCat() ? '<button class="bar ghost slim" data-a="custom-del">Delete my words</button>' : ""}
+    </div>
+    <button class="bar" data-a="custom-save">Save</button>`;
 }
 
 function pass() {
@@ -395,7 +503,7 @@ function pass() {
     ${topBar(G.idx === 0 ? "setup" : "", `${G.idx + 1}/${S.players}`, "home")}
     <div class="grow">
       <p class="c mut" style="font-size:20px;font-weight:600">Hand the phone to</p>
-      <p class="who">Player ${G.idx + 1}</p>
+      <p class="who">${esc(pname(G.idx))}</p>
       <p class="c mut" style="font-size:18px">${G.idx + 1} of ${S.players}</p>
     </div>
     <button class="bar" data-a="view">Then tap here</button>`;
@@ -406,16 +514,16 @@ function card() {
   const imp = G.imp[G.idx];
   let inner;
   if (S.word && !imp)
-    inner = `<p class="lbl">Word</p><p class="word" data-fit>${G.word}</p>`;
-  else if (imp && S.word && S.hint)
-    inner = `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${G.hint}</p>`;
+    inner = `<p class="lbl">Word</p><p class="word" data-fit>${esc(G.word)}</p>`;
+  else if (imp && S.word && S.hint && G.hint)
+    inner = `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${esc(G.hint)}</p>`;
   else
     inner = `<p class="role" style="color:var(${imp ? "--imp" : "--crew"})">${imp ? "IMPOSTER" : "CREW"}</p>
              <p class="mut small">${imp ? (S.word ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
   const last = G.idx === S.players - 1;
   app.innerHTML = `
     ${topBar("", `${G.idx + 1}/${S.players}`, "")}
-    <p class="cat"><span class="k">Category</span><span class="v">${S.word ? G.cat : "Tag mode"}</span></p>
+    <p class="cat"><span class="k">Category</span><span class="v">${S.word ? esc(G.cat) : "Tag mode"}</span></p>
     <div class="grow">
       <div class="card" id="card" aria-live="off">
         <p class="lbl">Hold the button</p><p class="mut small">to see your card.</p>
@@ -447,9 +555,9 @@ function started() {
     ${topBar("", "", "home")}
     <div class="grow">
       <p class="c" style="font-size:22px;font-weight:700;color:var(--acc)">Game started</p>
-      <p class="cat"><span class="k">Category</span><span class="v">${G.cat}</span></p>
+      <p class="cat"><span class="k">Category</span><span class="v">${esc(G.cat)}</span></p>
       <div class="card" style="min-height:0">
-        <p style="font-size:22px;font-weight:600">Player ${G.first + 1} starts.</p>
+        <p style="font-size:22px;font-weight:600">${esc(pname(G.first))} starts.</p>
         <p class="mut">One clue each. ${S.imps} imposter${S.imps === 1 ? "" : "s"}.</p>
       </div>
       <p class="c mut small">Go around the circle, one word each. Talk it over, then point on
@@ -498,12 +606,12 @@ function runCool() {
 function reveal() {
   redraw = reveal;
   clearCool();
-  const who = G.imp.map((v, i) => v ? "P" + (i + 1) : null).filter(Boolean);
+  const who = G.imp.map((v, i) => v ? esc(pname(i)) : null).filter(Boolean);
   app.innerHTML = `
     ${topBar("", "", "home")}
     <div class="grow">
       ${S.word ? `<p class="c mut" style="font-size:18px;font-weight:600">The word was</p>
-                  <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${G.word}</p>` : ""}
+                  <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${esc(G.word)}</p>` : ""}
       <p class="c mut" style="font-size:20px;font-weight:600;margin-top:10px">${who.length === 1 ? "Imposter" : "Imposters"}</p>
       <p class="c" style="font-size:40px;font-weight:700;color:var(--imp);text-wrap:balance">${who.join(", ")}</p>
     </div>
@@ -521,6 +629,30 @@ app.addEventListener("click", e => {
   if (a === "pick-word"){ S.word = true;  saveSetup(); return setup(); }
   if (a === "pick-tag") { S.word = false; saveSetup(); return setup(); }
   if (a === "setup")    return setup();
+  if (a === "names")    return namesScreen();
+  if (a === "names-clear") { NAMES = []; store.set("imp_names", NAMES); return namesScreen(); }
+  if (a === "cats")     return catsScreen();
+  if (a === "cat") {
+    const n = b.dataset.n;
+    OFF = OFF.includes(n) ? OFF.filter(x => x !== n) : OFF.concat([n]);
+    store.set("imp_off", OFF); return catsScreen();
+  }
+  if (a === "cats-all")  { OFF = []; store.set("imp_off", OFF); return catsScreen(); }
+  if (a === "cats-none") { OFF = allCats().map(c => c.name); store.set("imp_off", OFF); return catsScreen(); }
+  if (a === "custom")   return customScreen();
+  if (a === "custom-save" || a === "custom-del") {
+    const old = customCat();
+    CUSTOM = a === "custom-del" ? { name: "", words: "" }
+                                : { name: $("#cn").value.slice(0, 24), words: $("#cw").value.slice(0, 4000) };
+    store.set("imp_custom", CUSTOM);
+    const now = customCat();
+    // A renamed category keeps its on/off, and a new one starts switched on.
+    if (old) OFF = OFF.filter(x => x !== old.name);
+    if (now) OFF = OFF.filter(x => x !== now.name);
+    store.set("imp_off", OFF);
+    if (a === "custom-save" && !now) return customScreen("Add at least 2 words.");
+    return catsScreen();
+  }
   if (a === "inc" || a === "dec") {
     S[b.dataset.k] += a === "inc" ? 1 : -1; clampSetup(); saveSetup(); return setup();
   }
@@ -541,6 +673,7 @@ app.addEventListener("click", e => {
     app.innerHTML = '<div class="grow"><h2>This browser is too old to play.</h2><p class="c mut">Try Chrome, Safari or Firefox.</p></div>';
     return;
   }
+  if (IN_APP) { CATS = window.IMP_PLAIN.cats; return home(); }
   if (store.get("imp_wide", false)) document.body.classList.add("wide");
   const saved = store.get("imp_code", "");
   if (saved) {
