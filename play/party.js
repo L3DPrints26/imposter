@@ -76,8 +76,8 @@
       <div class="list">
         <h2>What's your name?</h2>
         <p class="c mut small">Everyone in the party sees it.</p>
-        <input id="pn" class="ftxt" maxlength="14" autocomplete="off" autocapitalize="words"
-               enterkeyhint="go" placeholder="Your name" value="${esc(saved)}">
+        <div class="names"><label><input id="pn" class="ftxt" maxlength="14" autocomplete="off" autocapitalize="words"
+               enterkeyhint="go" placeholder="Your name" value="${esc(saved)}"></label></div>
         <button class="bar ghost slim" data-a="p-rand">Random name</button>
         <p class="err" id="perr">${esc(msg || "")}</p>
       </div>
@@ -214,7 +214,7 @@
       <div class="list">
         <h2>Who's playing on your phone?</h2>
         <p class="c mut small">They look at their card on your phone when the game starts.</p>
-        <input id="pn" class="ftxt" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Their name">
+        <div class="names"><label><input id="pn" class="ftxt" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Their name"></label></div>
         <button class="bar ghost slim" data-a="p-rand">Random name</button>
         <p class="err" id="perr">${esc(msg || "")}</p>
       </div>
