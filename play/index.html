@@ -138,6 +138,37 @@ textarea.ftxt{height:auto;min-height:150px;padding:10px 12px;resize:vertical;fon
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .bar.slim{min-height:48px;font-size:17px;letter-spacing:0}
 
+/* the game-on screen */
+.gohead{display:flex;align-items:baseline;justify-content:space-between;margin:2px 4px 14px}
+.gohead b{font-size:28px;color:var(--acc);letter-spacing:.08em}
+.gohead span{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--mut)}
+.calls{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.call{border-radius:22px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:14px 10px;font-weight:700;text-align:center}
+.call svg{width:44px;height:44px}
+.call .k{font-size:18px;line-height:1.15}
+.call .s{font-size:14px;font-weight:600;opacity:.8}
+.call.em{background:var(--acc);color:#14161C}
+.call.body{background:var(--imp);color:#fff}
+.call:disabled{opacity:.35}
+.coolring{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:16px;width:100%;text-align:left;
+  background:var(--surf);border-radius:22px;padding:12px 16px 12px 12px;margin-top:12px}
+.coolring svg{width:92px;height:92px}
+.coolring b{display:block;font-size:20px}
+.coolring .sub{font-size:14px;color:var(--mut);font-weight:500}
+.coolring.live b{color:var(--imp)}
+.peek{align-self:center;padding:12px 22px;border-radius:999px;background:var(--surf2);font-weight:600;font-size:16px;
+  color:var(--mut);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.peek.on{background:var(--crew);color:#fff}
+.peekcard{min-height:0;padding:0;background:none}
+.peekcard:not(:empty){padding:16px;background:var(--surf);margin-top:10px}
+.pcode{font-size:64px;font-weight:700;letter-spacing:.14em;color:var(--acc);text-align:center;line-height:1;margin:2px 0 8px}
+.names label b small{font-size:13px;font-weight:500}
+.names .icon{width:36px;height:36px;font-size:24px}
+.together{width:100%;min-height:64px;border-radius:18px;background:var(--surf);border:2px solid var(--line);
+  font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;gap:10px}
+.together small{font-size:14px;font-weight:600;color:var(--mut)}
+
 /* Wide mode, for a laptop. The phone column is deliberately narrow because a
    phone gets passed hand to hand; a laptop sits on a table with everyone round
    it, so everything grows and the two mode buttons sit side by side. Driven by
@@ -325,6 +356,9 @@ const coolSecs = () => (S.players <= 6 ? 45 : S.players <= 10 ? 30 : 20) + (S.im
 
 /* ---------------------------------------------------------------- icons */
 const I = {
+  alarm: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 17v-5a6 6 0 0 1 12 0v5"/><path d="M4 21h16v-4H4z"/><path d="M12 2v1.5M3.5 6l1.2 1M20.5 6l-1.2 1"/></svg>',
+  alert: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 9v5"/><path d="M12 17.2v.1"/></svg>',
+  group: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="12" rx="1.5"/><rect x="14" y="8" width="7" height="12" rx="1.5"/><path d="M10 10h4"/></svg>',
   back: '<svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><path d="M11 2 2 11l9 9M3 11h21" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   home: '<svg width="24" height="22" viewBox="0 0 24 22" aria-hidden="true"><path d="M2 11 12 2l10 9M5 9v11h14V9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   expand: '<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M8 2H2v6M14 2h6v6M8 20H2v-6M14 20h6v-6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -371,6 +405,7 @@ function gate(msg) {
       <div class="where"><b>Where is my code?</b><br>On your box, tap <b>Info</b> at the top
       left of the menu, then tap the arrow past the five rule pages. The next page says
       <b>Play on your phone</b>, with your code underneath.</div>
+      <button class="bar ghost" data-a="p-join" style="margin-top:4px">Joining someone's party?</button>
       <p class="c small"><a href="../help/#questions">Questions</a> &nbsp;·&nbsp; <a href="../how-to-play/">How to play</a></p>
     </div>`;
   const inp = $("#code");
@@ -404,6 +439,7 @@ function gate(msg) {
 }
 
 function home() {
+  if (!CATS) return gate();          // left a party without unlocking (website)
   redraw = home;
   clearCool();
   app.innerHTML = `
@@ -414,6 +450,7 @@ function home() {
         <button class="big y" data-a="pick-word">Word<small>sit down</small></button>
         <button class="big o" data-a="pick-tag">Tag<small class="mut">outside</small></button>
       </div>
+      <button class="together" data-a="p-start">${I.group}<span>Play together<br><small>one phone each</small></span></button>
       <p class="c small"><a href="../how-to-play/">How to play</a>${IN_APP ? "" : ` &nbsp;·&nbsp;
         <button data-a="forget" style="color:var(--mut);text-decoration:underline">Use a different code</button>`}</p>
     </div>`;
@@ -581,23 +618,43 @@ function play() {
   redraw = play;
   window.onblur = null; document.onvisibilitychange = null;
   const left = coolLeft();
+  if (!G.startedAt) G.startedAt = Date.now();
   app.innerHTML = `
     ${topBar("", "", "home")}
-    <p class="c" style="font-size:22px;font-weight:700;color:var(--acc);margin-bottom:12px">Game on</p>
-    <div class="tiles">
-      <button class="tile" data-a="meet" ${meetOpen() ? "" : "disabled"}>
-        <span class="n">${G.meet}</span><span class="k">MEETINGS</span></button>
-      <button class="tile ${left ? "live" : ""}" data-a="cool" id="cool">
-        <span class="n" id="cooln">${left || coolSecs()}</span>
-        <span class="k" id="coolk">${left ? "COOLDOWN" : "TAP AFTER A TAG"}</span></button>
+    <div class="gohead"><b>GAME ON</b><span id="clock">${clockText()}</span></div>
+    <div class="calls">
+      <button class="call em" data-a="meet" ${meetOpen() ? "" : "disabled"}>${I.alarm}<span class="k">Emergency meeting</span>
+        <span class="s">${G.meet} left${S.each ? ", " + S.each + " each" : ""}</span></button>
+      <button class="call body" data-a="body">${I.alert}<span class="k">Report a body</span><span class="s">free, any time</span></button>
     </div>
-    <div class="grow">
-      <p class="c mut small">Tap MEETINGS for an emergency meeting${S.each ? `, up to ${S.each} each` : ""}. Meetings over a body
-      are free and don't touch it. Imposters: tap the timer the moment you tag someone, and
-      don't tag again until it hits zero.</p>
-    </div>
+    ${ringTile(left, coolSecs(), "cool")}
+    <div class="grow"><p class="c mut small">Leave the phone where everyone can reach it.</p></div>
     <button class="bar" data-a="reveal">Reveal</button>`;
-  if (left) runCool();
+  runCool();
+}
+// The tag cooldown as a ring that empties. Used here and by party.js.
+const RING = 2 * Math.PI * 38;
+function ringTile(left, total, action) {
+  const off = left ? RING * (1 - left / total) : 0;
+  return `<button class="coolring ${left ? "live" : ""}" data-a="${action}" id="cool">
+    <svg viewBox="0 0 92 92" aria-hidden="true">
+      <circle cx="46" cy="46" r="38" fill="none" stroke="var(--surf2)" stroke-width="10"/>
+      <circle id="coolarc" cx="46" cy="46" r="38" fill="none" stroke="${left ? "var(--imp)" : "var(--crew)"}" stroke-width="10"
+        stroke-linecap="round" stroke-dasharray="${RING}" stroke-dashoffset="${off}" transform="rotate(-90 46 46)"/>
+      <text id="cooln" x="46" y="55" text-anchor="middle" font-size="26" font-weight="700" fill="currentColor">${left || total}</text>
+    </svg>
+    <span><b id="coolk">${left ? "No tagging yet" : "Tag cooldown"}</b>
+      <span class="sub" id="coolsub">${left ? "Wait for zero." : "Imposters: tap right after a tag."}</span></span></button>`;
+}
+function ringSet(left, total) {
+  const n = $("#cooln"), arc = $("#coolarc"), t = $("#cool"), k = $("#coolk"), sub = $("#coolsub");
+  if (!n) return;
+  n.textContent = left || total;
+  arc.setAttribute("stroke-dashoffset", left ? RING * (1 - left / total) : 0);
+  arc.setAttribute("stroke", left ? "var(--imp)" : "var(--crew)");
+  t.classList.toggle("live", !!left);
+  k.textContent = left ? "No tagging yet" : "Tag cooldown";
+  sub.textContent = left ? "Wait for zero." : "Imposters: tap right after a tag.";
 }
 const coolLeft = () => G && G.coolEnd ? Math.max(0, Math.ceil((G.coolEnd - Date.now()) / 1000)) : 0;
 function meetPick() {
@@ -616,21 +673,22 @@ function meetPick() {
       <div class="names">${rows}</div>
     </div>`;
 }
+const clockText = () => { const t = Math.floor((Date.now() - (G.startedAt || Date.now())) / 1000); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
 function meeting() {
   redraw = meeting;
   clearCool();
   app.innerHTML = `
     ${topBar("", "", "")}
     <div class="grow">
-      <p class="c" style="font-size:20px;font-weight:700;color:var(--imp);letter-spacing:.08em">EMERGENCY MEETING</p>
-      <p class="who">${esc(G.caller)}</p>
-      <p class="c mut" style="font-size:18px">called it</p>
+      <p class="c" style="font-size:20px;font-weight:700;color:var(--imp);letter-spacing:.08em">${G.body ? "BODY REPORTED" : "EMERGENCY MEETING"}</p>
+      ${G.caller ? `<p class="who">${esc(G.caller)}</p><p class="c mut" style="font-size:18px">called it</p>` : ""}
       <div class="card" style="min-height:0;gap:6px">
-        <p style="font-size:19px;font-weight:600">Everyone come to the box.</p>
+        <p style="font-size:19px;font-weight:600">Everyone come together.</p>
         <p class="mut small">Talk it over, then point at once on three. Most votes is out.
         Finish with &ldquo;3, 2, 1, UP!&rdquo;, then no tagging for 15 seconds.</p>
       </div>
-      <p class="c mut small">${G.meet} meeting${G.meet === 1 ? "" : "s"} left</p>
+      <p class="c mut small">${G.meet} emergency meeting${G.meet === 1 ? "" : "s"} left</p>
+      <button class="bar ghost slim" data-a="hush">Stop the siren</button>
     </div>
     <button class="bar" data-a="play">Meeting's over</button>`;
 }
@@ -638,13 +696,14 @@ function clearCool() { if (coolTimer) { clearInterval(coolTimer); coolTimer = nu
 function runCool() {
   clearCool();
   coolTimer = setInterval(() => {
-    const l = coolLeft(), n = $("#cooln"), k = $("#coolk"), t = $("#cool");
-    if (!n) return clearCool();
-    if (l <= 0) {
-      G.coolEnd = 0; clearCool();
-      n.textContent = coolSecs(); k.textContent = "TAP AFTER A TAG"; t.classList.remove("live");
-      if (navigator.vibrate) navigator.vibrate(200);
-    } else n.textContent = l;
+    const c = $("#clock");
+    if (!c) return clearCool();
+    c.textContent = clockText();
+    if (G.coolEnd) {
+      const l = coolLeft();
+      ringSet(l, coolSecs());
+      if (l <= 0) { G.coolEnd = 0; if (navigator.vibrate) navigator.vibrate(200); }
+    }
   }, 250);
 }
 
@@ -711,11 +770,13 @@ app.addEventListener("click", e => {
   if (a === "meet-by")  {
     const i = +b.dataset.i;
     if (!meetOpen() || !canCall(i)) return play();
-    G.meet--; G.used[i]++; G.caller = pname(i);
-    return meeting();
+    G.meet--; G.used[i]++; G.caller = pname(i); G.body = false;
+    meeting(); Siren.play(8); return;
   }
-  if (a === "play")     return play();
-  if (a === "cool")     { if (!coolLeft()) { G.coolEnd = Date.now() + coolSecs() * 1000; play(); } return; }
+  if (a === "body")     { G.caller = ""; G.body = true; meeting(); Siren.play(8); return; }
+  if (a === "hush")     return Siren.stop();
+  if (a === "play")     { Siren.stop(); return play(); }
+  if (a === "cool")     { if (!coolLeft()) { G.coolEnd = Date.now() + coolSecs() * 1000; ringSet(coolSecs(), coolSecs()); } return; }
   if (a === "forget")   { store.del("imp_code"); CATS = null; return gate(); }
 });
 
@@ -736,5 +797,10 @@ app.addEventListener("click", e => {
   gate();
 })();
 </script>
+<!-- party mode: PeerJS (MIT, see vendor/PEERJS-LICENSE.txt), names, siren -->
+<script src="vendor/peerjs-1.5.4.min.js"></script>
+<script src="names.js"></script>
+<script src="siren.js"></script>
+<script src="party.js"></script>
 </body>
 </html>

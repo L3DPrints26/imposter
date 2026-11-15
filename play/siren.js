@@ -1,0 +1,88 @@
+/* The meeting siren: a tornado-warning style wail, made on the spot with Web
+   Audio (no recording, so nothing to license). Two detuned saws a minor third
+   apart, like the two-tone outdoor sirens, swept up, held while the "horn"
+   rotates past (a slow swell in volume), then wound down. About 8 seconds.
+
+   Phones only play sound after a tap, so unlock() runs on every tap; by the
+   time a meeting is called from someone else's phone the audio is already
+   allowed on this one. */
+(function () {
+  "use strict";
+  let ctx = null, live = null;
+
+  function unlock() {
+    try {
+      // iPhone: play even with the ring/silent switch on silent.
+      if (navigator.audioSession) navigator.audioSession.type = "playback";
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === "suspended") ctx.resume();
+    } catch (_) {}
+  }
+  document.addEventListener("pointerdown", unlock, { capture: true, passive: true });
+  document.addEventListener("keydown", unlock, { capture: true });
+
+  function stop() {
+    if (!live) return;
+    const { nodes, out } = live;
+    live = null;
+    try {
+      const t = ctx.currentTime;
+      out.gain.cancelScheduledValues(t);
+      out.gain.setValueAtTime(out.gain.value, t);
+      out.gain.linearRampToValueAtTime(0, t + 0.15);
+      setTimeout(() => nodes.forEach(n => { try { n.stop(); } catch (_) {} }), 250);
+    } catch (_) {}
+  }
+
+  function play(seconds) {
+    unlock();
+    if (!ctx) return;
+    stop();
+    const T = Math.max(3, seconds || 8);
+    const t0 = ctx.currentTime + 0.05;
+    const up = Math.min(2.4, T * 0.3), down = Math.min(1.8, T * 0.22), hold = T - up - down;
+    const lo = 140, hi = 560;                       // the wind-up and the wail
+
+    const out = ctx.createGain();
+    out.gain.setValueAtTime(0, t0);
+    out.gain.linearRampToValueAtTime(0.55, t0 + up * 0.6);
+    out.gain.setValueAtTime(0.55, t0 + up + hold);
+    out.gain.linearRampToValueAtTime(0, t0 + T);
+    // a little grit, then take the fizz off the top
+    const shape = ctx.createWaveShaper();
+    const curve = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) { const x = i / 512 - 1; curve[i] = Math.tanh(2.2 * x); }
+    shape.curve = curve;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass"; lp.frequency.value = 2600; lp.Q.value = 0.7;
+    // the horn turning past you: volume swells about once every 2.5 seconds
+    const rot = ctx.createGain();
+    rot.gain.value = 0.75;
+    const lfo = ctx.createOscillator(), lfoAmt = ctx.createGain();
+    lfo.frequency.value = 0.4; lfoAmt.gain.value = 0.25;
+    lfo.connect(lfoAmt); lfoAmt.connect(rot.gain);
+    rot.connect(shape); shape.connect(lp); lp.connect(out); out.connect(ctx.destination);
+
+    const nodes = [lfo];
+    [1, 1.2].forEach((ratio, k) => {                // root and minor third
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = "sawtooth";
+      o.detune.value = k ? 6 : -4;
+      const f = o.frequency;
+      f.setValueAtTime(lo * ratio, t0);
+      f.exponentialRampToValueAtTime(hi * ratio, t0 + up);
+      f.setValueAtTime(hi * ratio, t0 + up + hold);
+      f.exponentialRampToValueAtTime(lo * ratio * 0.9, t0 + T);
+      g.gain.value = 0.32;
+      o.connect(g); g.connect(rot);
+      o.start(t0); o.stop(t0 + T + 0.1);
+      nodes.push(o);
+    });
+    lfo.start(t0); lfo.stop(t0 + T + 0.1);
+    live = { nodes, out };
+    setTimeout(() => { if (live && live.out === out) live = null; }, (T + 0.3) * 1000);
+    if (navigator.vibrate) navigator.vibrate([600, 200, 600, 200, 600]);
+  }
+
+  window.Siren = { play, stop, unlock };
+})();
