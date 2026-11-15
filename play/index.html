@@ -285,7 +285,8 @@ const fsBtn = () =>
   `<button class="icon" data-a="fs" aria-label="${isWide() ? "Leave full screen" : "Full screen"}"
     title="${isWide() ? "Leave full screen" : "Full screen"}">${isWide() ? I.shrink : I.expand}</button>`;
 const topBar = (back, count, home) =>
-  `<div class="top">${back ? `<button class="icon" data-a="${back}" aria-label="Back">${I.back}</button>` : '<span style="width:44px"></span>'}
+  `<div class="top">${back === "site" ? `<a class="icon" href="../" aria-label="Back to the site">${I.back}</a>`
+     : back ? `<button class="icon" data-a="${back}" aria-label="Back">${I.back}</button>` : '<span style="width:44px"></span>'}
    <span class="count">${count || ""}</span>
    <span style="display:flex">${fsBtn()}${home ? `<button class="icon" data-a="home" aria-label="Home">${I.home}</button>` : ""}</span></div>`;
 
@@ -302,6 +303,7 @@ function gate(msg) {
   redraw = () => gate(msg);
   const saved = store.get("imp_code", "");
   app.innerHTML = `
+    ${topBar("site", "", "")}
     <div class="grow">
       <h1 class="wm">IMPOSTER</h1>
       <h2>Play on your phone</h2>
@@ -353,7 +355,7 @@ function home() {
   redraw = home;
   clearCool();
   app.innerHTML = `
-    ${topBar("", "", "")}
+    ${topBar("site", "", "")}
     <div class="grow">
       <h1 class="wm">IMPOSTER</h1>
       <div class="modes">

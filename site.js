@@ -14,6 +14,17 @@
     if (to) { location.replace(to); return; }
   }
 
+  // Back goes back a step when the last page was one of ours, and home when
+  // it wasn't - opened from a link or a QR code, back would leave the site.
+  document.querySelectorAll('[data-back]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var here = location.protocol + '//' + location.host;
+      if (document.referrer.indexOf(here) === 0 && history.length > 1) {
+        e.preventDefault(); history.back();
+      }
+    });
+  });
+
   // Menu button below 1160 px.
   var bar = document.querySelector('.bar'), btn = bar && bar.querySelector('.menubtn');
   if (btn) {
@@ -34,9 +45,8 @@
       .then(function (m) {
         var v = m && String(m.version || '').replace(/[^0-9A-Za-z.]/g, '');
         if (!v) return;
-        vb.innerHTML = 'Newest firmware is <b>v' + v + '</b>. On your box: <b>Info</b>, then keep ' +
-          'tapping the arrow to <b>Version</b>. Older than that? <a href="' + root +
-          'update/">Update it here</a>.';
+        vb.innerHTML = 'Newest firmware: <b>v' + v + '</b> &middot; <a href="' + root +
+          'update/">Update your box</a>';
       })
       .catch(function () {});
   }
