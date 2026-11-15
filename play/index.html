@@ -146,6 +146,42 @@ textarea.ftxt{height:auto;min-height:150px;padding:10px 12px;resize:vertical;fon
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .bar.slim{min-height:48px;font-size:17px;letter-spacing:0}
 
+/* pill switches, the fold-out, pick lists */
+.seg2{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:12px;background:var(--surf2);flex:none;min-width:168px}
+.seg2 button{height:40px;padding:0 10px;border-radius:9px;font-weight:700;font-size:15px;color:var(--mut)}
+.seg2 button.on{background:var(--acc);color:#14161C}
+.more{background:var(--surf);border-radius:16px}
+.more>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 14px 18px}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary b{display:block;font-size:19px;font-weight:600}
+.more>summary small{display:block;font-size:14px;color:var(--mut);font-weight:500}
+.more>summary::after{content:"";flex:none;width:9px;height:9px;margin-right:6px;border-right:2.5px solid var(--mut);
+  border-bottom:2.5px solid var(--mut);transform:rotate(45deg);transition:transform .15s}
+.more[open]>summary::after{transform:rotate(225deg)}
+.more .row{background:none;border-radius:0;border-top:1px solid var(--line)}
+.opts{background:var(--surf);border-radius:18px;overflow:hidden}
+.opt{display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:6px 16px;text-align:left;
+  font-size:18px;font-weight:600;border-top:1px solid var(--line)}
+.opt:first-child{border-top:0}
+.opt .rad{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid #4A5163;display:grid;place-items:center;color:transparent}
+.opt .rad svg{width:16px;height:16px}
+.opt.on{background:rgba(255,198,26,.10)}
+.opt.on .rad{background:var(--acc);border-color:var(--acc);color:#14161C}
+.opt .ol{display:flex;flex-direction:column;gap:1px}
+.opt small{font-size:13px;font-weight:500;color:var(--mut)}
+.opt.skip{color:var(--mut)}
+.textbtn{align-self:center;padding:10px 12px;color:var(--mut);font-weight:600;font-size:15px;text-decoration:underline}
+.foot{display:grid;gap:8px;margin-top:12px}
+h2.ask{text-align:left;margin:2px 2px 4px}
+.codecard{display:grid;gap:10px;padding:16px;border-radius:20px;background:var(--surf);text-align:center}
+.codecard .pcode{margin:0}
+.minis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.minis a,.minis button{height:44px;border-radius:12px;background:var(--surf2);display:grid;place-items:center;
+  font-weight:600;font-size:15px;color:var(--text);text-decoration:none}
+.names:has(> .addrow){gap:0;background:var(--surf);border-radius:16px;overflow:hidden}
+.names .addrow{display:flex;align-items:center;width:100%;min-height:50px;padding:0 16px;border-top:1px solid var(--line);
+  color:var(--acc);font-weight:600;font-size:17px;text-align:left}
+
 /* the game-on screen */
 .gohead{display:flex;align-items:baseline;justify-content:space-between;margin:2px 4px 14px}
 .gohead b{font-size:28px;color:var(--acc);letter-spacing:.08em}
@@ -308,9 +344,12 @@ async function unlock(code) {
 let CATS = null;
 const S = Object.assign({ word: true, players: 8, imps: 2, hint: true, meetings: 3, each: 0, vote: "phone", timer: false },
                         store.get("imp_setup", {}));
+// Imposters are always fewer than the crew. Half was allowed before, and 2 of
+// 4 meant the imposters had already "won" before anyone was tagged.
+const impMax = n => Math.max(1, Math.floor((n - 1) / 2));
 const clampSetup = () => {
   S.players  = Math.min(15, Math.max(3, S.players | 0));
-  S.imps     = Math.min(Math.max(1, Math.floor(S.players / 2)), Math.max(1, S.imps | 0));
+  S.imps     = Math.min(impMax(S.players), Math.max(1, S.imps | 0));
   S.meetings = Math.min(9, Math.max(0, S.meetings | 0));
   S.each     = Math.min(3, Math.max(0, S.each | 0));     // 0 = no limit per player
   S.vote     = S.vote === "loud" ? "loud" : "phone";
@@ -339,6 +378,25 @@ const liveCats = () => { const on = allCats().filter(c => !OFF.includes(c.name))
 // be kept), then shows the meeting.
 const canCall = i => S.each === 0 || G.used[i] < S.each;
 const meetOpen = () => G.meet > 0 && G.used.some((_, i) => canCall(i));
+
+// Tap a row and it gets a check; the bottom button (data-needs-pick) only
+// wakes up once something is checked. Shared with party.js.
+const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const pickList = items => `<div class="opts" role="radiogroup">${items.map(it =>
+  `<button class="opt ${it.cls || ""}" role="radio" aria-checked="false" data-v="${esc(it.v)}"><span class="rad">${CHECK}</span>
+    <span class="ol">${it.label}${it.sub ? `<small>${it.sub}</small>` : ""}</span></button>`).join("")}</div>`;
+const picked = () => { const o = app.querySelector(".opt.on"); return o ? o.dataset.v : ""; };
+app.addEventListener("click", e => {
+  const o = e.target.closest(".opt");
+  if (!o) return;
+  app.querySelectorAll(".opt").forEach(x => { x.classList.toggle("on", x === o); x.setAttribute("aria-checked", x === o); });
+  const s = app.querySelector("[data-needs-pick]");
+  if (s) s.disabled = false;
+});
+// A two-way switch, as one pill.
+const seg = (action, opts, cur) => `<div class="seg2">${opts.map(([v, label]) =>
+  `<button data-a="${action}" data-v="${v}" class="${v === cur ? "on" : ""}">${label}</button>`).join("")}</div>`;
+let moreOpen = false;            // "More rules" stays open across redraws
 
 let G = null;           // the round in play
 let coolTimer = null;
@@ -475,7 +533,7 @@ function home() {
 function setup() {
   redraw = setup;
   clampSetup();
-  const maxImp = Math.max(1, Math.floor(S.players / 2));
+  const maxImp = impMax(S.players);
   const stepper = (key, v, lo, hi, zero) =>
     `<div class="step"><button data-a="dec" data-k="${key}" ${v <= lo ? "disabled" : ""} aria-label="Fewer">&minus;</button>
      <output>${v === 0 && zero ? zero : v}</output>
@@ -484,20 +542,22 @@ function setup() {
     ${topBar("home", S.word ? "Word" : "Tag", "")}
     <div class="grow" style="justify-content:flex-start;gap:12px">
       <div class="row"><div><b>Players</b><div class="sub">3 to 15</div></div>${stepper("players", S.players, 3, 15)}</div>
-      <div class="row"><div><b>Imposters</b><div class="sub">up to half the players</div></div>${stepper("imps", S.imps, 1, maxImp)}</div>
+      <div class="row"><div><b>Imposters</b><div class="sub">fewer than the crew</div></div>${stepper("imps", S.imps, 1, maxImp)}</div>
       ${S.word
-        ? `<div class="row"><div><b>Hint word</b><div class="sub">${S.hint ? "Imposter gets a hint" : "Imposter: no hint"}</div></div>
-           <button class="tog ${S.hint ? "on" : ""}" data-a="hint" aria-pressed="${S.hint}">${S.hint ? "On" : "Off"}</button></div>`
+        ? `<div class="row"><div><b>Hint</b><div class="sub">for the imposter</div></div>${seg("hint", [["on", "On"], ["off", "Off"]], S.hint ? "on" : "off")}</div>`
         : `<div class="row"><div><b>Meetings</b><div class="sub">total for the group</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>
-           <div class="row"><div><b>Per player</b><div class="sub">${S.each ? "most one player can call" : "no limit per player"}</div></div>${stepper("each", S.each, 0, 3, "Off")}</div>
-           <div class="row"><div><b>Voting</b><div class="sub">${S.vote === "loud" ? "talk it out, then tap who's out" : "pass the phone, everyone votes"}</div></div>
-             <button class="tog on" data-a="vote-mode">${S.vote === "loud" ? "Out loud" : "On phone"}</button></div>
-           <div class="row"><div><b>Tag timer</b><div class="sub">${S.timer ? "imposters tap it after a tag" : "off: tapping it would give them away"}</div></div>
-             <button class="tog ${S.timer ? "on" : ""}" data-a="timer-mode">${S.timer ? "On" : "Off"}</button></div>`}
+           <details class="more" ${moreOpen ? "open" : ""}><summary><span><b>More rules</b>
+             <small>${S.vote === "loud" ? "Vote out loud" : "Vote on the phone"}, timer ${S.timer ? "on" : "off"}${S.each ? ", " + S.each + " meeting" + (S.each === 1 ? "" : "s") + " each" : ""}</small></span></summary>
+             <div class="row"><div><b>Voting</b></div>${seg("vote-mode", [["phone", "On phone"], ["loud", "Out loud"]], S.vote)}</div>
+             <div class="row"><div><b>Tag timer</b><div class="sub">tapping it shows who tagged</div></div>${seg("timer-mode", [["off", "Off"], ["on", "On"]], S.timer ? "on" : "off")}</div>
+             <div class="row"><div><b>Meetings each</b><div class="sub">most one player can call</div></div>${stepper("each", S.each, 0, 3, "Any")}</div>
+           </details>`}
       ${S.word ? `<button class="go" data-a="cats"><span><b>Categories</b><span class="sub">${catsLabel()}</span></span><span class="arr">&rsaquo;</span></button>` : ""}
       <button class="go" data-a="names"><span><b>Player names</b><span class="sub">${namedCount() ? namedCount() + " of " + S.players + " named" : "Optional"}</span></span><span class="arr">&rsaquo;</span></button>
     </div>
     <button class="bar" data-a="start">START</button>`;
+  const d = app.querySelector(".more");
+  if (d) d.addEventListener("toggle", () => { moreOpen = d.open; });
 }
 
 function catsLabel() {
@@ -761,16 +821,16 @@ function mvPass() {
 function mvVote() {
   const M = G.mv, who = M.order[M.i];
   redraw = mvVote;
-  const opts = alive().filter(i => i !== who).map(i =>
-    `<button class="go" data-a="mv-pick" data-v="${i}"><span><b>${esc(pname(i))}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+  const items = alive().filter(i => i !== who).map(i => ({ v: i, label: esc(pname(i)) }))
+    .concat([{ v: "skip", label: "Skip vote", cls: "skip" }]);
   app.innerHTML = `
-    ${topBar("", "", "")}
+    ${topBar("", "Vote " + (M.i + 1) + " of " + M.order.length, "")}
     <div class="list">
-      <h2>${esc(pname(who))}, who do you vote out?</h2>
-      <div class="names">${opts}</div>
-      <div class="btns"><button class="bar ghost slim" data-a="mv-pick" data-v="skip">Skip vote</button>
-        <button class="bar ghost slim" data-a="mv-pick" data-v="tagged">I got tagged</button></div>
-    </div>`;
+      <h2 class="ask">${esc(pname(who))}, who do you vote out?</h2>
+      ${pickList(items)}
+      <button class="textbtn" data-a="mv-pick" data-v="tagged">I got tagged, so I'm out</button>
+    </div>
+    <button class="bar" data-a="mv-submit" data-needs-pick disabled>Submit vote</button>`;
 }
 function mvCount() {
   const M = G.mv, t = {}; let skips = 0;
@@ -785,15 +845,15 @@ function mvCount() {
 }
 function mvLoud() {
   redraw = mvLoud;
-  const opts = alive().map(i =>
-    `<button class="go" data-a="mv-out" data-v="${i}"><span><b>${esc(pname(i))}</b></span><span class="arr">&rsaquo;</span></button>`).join("");
+  const items = alive().map(i => ({ v: i, label: esc(pname(i)) }))
+    .concat([{ v: "none", label: "Nobody", sub: "skipped or a tie", cls: "skip" }]);
   app.innerHTML = `
     ${topBar("", "", "")}
     <div class="list">
-      <h2>Who got voted out?</h2>
-      <div class="names">${opts}</div>
-      <button class="bar ghost slim" data-a="mv-out" data-v="none">Nobody (skipped or a tie)</button>
-    </div>`;
+      <h2 class="ask">Who got voted out?</h2>
+      ${pickList(items)}
+    </div>
+    <button class="bar" data-a="mv-out" data-needs-pick disabled>Done</button>`;
 }
 function mvResult(res) {
   redraw = () => mvResult(res);
@@ -901,7 +961,7 @@ app.addEventListener("click", e => {
   if (a === "inc" || a === "dec") {
     S[b.dataset.k] += a === "inc" ? 1 : -1; clampSetup(); saveSetup(); return setup();
   }
-  if (a === "hint")     { S.hint = !S.hint; saveSetup(); return setup(); }
+  if (a === "hint")     { S.hint = b.dataset.v ? b.dataset.v === "on" : !S.hint; saveSetup(); return setup(); }
   if (a === "start")    { deal(); return pass(); }
   if (a === "view")     return card();
   if (a === "next")     { G.idx++; return G.idx >= S.players ? started() : pass(); }
@@ -918,19 +978,21 @@ app.addEventListener("click", e => {
   if (a === "hush")     return Siren.stop();
   if (a === "play")     { Siren.stop(); return play(); }
   if (a === "reveal-ask") return revealAsk();
-  if (a === "timer-mode") { S.timer = !S.timer; saveSetup(); return setup(); }
-  if (a === "vote-mode") { S.vote = S.vote === "loud" ? "phone" : "loud"; saveSetup(); return setup(); }
+  if (a === "timer-mode") { S.timer = b.dataset.v ? b.dataset.v === "on" : !S.timer; saveSetup(); return setup(); }
+  if (a === "vote-mode") { S.vote = b.dataset.v || (S.vote === "loud" ? "phone" : "loud"); saveSetup(); return setup(); }
   if (a === "mv-start") { Siren.stop(); G.mv = { order: alive(), i: 0, votes: {} }; return mvPass(); }
   if (a === "mv-ready") return mvVote();
-  if (a === "mv-pick")  {
-    const M = G.mv, who = M.order[M.i], v = b.dataset.v;
+  if (a === "mv-pick" || a === "mv-submit") {
+    const M = G.mv, who = M.order[M.i], v = a === "mv-submit" ? picked() : b.dataset.v;
+    if (!v) return;
     M.votes[who] = v;
     if (v === "tagged") G.out[who] = true;
     M.i++; return mvPass();
   }
   if (a === "mv-loud")  { Siren.stop(); return mvLoud(); }
   if (a === "mv-out")   {
-    const v = b.dataset.v, i = v === "none" ? -1 : +v;
+    const v = picked(); if (!v) return;
+    const i = v === "none" ? -1 : +v;
     if (i >= 0) G.out[i] = true;
     return mvResult({ outIdx: i });
   }
