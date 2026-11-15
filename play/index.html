@@ -27,6 +27,8 @@
   --disp:"Fredoka",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* Tapping through players fast was zooming the page in (double-tap zoom). */
+html,body,button,a,input,label{touch-action:manipulation}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--disp);
   -webkit-font-smoothing:antialiased;height:100%}
 body{display:flex;justify-content:center}
