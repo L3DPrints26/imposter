@@ -364,3 +364,7 @@ footer a:hover{color:var(--text)}
    the description, so they need their own full-strength color back. */
 .mode b,.fix b{color:var(--text)}
 .report .opt span{font:400 15px/1.4 var(--sans)}
+
+/* Inside the iPhone app the page runs under the status bar (viewport-fit=cover),
+   so the sticky bar keeps clear of the clock. In a normal browser this is 0. */
+.bar{padding-top:env(safe-area-inset-top)}
