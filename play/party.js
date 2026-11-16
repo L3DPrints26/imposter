@@ -668,7 +668,7 @@
     view(`${bar("p-on", "")}
       <div class="grow">
         <h2>End the round?</h2>
-        <p class="c mut">This shows everyone who the imposters were.</p>
+        <p class="c mut">${P.round && P.round.mode === "word" ? "This shows everyone the word and who the imposters were." : "This shows everyone who the imposters were."}</p>
         <button class="bar ghost" data-a="p-reveal-yes" style="margin-top:8px">Yes, reveal</button>
       </div>
       <button class="bar" data-a="p-on">Keep playing</button>`, revealAsk, "ask");
@@ -949,7 +949,7 @@
       const R = P.round; R.phase = "on"; R.result = null; R.graceEnd = Date.now() + GRACE * 1000;
       return syncAll();
     }
-    if (a === "p-reveal") return P.round && P.round.mode === "tag" ? revealAsk() : revealNow();
+    if (a === "p-reveal") return revealAsk();
     if (a === "p-reveal-yes") return revealNow();
     if (a === "p-again") {
       P.round = null;

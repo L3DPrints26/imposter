@@ -776,7 +776,7 @@ function started() {
       <p class="c mut small">Go around the circle, one word each. Talk it over, then point on
       three. Tap Reveal when you've voted.</p>
     </div>
-    <button class="bar" data-a="reveal">Reveal</button>`;
+    <button class="bar" data-a="reveal-ask">Reveal</button>`;
 }
 
 function play() {
@@ -958,18 +958,19 @@ function mvResult(res) {
     </div>
     ${win ? '<button class="bar" data-a="reveal">Reveal</button>' : '<button class="bar" data-a="mv-done">Back to the game</button>'}`;
 }
-// Reveal asks first in Tag: the button sits where "Back to the game" was.
+// Reveal always asks first, so a stray or double tap can't end the round.
 function revealAsk() {
   redraw = revealAsk;
   clearCool();
+  const back = S.word ? "started" : "play";
   app.innerHTML = `
-    ${topBar("play", "", "")}
+    ${topBar(back, "", "")}
     <div class="grow">
       <h2>End the round?</h2>
-      <p class="c mut">This shows who the imposters were.</p>
+      <p class="c mut">${S.word ? "This shows the word and who the imposters were." : "This shows who the imposters were."}</p>
       <button class="bar ghost" data-a="reveal" style="margin-top:8px">Yes, reveal</button>
     </div>
-    <button class="bar" data-a="play">Keep playing</button>`;
+    <button class="bar" data-a="${back}">Keep playing</button>`;
 }
 
 function clearCool() { if (coolTimer) { clearInterval(coolTimer); coolTimer = null; } }
@@ -1063,6 +1064,7 @@ app.addEventListener("click", e => {
   if (a === "hush")     return Siren.stop();
   if (a === "play")     { Siren.stop(); return play(); }
   if (a === "reveal-ask") return revealAsk();
+  if (a === "started")  return started();
   if (a === "timer-mode") { S.timer = b.dataset.v ? b.dataset.v === "on" : !S.timer; saveSetup(); return setup(); }
   if (a === "vote-mode") { S.vote = b.dataset.v || (S.vote === "loud" ? "phone" : "loud"); saveSetup(); return setup(); }
   if (a === "mv-start") { Siren.stop(); G.mv = { order: alive(), i: 0, votes: {} }; return mvPass(); }
