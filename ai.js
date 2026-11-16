@@ -361,7 +361,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
 .aibubble .aiorb{width:60px;height:60px}
 .aibubble:active .aiorb,.aibtn:active .aiorb{transform:scale(.92)}
 @media(min-width:900px){.aibubble{bottom:28px;right:28px}}
-.aiwrap{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+.aiwrap{position:fixed;left:0;right:0;top:0;height:100%;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
   padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:rgba(3,4,16,.62);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 .aisheet{position:relative;display:flex;flex-direction:column;width:100%;max-width:520px;max-height:86%;overflow:hidden;
   border-radius:30px;color:#F2F4F8;font-family:inherit;
@@ -420,6 +420,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
   function close() {
     if (!sheet) return;
     sheet.remove(); sheet = null;
+    document.documentElement.style.overflow = "";
     document.removeEventListener("keydown", onKey);
   }
   const onKey = e => { if (e.key === "Escape") close(); };
@@ -432,16 +433,19 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     sheet.addEventListener("click", e => { if (e.target === sheet || e.target.closest("[data-x]")) close(); });
     document.body.appendChild(sheet);
     document.addEventListener("keydown", onKey);
-    // Keep the box above the keyboard.
-    const vv = window.visualViewport, box = sheet.firstElementChild;
+    // ⚠ The keyboard: the overlay covers exactly the part of the screen you
+    // can see, so the chat sits right above the keyboard. Build 23 added the
+    // keyboard height on top of iOS sliding the page, which pushed the chat
+    // off the top. (The app also shrinks itself for the keyboard natively.)
+    const vv = window.visualViewport, box = sheet.firstElementChild, wrap = sheet;
+    document.documentElement.style.overflow = "hidden";
     if (vv) {
       const fit = () => {
-        if (!sheet) return vv.removeEventListener("resize", fit);
-        const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-        box.style.marginBottom = kb + "px";
-        box.style.maxHeight = Math.max(240, vv.height - 48) + "px";
+        if (!sheet) { vv.removeEventListener("resize", fit); vv.removeEventListener("scroll", fit); return; }
+        wrap.style.top = vv.offsetTop + "px";
+        wrap.style.height = vv.height + "px";
       };
-      vv.addEventListener("resize", fit); fit();
+      vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); fit();
     }
     return box;
   }
