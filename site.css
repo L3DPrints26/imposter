@@ -412,4 +412,9 @@ body{background:
 /* tab bar: glass, with Play as a raised gold button */
 .tabbar{background:rgba(12,13,34,.9);border-top-color:rgba(53,232,255,.16)}
 .tabbar a.play .disc{background:linear-gradient(180deg,#FFE070,#F2A900);box-shadow:0 0 0 5px #0C0D22,0 4px 0 5px #0C0D22,0 8px 20px rgba(255,180,0,.3)}
+/* the Word / Tag switch on How to play: the one not picked still looks tappable */
+.seg{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+.seg button:not([aria-selected="true"]){background:linear-gradient(180deg,#252A62,#1A1E48);border:1px solid rgba(53,232,255,.26);color:#D6FAFF}
+.seg button:not([aria-selected="true"]) svg{color:var(--cyan)}
+.seg button[aria-selected="true"]{box-shadow:0 4px 0 rgba(0,0,0,.35)}
 @media (prefers-reduced-motion:reduce){.cta,.mode{transition:none}}

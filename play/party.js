@@ -81,6 +81,12 @@
   });
 
   const attr = (sel, k) => { const e = $p(sel); return e ? e.dataset[k] || "" : ""; };
+  const loadOn = text => { if (window.Loader && P) { P.loading = true; P.loadAt = Date.now(); Loader.show(text); } };
+  const loadOff = () => {
+    if (!P || !P.loading || !window.Loader) return;
+    P.loading = false;
+    setTimeout(() => Loader.hide(), Math.max(0, 1100 - (Date.now() - P.loadAt)));
+  };
   function view(html, redrawFn, screen) {
     // A redraw of the same screen (a vote came in, someone rejoined) keeps what
     // this phone was in the middle of: a checked name, a half-typed clue.
@@ -89,6 +95,7 @@
     stopTick();
     window.onblur = null; document.onvisibilitychange = null;
     if (P) P.screen = screen || "";
+    if (screen) loadOff();                 // a real screen is up: the loading screen can go
     redraw = redrawFn || (() => {});
     app.innerHTML = html;
     if (!keep) return;
@@ -149,6 +156,7 @@
     P = { role: "host", me: { id: "host", name }, set: loadSet(), conns: new Map(), banned: new Set(), locked: false,
           players: [{ id: "host", name, kind: "host", on: true }], round: null, code: "", peer: null };
     view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Making your party...</p></div>`);
+    loadOn("Making your party");
     openAs(0);
   }
   // keep: the code to reuse when the host's phone wakes back up, so the
@@ -268,10 +276,10 @@
     if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Where is everyone?</span>${seg("p-where", [["here", "Same room"], ["far", "Far apart"]], mode === "far" ? "far" : "here")}</div>`);
     rules.push(`<div class="rcard"><span class="rl">Imposters</span>${far ? mini("imps", 1, 1, 1) : mini("imps", S2.imps, 1, maxImp)}</div>`);
     if (mode !== "tag") rules.push(`<div class="rcard"><span class="rl">Imposter hint</span>${seg("p-hint", [["on", "On"], ["off", "Off"]], S2.hint ? "on" : "off")}</div>`);
-    if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues each</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
+    if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues per player</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
     if (mode === "tag") rules.push(`<div class="rcard"><span class="rl">Meetings</span>${mini("meetings", S2.meetings, 0, 9)}</div>`,
       `<div class="rcard"><span class="rl">Voting</span>${seg("p-vmode", [["phone", "Phones"], ["loud", "Out loud"]], S2.vote === "loud" ? "loud" : "phone")}</div>`,
-      `<div class="rcard"><span class="rl">Meetings each</span>${mini("each", S2.each, 0, 3, "Any")}</div>`);
+      `<div class="rcard"><span class="rl">Meetings per player</span>${mini("each", S2.each, 0, 3, "Any")}</div>`);
     view(`${bar("p-end", "Your party")}
       <div class="list" style="gap:8px">
         <div class="hero">
@@ -287,7 +295,7 @@
         </div>
 
         <p class="sec">Players <span>${P.players.length}</span></p>
-        <div class="avs">${bubbles(P.players, true)}<button class="av add" data-a="p-add"><i>+</i><span>Add</span><em>no phone</em></button></div>
+        <div class="avs">${bubbles(P.players, true)}<button class="av add" data-a="p-add"><i>+</i><span>Add</span><em>on your phone</em></button></div>
 
         <p class="sec">Game</p>
         <div class="gmodes">
@@ -376,7 +384,7 @@
     view(`${bar("")}
       <div class="grow">
         <p class="c mut" style="font-size:20px;font-weight:600">Hand your phone to</p>
-        <p class="who">${esc(pl.name)}</p>
+        <div class="whobox">${avatar(pl.name, "lg")}<p class="who">${esc(pl.name)}</p></div>
       </div>
       <button class="bar" data-a="p-handed">Then tap here</button>`, () => {}, "pass");
     P.afterHand = () => showCard(R.cards[id], esc(pl.name) + "'s card", nextHostCard, R);
@@ -498,7 +506,7 @@
       const canEm = R.meetLeft > 0 && mine.some(id => !isOut(id) && (!R.each || usedBy(id) < R.each));
       body = `<div class="calls">
           <button class="call em" data-a="p-meet" ${canEm ? "" : "disabled"}>${I.alarm}<span class="k">Emergency meeting</span>
-            <span class="s">${R.meetLeft} left${R.each ? ", " + R.each + " each" : ""}</span></button>
+            <span class="s">${R.meetLeft} left${R.each ? " &middot; " + R.each + " per player" : ""}</span></button>
           <button class="call body" data-a="p-body" ${meOut ? "disabled" : ""}>${I.alert}<span class="k">Report a body</span><span class="s">${meOut ? "you're out" : "free, any time"}</span></button>
         </div>
         ${coolTile(R)}`;
@@ -539,7 +547,7 @@
       const next = here.find(id => !voted(id));
       if (next) {
         body = `<h2 class="ask">${next === me ? "Who's the imposter?" : esc(nameOf(next)) + ", who's the imposter?"}</h2>
-          ${pickList(people.filter(x => x.id !== next).map(x => ({ v: x.id, label: esc(x.name) })))}`;
+          ${pickList(people.filter(x => x.id !== next).map(x => ({ v: x.id, label: esc(x.name), av: x.name })))}`;
         foot = `<button class="bar" data-a="p-fv" data-by="${next}" data-needs-pick disabled>Submit vote</button>`;
       } else {
         const inn = isHost ? Object.keys(R.votes).length : R.votesIn, need = isHost ? R.order.length : R.votesNeeded;
@@ -613,7 +621,7 @@
     const rows = mine.map(p => {
       const ok = !isOut(p.id) && (!R.each || (R.used[p.id] || 0) < R.each);
       return `<button class="go" data-a="p-meet-by" data-id="${p.id}" ${ok ? "" : "disabled"}><span><b>${esc(p.name)}</b>
-        <span class="sub">${R.each ? (ok ? (R.each - (R.used[p.id] || 0)) + " left" : "used up") : ""}</span></span></button>`;
+        <span class="sub">${isOut(p.id) ? "Out of the game" : meetsLeft(R.each, R.used[p.id] || 0)}</span></span></button>`;
     }).join("");
     view(`${bar("p-on", "Meeting")}<div class="list"><h2>Who's calling it?</h2>
       <p class="c mut small">People with their own phone call it from there.</p><div class="names">${rows}</div></div>`, hostMeetPick, "pick");
@@ -698,7 +706,7 @@
     if (next) {
       const ids = R.order || (R.people || []).map(x => x.id);
       const nextImp = isHost ? !!(R.cards[next] && R.cards[next].imp) : !!(R.card && R.card.imp);
-      const items = ids.filter(id => !isOut(id) && id !== next).map(id => ({ v: id, label: esc(nameOf(id)) }))
+      const items = ids.filter(id => !isOut(id) && id !== next).map(id => ({ v: id, label: esc(nameOf(id)), av: nameOf(id) }))
         .concat([{ v: "skip", label: "Skip vote", cls: "skip" }])
         .concat(nextImp ? [] : [{ v: "tagged", label: "I got tagged", sub: "so I'm out", cls: "skip" }]);
       body = `<h2 class="ask">${next === me ? "Who do you vote out?" : esc(nameOf(next)) + ", who do you vote out?"}</h2>
@@ -717,12 +725,12 @@
     const R = P.round;
     view(`${bar("p-meeting", "")}<div class="list"><h2 class="ask">Anyone tagged?</h2>
       <p class="c mut small">Check everyone who got tagged. Nobody? Just tap Next.</p>
-      ${pickList(aliveIds().map(id => ({ v: id, label: esc(nameOf(id)), cls: (R.tg || []).includes(id) ? "on" : "" })), true)}</div>
+      ${pickList(aliveIds().map(id => ({ v: id, label: esc(nameOf(id)), av: nameOf(id), cls: (R.tg || []).includes(id) ? "on" : "" })), true)}</div>
       <button class="bar" data-a="p-mv-tagged">Next</button>`, loudTagged, "loudtag");
   }
   function loudPick() {
     const R = P.round;
-    const items = aliveIds().filter(id => !(R.tg || []).includes(id)).map(id => ({ v: id, label: esc(nameOf(id)) }))
+    const items = aliveIds().filter(id => !(R.tg || []).includes(id)).map(id => ({ v: id, label: esc(nameOf(id)), av: nameOf(id) }))
       .concat([{ v: "none", label: "Nobody", sub: "skipped or a tie", cls: "skip" }]);
     view(`${bar("p-mv-loud", "")}<div class="list"><h2 class="ask">Who got voted out?</h2>${pickList(items)}</div>
       <button class="bar" data-a="p-mv-out" data-needs-pick disabled>Done</button>`, loudPick, "loudpick");
@@ -733,7 +741,7 @@
       <div class="grow">
         <p class="c" style="font-size:20px;font-weight:700;color:var(--acc);letter-spacing:.08em">VOTE RESULT</p>
         ${r.early ? '<p class="who">Vote stopped</p>'
-          : `<p class="who">${r.out ? esc(r.out) : "No one"}</p><p class="c mut" style="font-size:18px">was voted out</p>`}
+          : `<div class="whobox">${r.out ? avatar(r.out, "lg") : ""}<p class="who">${r.out ? esc(r.out) : "No one"}</p></div><p class="c mut" style="font-size:18px">was voted out</p>`}
         ${r.tally && r.tally.length ? `<p class="c mut small">${r.tally.map(esc).join(" &nbsp;·&nbsp; ")}</p>` : ""}
         ${r.win ? `<p class="c" style="font-size:22px;font-weight:700;color:var(${r.win === "crew" ? "--crew" : "--imp"})">${
             r.win === "crew" ? "That was the last imposter. Crew win!" : "Imposters win! There are at least as many of them as crew."}</p>`
@@ -772,7 +780,7 @@
             r.out ? esc(r.out) + " was voted out. " + (r.caught ? "Crew win!" : "Wrong one. Imposters win!") : (r.tally && r.tally.length ? "It's a tie, so nobody's out. Imposters win!" : "No votes, so nobody's out. Imposters win!")}</p>
           <p class="c mut small">${(r.tally || []).map(x => esc(x.name) + " " + x.votes).join(" &nbsp;·&nbsp; ")}</p>` : ""}
         <p class="c mut" style="font-size:20px;font-weight:600;margin-top:10px">${r.imps.length === 1 ? "Imposter" : "Imposters"}</p>
-        <p class="c" style="font-size:36px;font-weight:700;color:var(--imp);text-wrap:balance">${r.imps.map(esc).join(", ")}</p>
+        <div class="imps">${r.imps.map(n => `<span>${avatar(n, "md")}${esc(n)}</span>`).join("")}</div>
       </div>
       ${isHost ? '<button class="bar" data-a="p-again">Next game</button>' : '<p class="c mut small" style="margin:8px 0">Waiting for the host to start the next game.</p>'}`,
       () => reveal(r), "reveal");
@@ -801,6 +809,7 @@
     store.set("imp_party_code", code);
     P.code = code;
     view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Joining ${esc(code)}...</p></div>`);
+    loadOn("Joining " + code);
     connectGuest();
   }
   function connectGuest() {
@@ -918,6 +927,7 @@
     home();
   }
   function fail(why) {
+    loadOff();
     try { P && P.peer && P.peer.destroy(); } catch (_) {}
     P = null;
     view(`${bar("p-start")}<div class="grow"><h2>Couldn't start a party</h2><p class="c mut">${esc(why)}</p></div>`);
@@ -1057,6 +1067,7 @@
     P = { role: "guest", me: { id: "", name }, players: [], set: {}, round: null, code, peer: null, conn: null };
     store.set("imp_party_code", code);
     view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Joining ${esc(code)}...</p></div>`);
+    loadOn("Joining " + code);
     connectGuest();
   }
   function fromLink(code) { nameScreen(name => linkGo(code, name)); }

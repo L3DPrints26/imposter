@@ -29,7 +29,7 @@
       const C = window.Capacitor;
       if (!C || !C.isNativePlatform || !C.isNativePlatform() || typeof C.nativePromise !== "function") return null;
       const call = m => o => C.nativePromise("ImpNative", m, o || {});
-      return { aiStatus: call("aiStatus"), aiAsk: call("aiAsk"), aiReset: call("aiReset") };
+      return { aiStatus: call("aiStatus"), aiAsk: call("aiAsk"), aiReset: call("aiReset"), aiWarm: call("aiWarm") };
     } catch (_) { return null; }
   })();
   let status = NATIVE ? "checking" : "web";
@@ -128,7 +128,7 @@ Cards: "Hand the phone to [name]", that player taps "Then tap here", holds "HOLD
 Crew win if they vote out every imposter. Imposters win if they survive the vote. Optional house rule: a voted-out imposter still wins by naming the word.
 
 TAG (outside)
-Setup: Home > "Tag". Players, Imposters, Meetings (0 to 9, shared by the group). "More rules": Voting ("On phone" or "Out loud"), Tag timer (off by default. On one shared phone, people could see who taps it, so imposters count the cooldown in their heads. Turning it on is fine in Play together, where each imposter has their own phone), Meetings each (the most one player can call; Any means no limit).
+Setup: Home > "Tag". Players, Imposters, Meetings (0 to 9, shared by the group). "More rules": Voting ("On phone" or "Out loud"), Tag timer (off by default. On one shared phone, people could see who taps it, so imposters count the cooldown in their heads. Turning it on is fine in Play together, where each imposter has their own phone), "Meetings per player" (the most one player can call; Any means no limit).
 Cards say CREW or IMPOSTER. Then leave the phone where everyone can reach it.
 Imposters tag people by touching them, so Tag needs everyone in the same place. Tag can't be played far apart. A tagged player lies down right there. After a tag, an imposter waits out the tag cooldown before tagging again: 45 seconds with 3 to 6 players, 30 with 7 to 10, 20 with 11 to 15, plus 10 more for each imposter after the first.
 "Report a body" is free, any time. "Emergency meeting" uses one of the group's meetings and asks "Who's calling it?". A siren plays for 8 seconds; "Stop the siren" on the meeting screen stops it sooner. "Called by mistake? Cancel it" gives the meeting back.
@@ -337,6 +337,13 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
   try { log = JSON.parse(sessionStorage.getItem(LOG_KEY) || "[]"); } catch (_) {}
   const saveLog = () => { try { sessionStorage.setItem(LOG_KEY, JSON.stringify(log.slice(-30))); } catch (_) {} };
   let lastFacts = "", busy = false, sheet = null;
+  // Start the model loading the moment the chat opens (a cold start was 6+ s).
+  let warmed = false;
+  const warm = () => {
+    if (warmed || log.some(m => m.who === "ai")) return;
+    warmed = true;
+    try { const p = nat().aiWarm && nat().aiWarm({ instructions: RULES }); if (p && p.catch) p.catch(() => { warmed = false; }); } catch (_) { warmed = false; }
+  };
 
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   // Plain text in, a few line breaks and bullets out.
@@ -516,12 +523,13 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
       const c = e.target.closest("[data-chip]");
       if (c && !busy) return ask(c.dataset.chip);
       if (e.target.closest("[data-new]")) {
-        log = []; lastFacts = ""; saveLog();
-        try { nat().aiReset(); } catch (_) {}
+        log = []; lastFacts = ""; saveLog(); warmed = false;
+        try { const r = nat().aiReset(); if (r && r.then) r.then(warm, warm); } catch (_) {}
         render();
       }
     });
     render();
+    warm();
   }
 
   // The on-device model sometimes echoes the prompt's labels ("Facts:",
@@ -541,7 +549,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     busy = true; render();
     const math = questionMath(text);
     const now = facts() + (math.length ? "\nWorked out for this question: " + math.join(" ") : "");
-    const fresh = !log.some(m => m.who === "ai");
+    const fresh = !log.some(m => m.who === "ai") && !warmed;
     const prompt = (now === lastFacts && !fresh ? "Facts: same as before.\n\n" : "Facts:\n" + now + "\n\n") + "Question: " + text;
     let reply;
     try {
