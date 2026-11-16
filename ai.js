@@ -20,36 +20,82 @@
   "use strict";
 
   /* ------------------------------------------------------------ native */
+  // ⚠ This app ships the plain site, not Capacitor's JS library, so there is no
+  // Capacitor.registerPlugin (build 22's AI never connected because of that).
+  // The native bridge always has nativePromise, so calls go through it.
   const NATIVE = (() => {
     try {
       if (typeof Native !== "undefined" && Native) return Native;      // the play page made it already
       const C = window.Capacitor;
-      return C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin("ImpNative") : null;
+      if (!C || !C.isNativePlatform || !C.isNativePlatform() || typeof C.nativePromise !== "function") return null;
+      const call = m => o => C.nativePromise("ImpNative", m, o || {});
+      return { aiStatus: call("aiStatus"), aiAsk: call("aiAsk"), aiReset: call("aiReset") };
     } catch (_) { return null; }
   })();
   let status = NATIVE ? "checking" : "web";
   // Tests in a desktop browser can stand in for the iPhone's model.
   const nat = () => window.IMP_AI_MOCK || NATIVE;
 
+  // What's missing, and exactly how to fix it. Apple doesn't let apps open
+  // the Apple Intelligence setting directly, so the steps start at Settings.
+  const SETTINGS = 'Open <b>Settings</b>, the gray gear app on your Home Screen.';
   const WHY = {
-    web:   ["AI help is in the iPhone app", "It runs on the iPhone itself, so it needs the Pocket Imposter app on an iPhone 15 Pro or newer with Apple Intelligence on."],
-    os:    ["Update your iPhone first", "AI help runs on the phone itself. It needs iOS 26 or newer, on an iPhone 15 Pro or newer, with Apple Intelligence on."],
-    device:["AI help needs iPhone 15 Pro or newer", "This iPhone can't run Apple's on-device AI. Everything else in the app works the same."],
-    off:   ["Turn on Apple Intelligence", "Open Settings, then Apple Intelligence & Siri, and switch it on. Then come back and tap Ask."],
-    downloading: ["Almost ready", "Apple Intelligence is still downloading to this iPhone. Try again in a few minutes."],
-    language: ["Not in this language yet", "Apple's on-device AI doesn't support this iPhone's language yet. Switching the iPhone to English works."],
-    unavailable: ["AI help isn't available", "Apple Intelligence isn't available on this iPhone right now."],
-    checking: ["One sec", "Checking if this iPhone can run AI help."]
+    web: { t: "AI help is in the iPhone app",
+      p: "It runs on the iPhone itself, so it needs the Pocket Imposter app on an iPhone 15 Pro or newer, with Apple Intelligence on." },
+    update: { t: "Update Pocket Imposter",
+      p: "This copy of the app doesn't have the AI part yet.",
+      steps: ["Open the <b>TestFlight</b> app.", "Tap <b>Pocket Imposter</b>, then <b>Update</b>.", "Open Pocket Imposter again and tap the bubble."] },
+    os: { t: "Update your iPhone first",
+      p: "This iPhone can run AI help, but it needs iOS 26 or newer.",
+      steps: [SETTINGS, "Tap <b>General</b>, then <b>Software Update</b>.", "Tap <b>Update Now</b> and let the iPhone restart.",
+              "Then turn on Apple Intelligence: <b>Settings</b> &rsaquo; <b>Apple Intelligence &amp; Siri</b> &rsaquo; turn on <b>Apple Intelligence</b>.",
+              "Come back here and tap <b>Check again</b>."], again: true },
+    device: { t: "AI help needs a newer iPhone",
+      p: "Apple's on-device AI runs on iPhone 15 Pro, 15 Pro Max, every iPhone 16 and 17, and iPhone Air. Everything else in the app works the same.",
+      steps: ["To see which iPhone this is: <b>Settings</b> &rsaquo; <b>General</b> &rsaquo; <b>About</b> &rsaquo; <b>Model Name</b>."] },
+    off: { t: "Turn on Apple Intelligence",
+      p: "This iPhone can run AI help. Apple Intelligence just has to be switched on.",
+      steps: [SETTINGS, "Scroll down and tap <b>Apple Intelligence &amp; Siri</b>.",
+              "Tap the <b>Apple Intelligence</b> switch so it turns green, and follow what it says on screen.",
+              "Stay on Wi-Fi while it downloads. It can take a few minutes.",
+              "Come back here and tap <b>Check again</b>."], again: true },
+    downloading: { t: "Almost ready",
+      p: "Apple Intelligence is on, but it's still downloading to this iPhone.",
+      steps: ["Keep the iPhone on Wi-Fi. Plugging it in speeds it up.",
+              "To see how it's going: <b>Settings</b> &rsaquo; <b>Apple Intelligence &amp; Siri</b>.",
+              "When it's done, come back and tap <b>Check again</b>."], again: true },
+    language: { t: "Change the iPhone's language",
+      p: "Apple Intelligence doesn't support the language this iPhone is set to.",
+      steps: [SETTINGS, "Tap <b>General</b>, then <b>Language &amp; Region</b>, and set <b>iPhone Language</b> to English.",
+              "Go back to Settings, tap <b>Apple Intelligence &amp; Siri</b>, and set its <b>Language</b> to English too.",
+              "Come back here and tap <b>Check again</b>."], again: true },
+    unavailable: { t: "AI help isn't available right now",
+      p: "Apple Intelligence can't run on this iPhone at the moment.",
+      steps: [SETTINGS, "Tap <b>Apple Intelligence &amp; Siri</b> and check that <b>Apple Intelligence</b> is on.",
+              "Come back here and tap <b>Check again</b>."], again: true },
+    checking: { t: "One sec", p: "Checking if this iPhone can run AI help." }
   };
 
-  async function check() {
-    if (!nat()) return setStatus("web");
-    try { const r = await nat().aiStatus(); setStatus(r && r.status || "unavailable"); }
-    catch (_) { setStatus("os"); }       // an older build without the AI part
+  // iPhone 15 Pro is "iPhone16,1"; every model since is 16 or higher.
+  const newEnough = m => { const x = /^iPhone(\d+),/.exec(m || ""); return !x || +x[1] >= 16; };
+  let checking = null;
+  function check() {
+    checking = (async () => {
+      if (!nat()) return setStatus("web");
+      try {
+        const r = await nat().aiStatus();
+        let st = (r && r.status) || "unavailable";
+        if (st === "os" && !newEnough(r.machine)) st = "device";
+        setStatus(st);
+      } catch (_) {
+        setStatus("update");      // the app's AI part isn't there: don't blame the phone
+      }
+    })();
+    return checking;
   }
-  function setStatus(s) {
-    status = s;
-    document.documentElement.classList.toggle("ai-off", s !== "ready");
+  function setStatus(st) {
+    status = st;
+    document.documentElement.classList.toggle("ai-off", st !== "ready");
   }
   document.documentElement.classList.add("ai-off");
   check();
@@ -299,46 +345,74 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
   const SPARK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.5l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9zM18.5 15l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"/></svg>';
   const SEND = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>';
 
+  // Arcade colors: cyan bubble, gold for you. No pink, nothing that flashes.
   const css = `
-.aiwrap{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(6,7,10,.55)}
-.aisheet{position:relative;display:flex;flex-direction:column;max-height:82%;margin:0 auto;width:100%;max-width:560px;
-  background:#181B23;color:#F2F4F8;border-radius:24px 24px 0 0;border-top:1px solid rgba(255,255,255,.08);
-  padding:0 0 env(safe-area-inset-bottom);box-shadow:0 -12px 40px rgba(0,0,0,.45);font-family:inherit}
-.aihead{display:flex;align-items:center;gap:10px;padding:14px 14px 10px 18px}
-.aihead .aiic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:#14161C;
-  background:linear-gradient(135deg,#FFD65A,#FF9F2E)}
-.aihead .aiic svg{width:20px;height:20px}
-.aihead b{font-size:19px}
-.aihead small{display:block;font-size:12px;color:#9AA1B2;font-weight:600}
+.aiorb{position:relative;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none;
+  background:radial-gradient(circle at 32% 26%,#D4FBFF 0,#35E8FF 26%,#1C86FF 70%,#1640B5 100%);
+  box-shadow:0 0 0 1px rgba(53,232,255,.45),0 4px 16px rgba(53,232,255,.38),inset 0 -4px 7px rgba(8,18,80,.5),inset 0 2px 3px rgba(255,255,255,.55)}
+.aiorb svg{width:56%;height:56%;filter:drop-shadow(0 1px 1px rgba(0,30,90,.55))}
+.aiorb::after{content:"";position:absolute;left:22%;top:12%;width:30%;height:18%;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(1px)}
+.ai-off .aiorb{background:radial-gradient(circle at 32% 26%,#A7ADBA 0,#6C7282 40%,#3B404D 100%);color:#E3E6EC;
+  box-shadow:0 0 0 1px rgba(255,255,255,.14),0 3px 10px rgba(0,0,0,.4),inset 0 -4px 7px rgba(0,0,0,.35)}
+.aiorb.sm{width:26px;height:26px}
+.aiorb.lg{width:64px;height:64px}
+.aibubble{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;width:60px;height:60px;
+  padding:0;border:0;background:none;border-radius:50%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.aibubble .aiorb{width:60px;height:60px}
+.aibubble:active .aiorb,.aibtn:active .aiorb{transform:scale(.92)}
+@media(min-width:900px){.aibubble{bottom:28px;right:28px}}
+.aiwrap{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+  padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:rgba(3,4,16,.62);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.aisheet{position:relative;display:flex;flex-direction:column;width:100%;max-width:520px;max-height:86%;overflow:hidden;
+  border-radius:30px;color:#F2F4F8;font-family:inherit;
+  background:radial-gradient(120% 55% at 50% -12%,rgba(53,232,255,.20),transparent 62%),linear-gradient(180deg,#121640,#0B0D26);
+  border:1px solid rgba(53,232,255,.30);box-shadow:0 24px 70px rgba(0,0,0,.65),0 0 46px rgba(53,232,255,.14)}
+.aihead{display:flex;align-items:center;gap:12px;padding:16px 14px 12px 16px;border-bottom:1px solid rgba(53,232,255,.10)}
+.aihead .aiorb{width:42px;height:42px}
+.aihead b{font-size:20px;letter-spacing:.01em}
+.aihead small{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#8FE9F7;font-weight:600}
+.aihead small i{width:7px;height:7px;border-radius:50%;background:#3AC75A;box-shadow:0 0 6px #3AC75A}
 .aihead .sp{flex:1}
-.aihead button{height:36px;min-width:36px;padding:0 10px;border-radius:12px;background:#252935;color:#C9CEDA;font-family:inherit;font-weight:600;font-size:14px;line-height:1;border:0}
-.ailog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:6px 16px 10px;-webkit-overflow-scrolling:touch}
-.aimsg{max-width:86%;padding:10px 14px;border-radius:18px;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
-.aimsg.ai{align-self:flex-start;background:#252935;border-bottom-left-radius:6px}
-.aimsg.me{align-self:flex-end;background:#FFC61A;color:#14161C;font-weight:600;border-bottom-right-radius:6px}
-.aimsg.note{align-self:stretch;max-width:none;background:none;color:#9AA1B2;font-size:13px;text-align:center;padding:2px}
-.aidots{display:inline-flex;gap:5px;padding:4px 0}
-.aidots i{width:7px;height:7px;border-radius:50%;background:#9AA1B2;animation:aib 1s infinite ease-in-out}
-.aidots i:nth-child(2){animation-delay:.15s}.aidots i:nth-child(3){animation-delay:.3s}
-@keyframes aib{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
-.aichips{display:flex;flex-wrap:wrap;gap:8px;padding:2px 16px 10px}
-.aichips button{padding:8px 12px;border-radius:999px;background:#252935;color:#F2F4F8;font-family:inherit;font-weight:600;font-size:14px;line-height:1.1;border:1px solid rgba(255,255,255,.06)}
-.aiform{display:flex;gap:8px;padding:0 12px 12px}
-.aiform input{flex:1;min-width:0;height:48px;padding:0 16px;border-radius:24px;border:1px solid rgba(255,255,255,.1);
-  background:#0F1116;color:#F2F4F8;font-family:inherit;font-weight:500;font-size:16px;outline:none}
-.aiform input:focus{border-color:#FFC61A}
-.aiform button{width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center;background:#FFC61A;color:#14161C}
+.aihead button{height:36px;min-width:36px;padding:0 12px;border-radius:999px;border:1px solid rgba(53,232,255,.22);
+  background:rgba(53,232,255,.07);color:#CFF8FF;font-family:inherit;font-weight:600;font-size:14px;line-height:1}
+.ailog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:14px 14px 10px;-webkit-overflow-scrolling:touch}
+.airow{display:flex;align-items:flex-end;gap:8px;max-width:92%}
+.airow.me{align-self:flex-end;flex-direction:row-reverse}
+.aimsg{position:relative;padding:11px 15px;border-radius:22px;font-size:16px;line-height:1.42;overflow-wrap:anywhere}
+.airow.ai .aimsg{background:linear-gradient(180deg,#1E2560,#181E4E);border:1px solid rgba(53,232,255,.18);border-bottom-left-radius:7px}
+.airow.me .aimsg{background:linear-gradient(180deg,#FFD447,#FFC21A);color:#17140A;font-weight:600;border-bottom-right-radius:7px;
+  box-shadow:0 4px 14px rgba(255,198,26,.18)}
+.aidots{display:inline-flex;gap:5px;padding:5px 2px}
+.aidots i{width:7px;height:7px;border-radius:50%;background:#8FE9F7;opacity:.55}
+.aidots i:nth-child(2){opacity:.75}.aidots i:nth-child(3){opacity:.95}
+.aichips{display:flex;flex-wrap:wrap;gap:8px;padding:2px 14px 10px}
+.aichips button{padding:9px 13px;border-radius:999px;background:rgba(53,232,255,.08);color:#D6FAFF;font-family:inherit;
+  font-weight:600;font-size:14px;line-height:1.1;border:1px solid rgba(53,232,255,.26)}
+.aiform{display:flex;gap:8px;padding:4px 12px 14px}
+.aiform input{flex:1;min-width:0;height:50px;padding:0 18px;border-radius:25px;border:1px solid rgba(53,232,255,.22);
+  background:#070920;color:#F2F4F8;font-family:inherit;font-weight:500;font-size:16px;outline:none}
+.aiform input::placeholder{color:#7F87A6}
+.aiform input:focus{border-color:#35E8FF;box-shadow:0 0 0 3px rgba(53,232,255,.15)}
+.aiform button{width:50px;height:50px;border-radius:50%;border:0;display:grid;place-items:center;color:#06213A;
+  background:radial-gradient(circle at 32% 26%,#D4FBFF 0,#35E8FF 40%,#1C9BFF 100%);box-shadow:0 4px 14px rgba(53,232,255,.35)}
 .aiform button:disabled{opacity:.4}
 .aiform button svg{width:22px;height:22px}
-.aiwhy{display:grid;justify-items:center;gap:10px;padding:8px 24px 24px;text-align:center}
-.aiwhy .aiic{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:#252935;color:#7C8394}
-.aiwhy .aiic svg{width:30px;height:30px}
-.aiwhy h3{margin:0;font-size:21px}
-.aiwhy p{margin:0;color:#B4BAC8;font-size:16px;line-height:1.45;max-width:34ch}
-.aiwhy .ok{margin-top:6px;width:100%;height:50px;border-radius:16px;border:0;background:#FFC61A;color:#14161C;font-family:inherit;font-weight:700;font-size:17px}
-[data-ai]{transition:opacity .2s}
-.ai-off [data-ai]{opacity:.38;filter:grayscale(1)}
-@media (prefers-reduced-motion:reduce){.aidots i{animation:none}}`;
+.aiwhy{display:grid;justify-items:center;gap:12px;padding:6px 20px 20px;text-align:center;overflow-y:auto}
+.aiwhy h3{margin:2px 0 0;font-size:22px;line-height:1.2}
+.aiwhy p{margin:0;color:#B9C0D6;font-size:16px;line-height:1.45;max-width:36ch}
+.aisteps{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:10px;width:100%;text-align:left;counter-reset:s}
+.aisteps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding:12px 14px;
+  border-radius:16px;background:rgba(53,232,255,.06);border:1px solid rgba(53,232,255,.14);font-size:16px;line-height:1.4;color:#E6E9F2}
+.aisteps li::before{content:counter(s);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:#35E8FF;color:#06213A;font-weight:700;font-size:15px}
+.aisteps li b{color:#fff}
+.aiwhy .still{color:#FFC61A;font-weight:600;font-size:15px}
+.aiwhy .btns{display:grid;gap:8px;width:100%;margin-top:4px}
+.aiwhy .ok{height:52px;border-radius:18px;border:0;font-family:inherit;font-weight:700;font-size:17px;color:#06213A;
+  background:radial-gradient(circle at 30% 0%,#D4FBFF 0,#35E8FF 45%,#1C9BFF 100%)}
+.aiwhy .ok.ghost{background:rgba(255,255,255,.06);color:#CFD4E2;border:1px solid rgba(255,255,255,.12)}
+.aiwhy .note{font-size:13.5px;color:#8A92AC}`;
+  const ORB = (cls) => `<span class="aiorb ${cls || ""}">${SPARK}</span>`;
   const style = document.createElement("style");
   style.textContent = css;
   document.head.appendChild(style);
@@ -372,14 +446,24 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     return box;
   }
 
-  // Grayed out: say why, right away.
-  function why() {
-    const [h, p] = WHY[status] || WHY.unavailable;
+  // Grayed out: say why right away, and exactly how to fix it.
+  function why(again) {
+    const w = WHY[status] || WHY.unavailable;
     const learn = document.querySelector('a[href*="how-to-play"]');
-    frame(`<div class="aihead"><span class="sp"></span><button data-x aria-label="Close">&times;</button></div>
-      <div class="aiwhy"><span class="aiic">${SPARK}</span><h3>${esc(h)}</h3><p>${esc(p)}</p>
-        ${learn ? `<p style="font-size:14px">The rules are in <a href="${learn.getAttribute("href")}" style="color:#FFC61A">How to play</a>.</p>` : ""}
-        <button class="ok" data-x>OK</button></div>`);
+    const box = frame(`<div class="aihead"><span class="sp"></span><button data-x aria-label="Close">&times;</button></div>
+      <div class="aiwhy">${ORB("lg")}<h3>${esc(w.t)}</h3><p>${esc(w.p)}</p>
+        ${w.steps ? `<ol class="aisteps">${w.steps.map(x => `<li><span>${x}</span></li>`).join("")}</ol>` : ""}
+        ${again ? '<p class="still">Not ready yet. Check the steps above, then try again.</p>' : ""}
+        ${status === "off" ? '<p class="note">Apple doesn\'t let apps open that setting for you, so it\'s a few taps in Settings.</p>' : ""}
+        ${!w.steps && learn ? `<p class="note">The rules are in <a href="${learn.getAttribute("href")}" style="color:#35E8FF">How to play</a>.</p>` : ""}
+        <div class="btns">${w.again ? '<button class="ok" data-recheck>Check again</button><button class="ok ghost" data-x>Close</button>'
+                                    : '<button class="ok" data-x>OK</button>'}</div></div>`);
+    const rb = box.querySelector("[data-recheck]");
+    if (rb) rb.addEventListener("click", async () => {
+      rb.disabled = true; rb.textContent = "Checking...";
+      await check();
+      if (status === "ready") open(); else why(true);
+    });
   }
 
   function chips() {
@@ -399,17 +483,19 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
   function render() {
     if (!sheet) return;
     const lg = sheet.querySelector(".ailog");
-    lg.innerHTML = (log.length ? "" : `<div class="aimsg ai">Hi! Ask me anything about Pocket Imposter: the rules, what to tap, or what's going on in your game.</div>`) +
-      log.map(m => `<div class="aimsg ${m.who}">${m.who === "ai" ? fmt(m.text) : esc(m.text)}</div>`).join("") +
-      (busy ? '<div class="aimsg ai"><span class="aidots"><i></i><i></i><i></i></span></div>' : "");
+    const row = (who, html) => `<div class="airow ${who}">${who === "ai" ? ORB("sm") : ""}<div class="aimsg">${html}</div></div>`;
+    lg.innerHTML = (log.length ? "" : row("ai", "Hi! Ask me anything about Pocket Imposter: the rules, what to tap, or what's going on in your game.")) +
+      log.map(m => row(m.who, m.who === "ai" ? fmt(m.text) : esc(m.text))).join("") +
+      (busy ? row("ai", '<span class="aidots" aria-label="Thinking"><i></i><i></i><i></i></span>') : "");
     lg.scrollTop = lg.scrollHeight;
     sheet.querySelector(".aichips").innerHTML = busy ? "" : chips();
     sheet.querySelector(".aiform button").disabled = busy;
   }
 
-  function open() {
+  async function open() {
+    if (status === "checking" && checking) await checking;
     if (status !== "ready") return why();
-    const box = frame(`<div class="aihead"><span class="aiic">${SPARK}</span><span><b>Ask</b><small>Runs on this iPhone</small></span>
+    const box = frame(`<div class="aihead">${ORB()}<span><b>Ask</b><small><i></i>Runs on this iPhone</small></span>
         <span class="sp"></span><button data-new>New chat</button><button data-x aria-label="Close">&times;</button></div>
       <div class="ailog" aria-live="polite"></div>
       <div class="aichips"></div>
@@ -486,5 +572,5 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     open();
   });
 
-  window.ImpAI = { open, facts, check, questionMath, status: () => status, RULES };
+  window.ImpAI = { open, facts, check, questionMath, status: () => status, RULES, SPARK };
 })();

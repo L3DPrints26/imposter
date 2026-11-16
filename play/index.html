@@ -292,7 +292,8 @@ h2.ask{text-align:left;margin:2px 2px 4px}
 .pcode{font-size:64px;font-weight:700;letter-spacing:.14em;color:var(--acc);text-align:center;line-height:1;margin:2px 0 8px}
 .names label b small{font-size:13px;font-weight:500}
 .names .icon{width:36px;height:36px;font-size:24px}
-.icon.aibtn{color:var(--acc)}
+.icon.aibtn .aiorb{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;background:#1C86FF}
+.icon.aibtn .aiorb svg{width:20px;height:20px}
 .together{width:100%;min-height:64px;border-radius:18px;background:var(--surf);border:2px solid var(--line);
   font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;gap:10px}
 .together small{font-size:14px;font-weight:600;color:var(--mut)}
@@ -409,10 +410,15 @@ app.addEventListener("click", e => {
 }, true);
 
 // The iPhone app's own native helpers (screen on, AI). Null on the website.
+// ⚠ This app ships the plain site, not Capacitor's JS library, so there is no
+// Capacitor.registerPlugin (build 22's AI never connected because of that).
+// The native bridge always has nativePromise, so calls go through it.
 const Native = (() => {
   try {
     const C = window.Capacitor;
-    return C && C.isNativePlatform && C.isNativePlatform() && C.registerPlugin ? C.registerPlugin("ImpNative") : null;
+    if (!C || !C.isNativePlatform || !C.isNativePlatform() || typeof C.nativePromise !== "function") return null;
+    const call = m => o => C.nativePromise("ImpNative", m, o || {});
+    return { keepAwake: call("keepAwake"), aiStatus: call("aiStatus"), aiAsk: call("aiAsk"), aiReset: call("aiReset") };
   } catch (_) { return null; }
 })();
 // Keep the screen on during a round: a phone that locks on the ground can't
@@ -611,7 +617,7 @@ const fsBtn = () => IN_APP ? "" :
   `<button class="icon" data-a="fs" aria-label="${isWide() ? "Leave full screen" : "Full screen"}"
     title="${isWide() ? "Leave full screen" : "Full screen"}">${isWide() ? I.shrink : I.expand}</button>`;
 // Ask, the AI helper (../ai.js). Grayed out where it can't run.
-const aiBtn = () => `<button class="icon aibtn" data-ai aria-label="Ask for help">${I.spark}</button>`;
+const aiBtn = () => `<button class="icon aibtn" data-ai aria-label="Ask for help"><span class="aiorb">${I.spark}</span></button>`;
 const topBar = (back, count, home) =>
   `<div class="top">${back === "site" ? `<a class="icon" href="../" aria-label="Back to the site">${I.back}</a>`
      : back ? `<button class="icon" data-a="${back}" aria-label="Back">${I.back}</button>` : '<span style="width:44px"></span>'}

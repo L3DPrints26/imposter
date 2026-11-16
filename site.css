@@ -70,14 +70,6 @@ p{margin:0}
 .toptabs a[aria-current="page"]{color:var(--text);background:var(--surf2)}
 .toptabs a.play{background:var(--gold);color:#14161C}
 @media(min-width:900px){.toptabs{display:flex}}
-/* Ask, the AI helper (ai.js grays it out where it can't run) */
-.askbtn{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:6px;padding:9px 14px 9px 11px;border:0;
-  border-radius:999px;background:var(--surf2);color:var(--gold);font:600 15px/1 var(--disp);cursor:pointer}
-.askbtn svg{width:18px;height:18px}
-.askbtn span{color:var(--text)}
-@media(min-width:900px){.askbtn{margin-left:4px}}
-/* Narrow phones: on pages with Back, the logo stands in for the name so Ask fits. */
-@media(max-width:520px){.backbtn ~ .brand span:last-child{display:none}}
 
 /* ---------- tab bar, phones ---------- */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(5,1fr);
