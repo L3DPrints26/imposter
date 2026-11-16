@@ -50,7 +50,7 @@
   <details class="qa"><summary>Why does the battery % move around?</summary><p>It's worked out from the battery's voltage, which dips while the screen is bright. While it's charging it just says Charging.</p></details>
   <details class="qa"><summary>Can I play on my phone?</summary><p>Yes, if you own a box. Open <a href="../play/">Play</a> and type the code from your box. To find it: Info, then tap the arrow until it says Play on your phone.</p></details>
   <details class="qa"><summary>Do I need an app or wifi?</summary><p>No. The box works on its own. Only the phone version needs internet.</p></details>
-  <details class="qa"><summary>Can we each use our own phone?</summary><p>Yes. In Play, tap Play together. One person hosts and gets a 4-letter code; everyone else taps Join and types it. People without a phone can still play on the host's phone.</p></details>
+  <details class="qa"><summary>Can we each use our own phone?</summary><p>Yes. In Play, tap Play together. One person hosts and gets a 4-letter code. Send the invite by text or email, or everyone else taps Join and types the code. It needs internet, and it works from anywhere, even another state. Up to 15 players. New players join between rounds, and the host can remove anyone. No phone? The host adds you and you look at your card on theirs. Playing far apart? In Word, set Where is everyone? to Far apart and type your clues.</p></details>
   <details class="qa"><summary>How many players?</summary><p>3 to 15.</p></details>
   <details class="qa"><summary>Does the imposter know?</summary><p>Yes. Their card says IMPOSTER.</p></details>
   <details class="qa"><summary>Can I add my own words?</summary><p>In the phone game, yes: in Word mode tap Categories, then Make your own. The box has 450 words in 18 categories; the phone game has 880 in 28. No word repeats within 16 rounds.</p></details>
@@ -74,6 +74,8 @@
       <label class="opt"><input type="radio" name="Type" value="Something good">
       <span><b>Something is good</b>A round that went great, a bit you liked, or an idea you want
       in it.</span></label>
+      <label class="opt"><input type="radio" name="Type" value="Report a player">
+      <span><b>Report a player</b>A name or clue someone typed in a party that wasn't OK.</span></label>
     </div>
 
     <label for="n">Your name</label>
@@ -129,14 +131,19 @@
       // it back instead of leaving an earlier telling-off sitting there
       msgOk = msg.textContent;
 
+  var TEXT = {
+    'A problem':       ['Pocket Imposter: a problem', 'What happened?', 'What were you doing, and what went wrong?'],
+    'Something good':  ['Pocket Imposter: something good', 'What was good?', 'What did you like, or what would you put in it?'],
+    'Report a player': ['Pocket Imposter: report a player', 'What happened?', 'The party code, their name, and what they typed.']
+  };
+  // "Report a problem" in a party links here with ?type=report.
+  if (/[?&]type=report\b/.test(location.search))
+    for (var k = 0; k < kinds.length; k++) kinds[k].checked = kinds[k].value === 'Report a player';
   function sync() {
-    var good = false, i;
-    for (i = 0; i < kinds.length; i++)
-      if (kinds[i].checked) good = kinds[i].value !== 'A problem';
-    subj.value = good ? 'Pocket Imposter: something good' : 'Pocket Imposter: a problem';
-    lab.textContent = good ? 'What was good?' : 'What happened?';
-    m.placeholder = good ? 'What did you like, or what would you put in it?'
-                         : 'What were you doing, and what went wrong?';
+    var v = 'A problem', i;
+    for (i = 0; i < kinds.length; i++) if (kinds[i].checked) v = kinds[i].value;
+    var t = TEXT[v] || TEXT['A problem'];
+    subj.value = t[0]; lab.textContent = t[1]; m.placeholder = t[2];
   }
   for (var i = 0; i < kinds.length; i++) kinds[i].addEventListener('change', sync);
   sync();

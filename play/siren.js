@@ -15,13 +15,15 @@
       // iPhone: play even with the ring/silent switch on silent.
       if (navigator.audioSession) navigator.audioSession.type = "playback";
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.state === "suspended") ctx.resume();
+      // Safari says "interrupted" after a lock or a call, not "suspended".
+      if (ctx.state !== "running") ctx.resume();
     } catch (_) {}
   }
   document.addEventListener("pointerdown", unlock, { capture: true, passive: true });
   document.addEventListener("keydown", unlock, { capture: true });
 
   function stop() {
+    try { if (navigator.vibrate) navigator.vibrate(0); } catch (_) {}
     if (!live) return;
     const { nodes, out } = live;
     live = null;

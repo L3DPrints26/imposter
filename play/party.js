@@ -37,6 +37,21 @@
   const uid = () => Math.random().toString(36).slice(2, 10);
   const newCode = () => Array.from({ length: 4 }, () => ABC[Math.floor(Math.random() * ABC.length)]).join("");
   const send = (c, m) => { try { if (c && c.open) c.send(m); } catch (_) {} };
+  const okStr = (v, max) => typeof v === "string" && v.length <= max;
+  const REPORT = '<a class="textbtn" href="https://l3dprints26.github.io/imposter/help/#feedback" target="_blank" rel="noopener">Report a problem</a>';
+  // This phone's key: a returning guest is matched by it, so a quick drop
+  // (screen lock, Wi-Fi to cell) can't lock them out or let someone else
+  // take their spot by typing their name.
+  const KEY = store.get("imp_party_key", "") || (uid() + uid());
+  store.set("imp_party_key", KEY);
+  // The host's own words go to other phones in a party, so they get the same
+  // word check as clues; a word that fails is left out.
+  const partyPool = () => {
+    const pool = liveCats().map(c => !c.mine ? c : Object.assign({}, c, {
+      name: NameCheck.clean(c.name) ? c.name : "Our words",
+      words: c.words.filter(w => NameCheck.clean(w[0])) })).filter(c => c.words.length);
+    return pool.length ? pool : CATS;
+  };
   const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   const coolFor = (n, imps) => (n <= 6 ? 45 : n <= 10 ? 30 : 20) + (imps - 1) * 10;
   const SET_KEY = "imp_party_set";
@@ -51,16 +66,7 @@
   function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
 
   // Keep the screen on while in a party: a phone that locks drops off.
-  let wake = null;
-  async function keepAwake(on) {
-    try {
-      if (on && navigator.wakeLock && !wake) {
-        wake = await navigator.wakeLock.request("screen");
-        wake.addEventListener("release", () => { wake = null; });
-      }
-      if (!on && wake) { await wake.release(); wake = null; }
-    } catch (_) {}
-  }
+  const keepAwake = on => on ? Awake.on() : Awake.off();
   // Coming back to the app after the screen went off: the phone may have
   // dropped its connection. The host reconnects under the same code; guests
   // are already retrying on their own.
@@ -71,15 +77,27 @@
       if (P.peer.destroyed) openAs(0, P.code);
       else if (P.peer.disconnected) { try { P.peer.reconnect(); } catch (_) {} }
     }
-    if (P.role === "guest" && P.me.id && (!P.conn || !P.conn.open) && P.screen !== "reconnect") guestLost(P.conn);
+    if (P.role === "guest" && P.me.id && !P.dead && (!P.conn || !P.conn.open) && P.screen !== "reconnect") guestLost(P.conn);
   });
 
+  const attr = (sel, k) => { const e = $p(sel); return e ? e.dataset[k] || "" : ""; };
   function view(html, redrawFn, screen) {
+    // A redraw of the same screen (a vote came in, someone rejoined) keeps what
+    // this phone was in the middle of: a checked name, a half-typed clue.
+    const same = !!(P && screen && P.screen === screen), c0 = $p("#pclue");
+    const keep = same ? { pick: picked(), by: attr("[data-by]", "by"), clue: c0 ? c0.value : "", cfor: attr('[data-a="p-clue"]', "id") } : null;
     stopTick();
     window.onblur = null; document.onvisibilitychange = null;
     if (P) P.screen = screen || "";
     redraw = redrawFn || (() => {});
     app.innerHTML = html;
+    if (!keep) return;
+    if (keep.pick && attr("[data-by]", "by") === keep.by) {
+      const o = [...app.querySelectorAll(".opt")].find(x => x.dataset.v === keep.pick);
+      if (o) { o.classList.add("on"); o.setAttribute("aria-checked", "true"); const s = $p("[data-needs-pick]"); if (s) s.disabled = false; }
+    }
+    const c1 = $p("#pclue");
+    if (keep.clue && c1 && attr('[data-a="p-clue"]', "id") === keep.cfor) c1.value = keep.clue;
   }
   const bar = (back, title) => topBar(back, title || "", "");
   const netWhy = e => e && e.type === "peer-unavailable" ? "No party with that code. Check it and try again."
@@ -128,7 +146,7 @@
 
   /* ------------------------------------------------------------ host */
   function host(name) {
-    P = { role: "host", me: { id: "host", name }, set: loadSet(), conns: new Map(),
+    P = { role: "host", me: { id: "host", name }, set: loadSet(), conns: new Map(), banned: new Set(), locked: false,
           players: [{ id: "host", name, kind: "host", on: true }], round: null, code: "", peer: null };
     view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Making your party...</p></div>`);
     openAs(0);
@@ -149,7 +167,11 @@
       conn.on("close", () => hostLost(conn));
       conn.on("error", () => hostLost(conn));
     });
-    peer.on("disconnected", () => { try { if (P && P.peer === peer) peer.reconnect(); } catch (_) {} });
+    // Lost the PeerJS server (no signal outdoors): try again every 2 seconds,
+    // not in a tight loop.
+    peer.on("disconnected", () => setTimeout(() => {
+      try { if (P && P.peer === peer && !peer.destroyed && peer.disconnected) peer.reconnect(); } catch (_) {}
+    }, 2000));
     peer.on("error", e => {
       if (keep) { peer.destroy(); return setTimeout(() => P && P.role === "host" && P.code === keep && openAs(0, keep), 3000); }
       if (e.type === "unavailable-id" && tries < 6) { peer.destroy(); return openAs(tries + 1); }
@@ -169,23 +191,35 @@
   function hostMsg(conn, m) {
     if (!P || P.role !== "host" || !m || typeof m !== "object") return;
     if (m.t === "join") {
-      const r = NameCheck.check(String(m.name || ""));
+      if (conn.pid) return;                                // this phone is already in
+      if (!okStr(m.name, 60) || (m.key != null && !okStr(m.key, 40))) return;
+      const r = NameCheck.check(m.name);
       if (!r.ok) return send(conn, { t: "reject", why: r.why, name: true });
-      // A phone that dropped out (screen locked, signal) comes back by name.
-      const back = P.players.find(p => p.kind === "phone" && !p.on && p.name.toLowerCase() === r.name.toLowerCase());
+      const key = m.key || "", lname = r.name.toLowerCase();
+      if (P.banned.has(lname) || (key && P.banned.has("k:" + key)))
+        return send(conn, { t: "reject", why: "The host removed you from this party." });
+      // A phone that dropped out (screen locked, signal) comes back. Its key
+      // finds it even before the old connection times out; pages too old to
+      // send a key come back by name.
+      const back = P.players.find(p => p.kind === "phone" &&
+        (key ? p.key === key : !p.on && !p.key && p.name.toLowerCase() === lname));
       if (back) {
+        const old = P.conns.get(back.id);
+        if (old && old !== conn) { old.pid = null; try { old.close(); } catch (_) {} }
         back.on = true; conn.pid = back.id; P.conns.set(back.id, conn);
         send(conn, { t: "welcome", id: back.id, code: P.code });
         send(conn, lobbyMsg());
-        if (P.round) send(conn, roundFor(back.id));
+        if (P.round) send(conn, P.round.phase === "reveal" && P.round.revealMsg ? P.round.revealMsg : roundFor(back.id));
         shareLobby(); refresh();
         return;
       }
+      if (P.locked) return send(conn, { t: "reject", why: "The host isn't letting new players in right now." });
       if (nameTaken(r.name)) return send(conn, { t: "reject", why: "Someone here already has that name. Pick another.", name: true });
       if (P.players.length >= MAXP) return send(conn, { t: "reject", why: "This party is full (15 players)." });
-      if (P.round) return send(conn, { t: "reject", why: "A game is going. Join when it ends." });
+      // During the reveal you can join and wait for the next game.
+      if (P.round && P.round.phase !== "reveal") return send(conn, { t: "reject", why: "A game is going. Join when it ends." });
       const id = uid();
-      P.players.push({ id, name: r.name, kind: "phone", on: true });
+      P.players.push({ id, name: r.name, kind: "phone", on: true, key });
       conn.pid = id; P.conns.set(id, conn);
       send(conn, { t: "welcome", id, code: P.code });
       shareLobby(); refresh();
@@ -194,9 +228,11 @@
     const pid = conn.pid;
     if (!pid) return;
     if (m.t === "meet") return callMeeting(pid, !!m.body);
-    if (m.t === "clue") return takeClue(pid, String(m.text || ""));
-    if (m.t === "vote") return takeVote(pid, String(m.for || ""));
-    if (m.t === "mvote") return takeMvote(pid, String(m.v || ""));
+    if (m.t === "clue") return okStr(m.text, 60) && takeClue(pid, m.text);
+    // A vote the host can't take (the round moved on) puts that phone's
+    // screen back the way the host sees it.
+    if (m.t === "vote") { if (!(okStr(m.for, 60) && takeVote(pid, m.for)) && P.round) send(conn, roundFor(pid)); return; }
+    if (m.t === "mvote") { if (!(okStr(m.v, 60) && takeMvote(pid, m.v)) && P.round) send(conn, roundFor(pid)); return; }
     if (m.t === "leave") {
       const pl = P.players.find(p => p.id === pid);
       P.conns.delete(pid);
@@ -219,6 +255,7 @@
   function lobby(msg) {
     const S2 = P.set, n = present().length, maxImp = impMax(Math.max(n, 3));
     S2.imps = Math.min(maxImp, Math.max(1, S2.imps));
+    const far = modeOf(S2) === "far";        // far apart: one imposter, one vote decides it
     const step = (k, v, lo, hi, zero) =>
       `<div class="step"><button data-a="p-dec" data-k="${k}" ${v <= lo ? "disabled" : ""} aria-label="Fewer">&minus;</button>
        <output>${v === 0 && zero ? zero : v}</output>
@@ -229,7 +266,7 @@
     // switch under Word, not a third game.
     const rules = [];
     if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Where is everyone?</span>${seg("p-where", [["here", "Same room"], ["far", "Far apart"]], mode === "far" ? "far" : "here")}</div>`);
-    rules.push(`<div class="rcard"><span class="rl">Imposters</span>${mini("imps", S2.imps, 1, maxImp)}</div>`);
+    rules.push(`<div class="rcard"><span class="rl">Imposters</span>${far ? mini("imps", 1, 1, 1) : mini("imps", S2.imps, 1, maxImp)}</div>`);
     if (mode !== "tag") rules.push(`<div class="rcard"><span class="rl">Imposter hint</span>${seg("p-hint", [["on", "On"], ["off", "Off"]], S2.hint ? "on" : "off")}</div>`);
     if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues each</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
     if (mode === "tag") rules.push(`<div class="rcard"><span class="rl">Meetings</span>${mini("meetings", S2.meetings, 0, 9)}</div>`,
@@ -259,12 +296,13 @@
         </div>
 
         <p class="sec">Rules</p>
-        <div class="rgrid">${rules.join("")}</div>
+        <div class="rgrid">${rules.join("")}
+          <div class="rcard" ${(rules.length - (mode !== "tag" ? 1 : 0)) % 2 ? "" : 'style="grid-column:1/-1"'}><span class="rl">New players</span>${seg("p-lock", [["open", "Open"], ["locked", "Locked"]], P.locked ? "locked" : "open")}</div>
+        </div>
         <p class="err">${esc(msg || "")}</p>
+        ${REPORT}
       </div>
       <button class="bar" data-a="p-go" ${n >= 3 ? "" : "disabled"}>${n >= 3 ? "START" : "Need 3 players"}</button>`, () => lobby(), "lobby");
-    const d = $p(".more");
-    if (d) d.addEventListener("toggle", () => { lobbyMore = d.open; });
   }
 
   function addLocal(msg) {
@@ -290,13 +328,13 @@
   /* ------------------------------------------------------------ the round (host deals) */
   function deal() {
     const ps = present();
-    const n = ps.length, imps = Math.min(impMax(n), Math.max(1, P.set.imps));
+    const n = ps.length, imps = P.set.far ? 1 : Math.min(impMax(n), Math.max(1, P.set.imps));
     const impIds = new Set();
     while (impIds.size < imps) impIds.add(ps[rnd(n)].id);
     let cat = null, w = null, hint = "";
     const far = !!P.set.far;
     if (P.set.word || far) {
-      const recent = store.get("imp_recent", []), pool = liveCats();
+      const recent = store.get("imp_recent", []), pool = partyPool();
       for (let t = 0; t < 40; t++) { cat = pool[rnd(pool.length)]; w = cat.words[rnd(cat.words.length)]; if (!recent.includes(w[0])) break; }
       recent.push(w[0]); store.set("imp_recent", recent.slice(-16));
       hint = P.set.hint && w[1].length ? w[1][rnd(w[1].length)] : "";
@@ -314,7 +352,7 @@
       imps: ps.filter(p => impIds.has(p.id)).map(p => p.name), first: ps[start].name, n, impCount: imps,
       meetLeft: P.set.meetings, each: P.set.each, used: {}, phase: far ? "clues" : "on", startedAt: Date.now(),
       cool: coolFor(n, imps), coolEnd: 0, caller: "", body: false,
-      queue: ps.filter(p => p.kind !== "phone").map(p => p.id) };
+      queue: ps.filter(p => p.kind !== "phone").map(p => p.id), dealing: true };
     P.conns.forEach((c, id) => { if (cards[id]) send(c, roundFor(id)); });
     nextHostCard();
   }
@@ -332,7 +370,7 @@
   // The host's own card, then anyone playing on the host's phone, one by one.
   function nextHostCard() {
     const R = P.round, id = R.queue.shift();
-    if (!id) return gameOn();
+    if (!id) { R.dealing = false; return gameOn(); }
     const pl = P.players.find(p => p.id === id);
     if (pl.kind === "host") return showCard(R.cards[id], "Your card", nextHostCard, R);
     view(`${bar("")}
@@ -362,16 +400,34 @@
     const t = text.replace(/\s+/g, " ").trim().slice(0, 30);
     if (!t || !NameCheck.clean(t)) return;
     R.clues.push({ id: pid, name: nameOf(pid), text: t });
-    R.turn++;
-    if (R.turn >= R.order.length * R.rounds) R.phase = "vote";
+    advanceTurn();
     syncAll();
+  }
+  // Next turn. Someone no longer in the party is skipped on the spot; someone
+  // who just went offline can be skipped by the host.
+  function advanceTurn() {
+    const R = P.round;
+    for (let g = 0; g <= R.order.length * R.rounds; g++) {
+      R.turn++;
+      if (R.turn >= R.order.length * R.rounds) { R.phase = "vote"; return; }
+      const id = turnId();
+      if (P.players.some(p => p.id === id)) return;
+      R.clues.push({ id, name: nameOf(id), text: "(left)" });
+    }
+  }
+  function skipTurn() {
+    const R = P.round, id = turnId();
+    if (!R || !id) return;
+    R.clues.push({ id, name: nameOf(id), text: "(skipped)" });
+    advanceTurn(); syncAll();
   }
   function takeVote(pid, target) {
     const R = P.round;
-    if (!R || !R.far || R.phase !== "vote" || R.votes[pid] || !R.order.includes(pid) || !R.order.includes(target) || pid === target) return;
+    if (!R || !R.far || R.phase !== "vote" || R.votes[pid] || !R.order.includes(pid) || !R.order.includes(target) || pid === target) return false;
     R.votes[pid] = target;
-    if (Object.keys(R.votes).length >= R.order.length) return countVotes();
+    if (Object.keys(R.votes).length >= R.order.length) { countVotes(); return true; }
     syncAll();
+    return true;
   }
   function countVotes() {
     const R = P.round, tally = {};
@@ -383,6 +439,7 @@
     R.phase = "reveal";
     const r = { t: "reveal", mode: "word", word: R.word, cat: R.cat, imps: R.imps, far: true,
       tally: ranked.filter(x => x.votes), out: out ? out.name : "", caught };
+    R.revealMsg = r;                     // for anyone who rejoins now
     broadcast(r); Siren.stop();
     reveal(r);
   }
@@ -434,9 +491,11 @@
         <p class="mut">One clue each. ${R.impCount} imposter${R.impCount === 1 ? "" : "s"}.</p></div>
         <p class="c mut small">Go around, one word each. Talk it over, then point on three.</p>`;
     } else {
-      const myUsed = isHost ? 0 : (R.used || 0);
-      const meOut = isOut(isHost ? "host" : P.me.id);
-      const canEm = !meOut && R.meetLeft > 0 && (!R.each || isHost || myUsed < R.each);
+      // The host's buttons work for everyone playing on the host's phone.
+      const mine = isHost ? P.players.filter(p => p.kind !== "phone").map(p => p.id) : [P.me.id];
+      const usedBy = id => isHost ? (R.used[id] || 0) : (R.used || 0);
+      const meOut = mine.every(isOut);
+      const canEm = R.meetLeft > 0 && mine.some(id => !isOut(id) && (!R.each || usedBy(id) < R.each));
       body = `<div class="calls">
           <button class="call em" data-a="p-meet" ${canEm ? "" : "disabled"}>${I.alarm}<span class="k">Emergency meeting</span>
             <span class="s">${R.meetLeft} left${R.each ? ", " + R.each + " each" : ""}</span></button>
@@ -470,7 +529,8 @@
         ${mine ? `<div class="names" style="margin-top:6px"><label><input id="pclue" class="ftxt" maxlength="30" autocomplete="off"
             enterkeyhint="send" placeholder="${tid === me ? "Your clue" : esc(tname) + "'s clue"}"></label></div>
           <p class="err" id="perr"></p>`
-        : `<p class="c" style="font-size:20px;font-weight:700;margin:8px 0">${esc(tname)} is thinking...</p>`}`;
+        : `<p class="c" style="font-size:20px;font-weight:700;margin:8px 0">${esc(tname)} is thinking...</p>`}
+        ${isHost && !mine ? `<button class="textbtn" data-a="p-skip">Skip ${esc(tname)}${(P.players.find(p => p.id === tid) || {}).on ? "" : " (offline)"}</button>` : ""}`;
       if (mine) foot = `<button class="bar" data-a="p-clue" data-id="${tid}">Send${tid === me ? "" : " for " + esc(tname)}</button>`;
     } else if (R.phase === "vote") {
       // who still needs a vote on this phone
@@ -492,7 +552,8 @@
       <p class="cat"><span class="k">Category</span><span class="v">${esc(R.cat)}</span></p>
       <div class="chat">${clues || '<p class="c mut small">No clues yet. ' + esc(R.first) + " goes first.</p>"}</div>
       ${body}
-      <div class="grow" style="justify-content:flex-end">${peek}</div>
+      <div class="grow" style="justify-content:flex-end">${peek}
+        <p class="c small">${isHost ? '<button class="textbtn" data-a="p-reveal" style="padding:6px">End round</button> &nbsp;·&nbsp; ' : ""}${REPORT.replace('class="textbtn"', 'class="textbtn" style="padding:6px"')}</p></div>
       ${foot}`, farScreen, "on");
     if (peek) holdWire(cardInner(myCard(), R));
     const inp = $p("#pclue");
@@ -534,7 +595,7 @@
   // Only the host decides; everyone else asks it.
   function callMeeting(pid, body) {
     const R = P.round;
-    if (!R || R.mode !== "tag" || R.phase !== "on" || isOut(pid)) return;
+    if (!R || R.mode !== "tag" || R.phase !== "on" || R.dealing || isOut(pid)) return;
     if (!body) {
       if (R.meetLeft <= 0) return;
       if (R.each && (R.used[pid] || 0) >= R.each) return;
@@ -559,6 +620,7 @@
   }
   function meeting(loud) {
     const R = P.round, isHost = P.role === "host";
+    R.coolEnd = 0;                       // a cooldown from before the meeting is over
     view(`${bar("")}
       <div class="grow">
         <p class="c" style="font-size:20px;font-weight:700;color:var(--imp);letter-spacing:.08em">${R.body ? "BODY REPORTED" : "EMERGENCY MEETING"}</p>
@@ -572,7 +634,7 @@
         <p class="c mut small">${R.meetLeft} emergency meeting${R.meetLeft === 1 ? "" : "s"} left</p>
         <button class="bar ghost slim" data-a="p-hush">Stop the siren</button>
       </div>
-      ${isHost ? (P.set.vote === "loud" ? '<button class="bar" data-a="p-mv-loud">Who got voted out?</button>' : '<button class="bar" data-a="p-mv-start">Start the vote</button>')
+      ${isHost ? (P.set.vote === "loud" ? '<button class="bar" data-a="p-mv-loud">Who\'s out?</button>' : '<button class="bar" data-a="p-mv-start">Start the vote</button>')
         : `<p class="c mut small" style="margin:8px 0">${(R.vote || P.set.vote) === "loud" ? "Talk it over. The host taps who's voted out." : "Talk it over. The vote opens on your phone."}</p>`}`,
       () => meeting(false), "meeting");
     if (loud) Siren.play(8);
@@ -588,12 +650,18 @@
   }
   function takeMvote(pid, v) {
     const R = P.round;
-    if (!R || R.phase !== "mvote" || !R.mv.voters.includes(pid) || R.mv.votes[pid]) return;
-    if (v !== "skip" && v !== "tagged" && (!aliveIds().includes(v) || v === pid)) return;
+    if (!R || R.phase !== "mvote" || !R.mv.voters.includes(pid) || R.mv.votes[pid]) return false;
+    if (v !== "skip" && v !== "tagged" && (!aliveIds().includes(v) || v === pid)) return false;
+    if (v === "tagged" && R.cards[pid] && R.cards[pid].imp) return false;     // imposters can't be tagged
     R.mv.votes[pid] = v;
-    if (v === "tagged") R.out[pid] = true;
-    if (Object.keys(R.mv.votes).length >= R.mv.voters.length) return mvCount();
+    if (v === "tagged") {
+      R.out[pid] = true;
+      // Enough tags can hand the imposters the win before the vote ends.
+      if (tagWinnerP()) { R.mv = null; finishVote("", [], true); return true; }
+    }
+    if (Object.keys(R.mv.votes).length >= R.mv.voters.length) { mvCount(); return true; }
     syncAll();
+    return true;
   }
   function tagWinnerP() {
     const R = P.round; let imp = 0, crew = 0;
@@ -602,7 +670,11 @@
   }
   function mvCount() {
     const R = P.round, t = {}; let skips = 0;
-    Object.values(R.mv.votes).forEach(v => { if (v === "skip") skips++; else if (v !== "tagged") t[v] = (t[v] || 0) + 1; });
+    Object.values(R.mv.votes).forEach(v => {
+      if (v === "tagged") return;
+      if (v === "skip" || isOut(v)) skips++;          // voted for someone who's out by now
+      else t[v] = (t[v] || 0) + 1;
+    });
     const ranked = Object.entries(t).map(([id, n]) => ({ id, n })).filter(x => !isOut(x.id)).sort((a, b) => b.n - a.n);
     let out = "";
     if (ranked.length && (ranked.length === 1 || ranked[0].n > ranked[1].n) && ranked[0].n > skips) out = ranked[0].id;
@@ -610,9 +682,9 @@
     R.mv = null;
     finishVote(out, ranked.map(x => nameOf(x.id) + " " + x.n).concat(skips ? ["Skip " + skips] : []));
   }
-  function finishVote(outId, tally) {
+  function finishVote(outId, tally, early) {
     const R = P.round;
-    R.result = { out: outId ? nameOf(outId) : "", tally: tally || [], win: tagWinnerP() };
+    R.result = { out: outId ? nameOf(outId) : "", tally: tally || [], win: tagWinnerP(), early: !!early };
     R.phase = "result";
     syncAll();
   }
@@ -625,12 +697,13 @@
     let body, foot = "";
     if (next) {
       const ids = R.order || (R.people || []).map(x => x.id);
+      const nextImp = isHost ? !!(R.cards[next] && R.cards[next].imp) : !!(R.card && R.card.imp);
       const items = ids.filter(id => !isOut(id) && id !== next).map(id => ({ v: id, label: esc(nameOf(id)) }))
-        .concat([{ v: "skip", label: "Skip vote", cls: "skip" }]);
+        .concat([{ v: "skip", label: "Skip vote", cls: "skip" }])
+        .concat(nextImp ? [] : [{ v: "tagged", label: "I got tagged", sub: "so I'm out", cls: "skip" }]);
       body = `<h2 class="ask">${next === me ? "Who do you vote out?" : esc(nameOf(next)) + ", who do you vote out?"}</h2>
         ${next !== me ? '<p class="mut small">Hand the phone over. Votes are secret.</p>' : ""}
-        ${pickList(items)}
-        <button class="textbtn" data-a="p-mv" data-by="${next}" data-v="tagged">I got tagged, so I'm out</button>`;
+        ${pickList(items)}`;
       foot = `<button class="bar" data-a="p-mv" data-by="${next}" data-needs-pick disabled>Submit vote</button>`;
     } else {
       const inn = isHost ? Object.keys(R.mv.votes).length : (R.mv ? R.mv.inn : 0), need = isHost ? R.mv.voters.length : (R.mv ? R.mv.need : 0);
@@ -640,11 +713,18 @@
     }
     view(`${bar("", "Vote")}<div class="list">${body}</div>${foot}`, mvoteScreen, "mvote");
   }
+  function loudTagged() {
+    const R = P.round;
+    view(`${bar("p-meeting", "")}<div class="list"><h2 class="ask">Anyone tagged?</h2>
+      <p class="c mut small">Check everyone who got tagged. Nobody? Just tap Next.</p>
+      ${pickList(aliveIds().map(id => ({ v: id, label: esc(nameOf(id)), cls: (R.tg || []).includes(id) ? "on" : "" })), true)}</div>
+      <button class="bar" data-a="p-mv-tagged">Next</button>`, loudTagged, "loudtag");
+  }
   function loudPick() {
     const R = P.round;
-    const items = aliveIds().map(id => ({ v: id, label: esc(nameOf(id)) }))
+    const items = aliveIds().filter(id => !(R.tg || []).includes(id)).map(id => ({ v: id, label: esc(nameOf(id)) }))
       .concat([{ v: "none", label: "Nobody", sub: "skipped or a tie", cls: "skip" }]);
-    view(`${bar("", "")}<div class="list"><h2 class="ask">Who got voted out?</h2>${pickList(items)}</div>
+    view(`${bar("p-mv-loud", "")}<div class="list"><h2 class="ask">Who got voted out?</h2>${pickList(items)}</div>
       <button class="bar" data-a="p-mv-out" data-needs-pick disabled>Done</button>`, loudPick, "loudpick");
   }
   function resultScreen() {
@@ -652,11 +732,11 @@
     view(`${bar("", "")}
       <div class="grow">
         <p class="c" style="font-size:20px;font-weight:700;color:var(--acc);letter-spacing:.08em">VOTE RESULT</p>
-        <p class="who">${r.out ? esc(r.out) : "No one"}</p>
-        <p class="c mut" style="font-size:18px">was voted out</p>
+        ${r.early ? '<p class="who">Vote stopped</p>'
+          : `<p class="who">${r.out ? esc(r.out) : "No one"}</p><p class="c mut" style="font-size:18px">was voted out</p>`}
         ${r.tally && r.tally.length ? `<p class="c mut small">${r.tally.map(esc).join(" &nbsp;·&nbsp; ")}</p>` : ""}
         ${r.win ? `<p class="c" style="font-size:22px;font-weight:700;color:var(${r.win === "crew" ? "--crew" : "--imp"})">${
-            r.win === "crew" ? "That was the last imposter. Crew win!" : "Imposters win! There are as many of them as crew left."}</p>`
+            r.win === "crew" ? "That was the last imposter. Crew win!" : "Imposters win! There are at least as many of them as crew."}</p>`
           : `<div class="card" style="min-height:0;gap:6px"><p style="font-size:19px;font-weight:600">Everyone: &ldquo;3, 2, 1, UP!&rdquo;</p>
              <p class="mut small">Then no tagging for 15 seconds. Every phone counts it down.</p></div>`}
       </div>
@@ -678,6 +758,7 @@
   function revealNow() {
     const R = P.round; R.phase = "reveal";
     const r = { t: "reveal", mode: R.mode, word: R.word, cat: R.cat, imps: R.imps };
+    R.revealMsg = r;
     broadcast(r); Siren.stop();
     return reveal(r);
   }
@@ -688,7 +769,7 @@
         ${r.mode === "word" ? `<p class="c mut" style="font-size:18px;font-weight:600">The word was</p>
           <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${esc(r.word)}</p>` : ""}
         ${r.far ? `<p class="c" style="font-size:22px;font-weight:700;color:${r.caught ? "var(--crew)" : "var(--imp)"}">${
-            r.out ? esc(r.out) + " was voted out. " + (r.caught ? "Crew win!" : "Wrong one. Imposters win!") : "It's a tie, so nobody's out. Imposters win!"}</p>
+            r.out ? esc(r.out) + " was voted out. " + (r.caught ? "Crew win!" : "Wrong one. Imposters win!") : (r.tally && r.tally.length ? "It's a tie, so nobody's out. Imposters win!" : "No votes, so nobody's out. Imposters win!")}</p>
           <p class="c mut small">${(r.tally || []).map(x => esc(x.name) + " " + x.votes).join(" &nbsp;·&nbsp; ")}</p>` : ""}
         <p class="c mut" style="font-size:20px;font-weight:600;margin-top:10px">${r.imps.length === 1 ? "Imposter" : "Imposters"}</p>
         <p class="c" style="font-size:36px;font-weight:700;color:var(--imp);text-wrap:balance">${r.imps.map(esc).join(", ")}</p>
@@ -729,25 +810,27 @@
     peer.on("open", () => {
       const conn = peer.connect(PREFIX + P.code, { reliable: true });
       P.conn = conn;
-      conn.on("open", () => { P.tries = 0; send(conn, { t: "join", name: P.me.name }); });
+      conn.on("open", () => { send(conn, { t: "join", name: P.me.name, key: KEY }); });
       conn.on("data", guestMsg);
       conn.on("close", () => guestLost(conn));
       conn.on("error", () => guestLost(conn));
     });
     peer.on("error", e => {
-      if (P && P.peer === peer && !P.me.id) return join(P.me.name, netWhy(e));
+      if (P && P.peer === peer && !P.me.id) { try { peer.destroy(); } catch (_) {} return join(P.me.name, netWhy(e)); }
       if (P && P.peer === peer) guestLost(P.conn);
     });
   }
   function guestLost(conn) {
-    if (!P || P.role !== "guest" || P.conn !== conn || P.leaving) return;
+    if (!P || P.role !== "guest" || P.conn !== conn || P.leaving || P.dead) return;
     if (!P.me.id) return;                                // never got in
     // Two minutes from the moment the host's phone went quiet, counted on
     // screen, then the party is over for this phone.
     if (!P.lostAt) P.lostAt = Date.now();
     const LIMIT = 120000, left = () => LIMIT - (Date.now() - P.lostAt);
     if (left() <= 0) {
-      P.lostAt = 0;
+      // Over for good: no more retries restarting the countdown.
+      P.lostAt = 0; P.dead = true;
+      try { P.peer && P.peer.destroy(); } catch (_) {}
       return view(`${bar("p-leave")}<div class="grow"><h2>The party ended</h2>
         <p class="c mut">The host's phone was off for 2 minutes.</p></div>
         <button class="bar" data-a="p-retry">Try again</button>`, null, "lost");
@@ -768,22 +851,23 @@
         if (left() <= 0) { stopTick(); guestLost(P.conn); }
       }, 500);
     }
-    setTimeout(() => { if (P && P.role === "guest" && !P.leaving && P.lostAt) connectGuest(); }, 2500);
+    setTimeout(() => { if (P && P.role === "guest" && !P.leaving && !P.dead && P.lostAt) connectGuest(); }, 2500);
   }
   function guestMsg(m) {
     if (!P || P.role !== "guest" || !m || typeof m !== "object") return;
     if (m.t === "reject") {
       try { P.peer.destroy(); } catch (_) {}
-      const name = P.me.name;
-      if (m.name) return nameScreen(n => join(n), m.why);
+      const name = P.me.name, code = P.code;
+      if (m.name) return nameScreen(n => linkGo(code, n), m.why);    // new name, straight back in
       return join(name, m.why);
     }
-    if (m.t === "welcome") { P.me.id = m.id; P.lostAt = 0; P.tries = 0; keepAwake(true); return; }
+    if (m.t === "welcome") { P.me.id = m.id; P.lostAt = 0; keepAwake(true); return; }
     if (m.t === "lobby") {
       P.players = m.players; P.set = m.set;
       // Between games (or before the first) the lobby is the screen; during a
       // game this is just the player list changing, so the game stays up.
       if (!m.inRound) { P.round = null; Siren.stop(); return guestLobby(); }
+      if (!P.round && P.screen !== "reveal") return guestLobby();   // joined during the reveal
       return;
     }
     if (m.t === "round") {
@@ -799,12 +883,6 @@
       if (!P.round) return;
       Object.assign(P.round, { phase: "meeting", caller: m.by, body: m.body, meetLeft: m.left, used: m.used });
       return meeting(true);
-    }
-    if (m.t === "meetover") {
-      if (!P.round) return;
-      P.round.phase = "on"; P.round.meetLeft = m.left;
-      Siren.stop();
-      return gameOn();
     }
     if (m.t === "reveal") { if (P.round) P.round.phase = "reveal"; Siren.stop(); return reveal(m); }
     if (m.t === "kicked") { P.leaving = true; try { P.peer.destroy(); } catch (_) {} P = null; keepAwake(false);
@@ -825,14 +903,17 @@
         <p class="sec">Players <span>${P.players.length}</span></p>
         <div class="avs">${bubbles(P.players, false, P.me.id)}</div>
         <div class="wait" style="margin-top:12px"><div class="spin"></div>Waiting for the host to start</div>
+        ${REPORT}
       </div>`, guestLobby, "lobby");
   }
 
   /* ------------------------------------------------------------ leaving */
   function endParty() {
     if (!P) return home();
-    if (P.role === "host") { broadcast({ t: "ended" }); setTimeout(() => { try { P && P.peer && P.peer.destroy(); } catch (_) {} P = null; }, 300); }
-    else { P.leaving = true; send(P.conn, { t: "leave" }); setTimeout(() => { try { P && P.peer && P.peer.destroy(); } catch (_) {} P = null; }, 300); }
+    const old = P;
+    if (old.role === "host") broadcast({ t: "ended" });
+    else { old.leaving = true; send(old.conn, { t: "leave" }); }
+    setTimeout(() => { try { old.peer && old.peer.destroy(); } catch (_) {} if (P === old) P = null; }, 300);
     keepAwake(false); Siren.stop();
     home();
   }
@@ -853,14 +934,16 @@
     if (a === "p-rand")  { const i = $p("#pn"); if (i) i.value = NameCheck.random(P && P.players ? P.players.map(p => p.name) : []); return; }
     if (a === "p-name-ok") return nameOk();
     if (a === "p-join-go") return joinGo();
-    if (a === "p-retry")   { P.tries = 0; P.lostAt = 0; view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Reconnecting...</p></div>`); return connectGuest(); }
+    if (a === "p-retry")   { P.lostAt = 0; P.dead = false; view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Reconnecting...</p></div>`); return connectGuest(); }
     if (a === "p-leave" || a === "p-end") return endParty();
     if (!P) return;
     if (a === "p-lobby")   return lobby();
     if (a === "p-add")     return addLocal();
     if (a === "p-add-ok")  return addLocalOk();
     if (a === "p-kick") {
-      const id = b.dataset.id, c = P.conns.get(id);
+      const id = b.dataset.id, c = P.conns.get(id), pl = P.players.find(p => p.id === id);
+      // Removed means removed: the same name or phone can't come back in.
+      if (pl && pl.kind === "phone") { P.banned.add(pl.name.toLowerCase()); if (pl.key) P.banned.add("k:" + pl.key); }
       send(c, { t: "kicked" }); setTimeout(() => { try { c && c.close(); } catch (_) {} }, 200);
       P.conns.delete(id); P.players = P.players.filter(p => p.id !== id);
       shareLobby(); return lobby();
@@ -884,13 +967,9 @@
       inp.disabled = true; b.disabled = true;
       return send(P.conn, { t: "clue", text: t });
     }
-    if (a === "p-vote") {
-      if (P.role === "host") return takeVote(b.dataset.by, b.dataset.for);
-      P.round.myVote = b.dataset.for; farScreen();
-      return send(P.conn, { t: "vote", for: b.dataset.for });
-    }
     if (a === "p-count") return countVotes();
-    if (a === "p-mode")  { P.set.word = b.dataset.v === "word"; saveSet(); shareLobby(); return lobby(); }
+    if (a === "p-lock")  { P.locked = b.dataset.v === "locked"; return lobby(); }
+    if (a === "p-skip")  return P.role === "host" && skipTurn();
     if (a === "p-hint")  { P.set.hint = b.dataset.v ? b.dataset.v === "on" : !P.set.hint; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-inc" || a === "p-dec") {
       const k = b.dataset.k, lim = { imps: [1, 7], meetings: [0, 9], each: [0, 3], rounds: [1, 3] }[k];
@@ -907,15 +986,13 @@
     }
     if (a === "p-meet-by") return callMeeting(b.dataset.id, false);
     if (a === "p-body") {
-      if (P.role === "host") return callMeeting("host", true);
+      if (P.role === "host") {
+        const id = P.players.filter(p => p.kind !== "phone").map(p => p.id).find(x => !isOut(x));
+        return id && callMeeting(id, true);
+      }
       return send(P.conn, { t: "meet", body: true });
     }
     if (a === "p-hush")    return Siren.stop();
-    if (a === "p-meetover") {
-      const R = P.round; R.phase = "on"; Siren.stop();
-      broadcast({ t: "meetover", left: R.meetLeft });
-      return gameOn();
-    }
     if (a === "p-cool") {
       const R = P.round;
       if (!R.coolEnd || R.coolEnd <= Date.now()) { R.coolEnd = Date.now() + R.cool * 1000; ringSet(R.cool, R.cool); }
@@ -938,11 +1015,22 @@
       return send(P.conn, { t: "vote", for: v });
     }
     if (a === "p-mv-count") return mvCount();
-    if (a === "p-mv-loud") { Siren.stop(); return loudPick(); }
+    if (a === "p-meeting") return meeting(false);
+    if (a === "p-mv-loud") { Siren.stop(); P.round.tg = P.round.tg || []; return loudTagged(); }
+    if (a === "p-mv-tagged") {
+      // Kept to one side until the vote is in, so Back can still change it.
+      const R = P.round;
+      R.tg = [...app.querySelectorAll(".opt.on")].map(o => o.dataset.v);
+      R.tg.forEach(id => { R.out[id] = true; });
+      if (tagWinnerP()) { R.tg = []; return finishVote("", [], true); }
+      R.tg.forEach(id => { delete R.out[id]; });
+      return loudPick();
+    }
     if (a === "p-mv-out") {
-      const v = picked();
+      const v = picked(), R = P.round;
       if (!v) return;
-      if (v !== "none") P.round.out[v] = true;
+      (R.tg || []).forEach(id => { R.out[id] = true; }); R.tg = [];
+      if (v !== "none") R.out[v] = true;
       return finishVote(v === "none" ? "" : v, []);
     }
     if (a === "p-mv-done") {
@@ -965,14 +1053,13 @@
     catch (_) { if (msg) msg.textContent = inviteUrl(); }
   }
   // Opened from an invite: just a name, then straight in.
-  function fromLink(code) {
-    nameScreen(name => {
-      P = { role: "guest", me: { id: "", name }, players: [], set: {}, round: null, code, peer: null, conn: null, tries: 0 };
-      store.set("imp_party_code", code);
-      view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Joining ${esc(code)}...</p></div>`);
-      connectGuest();
-    });
+  function linkGo(code, name) {
+    P = { role: "guest", me: { id: "", name }, players: [], set: {}, round: null, code, peer: null, conn: null };
+    store.set("imp_party_code", code);
+    view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Joining ${esc(code)}...</p></div>`);
+    connectGuest();
   }
+  function fromLink(code) { nameScreen(name => linkGo(code, name)); }
 
   window.Party = { start, fromLink, active: () => !!P };
 

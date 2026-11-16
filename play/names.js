@@ -18,6 +18,9 @@
                  "$": "s", "7": "t", "+": "t", "8": "b", "9": "g", "6": "g", "2": "z" };
   const norm = s => s.toLowerCase().replace(/[0-9!|@$+]/g, c => LEET[c] || c);
   const squash = s => s.replace(/(.)\1+/g, "$1");
+  // No links, emails, handles or phone numbers: names and clues go to other
+  // people's phones.
+  const CONTACT = /https?:|www\.|\.(com|net|org|io|gg|me|co|tv|app|xyz|ly)\b|@|\d{5,}|\d{3}[\s.-]\d{3}[\s.-]?\d{4}/i;
 
   function check(raw) {
     const name = (raw || "").replace(/\s+/g, " ").trim();
@@ -25,6 +28,7 @@
     if (name.length > 14) return { ok: false, why: "Keep it to 14 letters or fewer." };
     if (!/^[A-Za-z0-9 .'\-]+$/.test(name)) return { ok: false, why: "Letters, numbers and spaces only." };
     if (!/[A-Za-z]/.test(name)) return { ok: false, why: "Put at least one letter in it." };
+    if (CONTACT.test(name)) return { ok: false, why: "No links or long numbers in names." };
     const n = norm(name);
     const flat = n.replace(/[^a-z]/g, "");
     const words = n.split(/[^a-z]+/).filter(Boolean);
@@ -55,6 +59,7 @@
   // Clues go to everyone's phone, so they get the same word check (no length
   // or letters-only rules: "hot sauce" and "50s" are fine clues).
   function clean(raw) {
+    if (CONTACT.test(String(raw || ""))) return false;
     const n = norm(String(raw || ""));
     const flat = n.replace(/[^a-z]/g, "");
     const words = n.split(/[^a-z]+/).filter(Boolean);
