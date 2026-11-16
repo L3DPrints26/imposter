@@ -9,10 +9,10 @@
   "use strict";
   const rev = s => s.split("").reverse().join("");
   // Blocked anywhere inside a name.
-  const ANY_LIST = ["kcuf", "tihs", "hctib", "tnuc", "yssup", "erohw", "tuls", "ggin", "toggaf", "drater", "nrop", "sinep", "anigav", "elohssa", "dratsab", "tawt", "knaw", "zzij", "odlid", "ynroh", "ssip", "izan", "reltih", "kkk", "tsipar", "flesruoyllik", "kcid", "kcuc", "ekik", "kcabtew", "ynnart", "renaeb", "ekyd", "boob", "elppin", "yxes", "ysup", "elohsa", "togaf"].map(rev);
+  const ANY_LIST = ["kcuf", "tihs", "hctib", "tnuc", "yssup", "erohw", "tuls", "ggin", "toggaf", "drater", "nrop", "sinep", "anigav", "elohssa", "dratsab", "tawt", "zzij", "odlid", "ynroh", "ssip", "reltih", "kkk", "kcuc", "ekik", "kcabtew", "ynnart", "renaeb", "elppin", "yxes", "ysup", "elohsa", "togaf", "kuf", "kcf", "kcuhp", "quf", "tyhs", "t1hs", "hctaib", "hctb", "tnuk", "rohw", "t0ls", "aggin", "rgin", "agin", "nr0p", "nigav", "elohesra", "rotarbiv", "einroh", "dessip", "kc1d", "yttit", "seittit", "xxes", "msagro", "flim", "toht", "bojwolb", "bojdnah", "renob", "elcitset", "mutorcs", "nemes", "mreps", "modnoc", "tsecni", "elihpodep", "elifodep", "tselom", "edicius", "smk", "mrahfles", "flesymtuc", "tsirorret", "sisi", "akitsaws", "eniacoc", "gnob", "ysatsce", "lynatnef", "xanax", "daehkcarc", "eiggurd", "ftw", "ufts", "gfmo", "oafml", "lmf", "tihsllub", "ssabmud", "ssakcaj", "ssatrams", "ssadab", "daehtihs", "daehkcid", "elohttub", "gulpttub", "sbweb", "sboob", "reppirts", "rekooh", "etutitsorp", "yddadragus", "seussiyddad", "snafylno", "reredrum", "rebmob", "ssataf", "ostaf", "ssadral", "ypeerc", "timmad", "nmaddog", "ypparc", "rotaredom"].map(rev);
   // Blocked only as a whole word, because they hide inside fine words
   // (peacock, grape, hello, button, raccoon, Sussex, cucumber, canal).
-  const WORD_SET = new Set(["kcoc", "epar", "ttub", "ssa", "muc", "xes", "nooc", "omoh", "cips", "knihc", "koog", "gaf", "nmad", "parc", "lleh", "stit", "edun", "dekan", "lana", "eoh", "kcus", "skcus"].map(rev));
+  const WORD_SET = new Set(["kcoc", "epar", "ttub", "ssa", "muc", "xes", "nooc", "omoh", "cips", "knihc", "koog", "gaf", "nmad", "parc", "lleh", "stit", "edun", "dekan", "lana", "eoh", "kcus", "skcus", "esra", "koc", "tsipar", "suna", "smuc", "tit", "seoh", "izan", "sizan", "orgen", "deew", "nioreh", "kcarc", "htem", "top", "epod", "hgih", "evals", "sevals", "syk", "odep", "sodep", "knaw", "reknaw", "ekyd", "96yag", "syag", "sb", "fa", "htw", "uf", "kf", "ths", "pp", "eep", "oop", "poop", "sttub", "ytoob", "mub", "smub", "tun", "stun", "sllab", "llab", "kcas", "tsoh", "dom", "sved", "ved", "mg", "llik", "sllik", "eid", "seid", "daed", "htaed", "rellik", "toohs", "nug", "doolb", "bats", "pirts", "tnulb", "bmud", "rekcus", "pmip", "trocse", "peerc", "kaerf", "bmob", "ffats", "metsys", "troppus", "elppa", "laiciffo", "nimda", "erog", "redrum", "1ssup", "5inep", "denots", "resol", "ylgu", "sedun", "boob", "norom", "toidi", "diputs", "odriew", "vrep", "trevrep", "kcid", "kid", "ctib", "elfir", "retoohs", "flesruoyllik", "dsl", "namssa", "tahssa", "epiwssa", "nwolcssa", "sessa"].map(rev));
 
   const LEET = { "0": "o", "1": "i", "!": "i", "|": "i", "3": "e", "4": "a", "@": "a", "5": "s",
                  "$": "s", "7": "t", "+": "t", "8": "b", "9": "g", "6": "g", "2": "z" };
@@ -29,12 +29,15 @@
     if (!/^[A-Za-z0-9 .'\-]+$/.test(name)) return { ok: false, why: "Letters, numbers and spaces only." };
     if (!/[A-Za-z]/.test(name)) return { ok: false, why: "Put at least one letter in it." };
     if (CONTACT.test(name)) return { ok: false, why: "No links or long numbers in names." };
+    if (/(^|\D)(69|420|666|80085|8008|5318008)(\D|$)/.test(name)) return { ok: false, why: "Pick a different name. That one isn't allowed." };
     const n = norm(name);
     const flat = n.replace(/[^a-z]/g, "");
     const words = n.split(/[^a-z]+/).filter(Boolean);
+    const rawWords = name.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+    const trimmed = flat.replace(/^x+|x+$/g, "");
     const bad =
       ANY_LIST.some(w => flat.includes(w) || squash(flat).includes(w)) ||
-      words.some(w => WORD_SET.has(w) || WORD_SET.has(squash(w))) ||
+      words.concat(rawWords, [trimmed]).some(w => WORD_SET.has(w) || WORD_SET.has(squash(w))) ||
       WORD_SET.has(flat) || WORD_SET.has(squash(flat));
     if (bad) return { ok: false, why: "Pick a different name. That one isn't allowed." };
     return { ok: true, name };
@@ -60,6 +63,7 @@
   // or letters-only rules: "hot sauce" and "50s" are fine clues).
   function clean(raw) {
     if (CONTACT.test(String(raw || ""))) return false;
+    if (/(^|\D)(69|420|80085|5318008)(\D|$)/.test(String(raw || ""))) return false;
     const n = norm(String(raw || ""));
     const flat = n.replace(/[^a-z]/g, "");
     const words = n.split(/[^a-z]+/).filter(Boolean);

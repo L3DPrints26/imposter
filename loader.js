@@ -23,6 +23,24 @@
     { pal: GOLD, off: 2.45, wob: 0.06, wf: 1.1, seed: 4.4, rest: -Math.PI / 2 + 0.95 }
   ];
 
+  // One runner per player, imposters in red (his ask). Just the host, or no
+  // count given: the logo's two gold and one red. Big groups run smaller.
+  var DEFAULT_CAST = CAST, SIZE = 1;
+  function setCast(o) {
+    var n = o && o.players | 0, k = o && o.imps | 0;
+    if (!o || n < 3) { CAST = DEFAULT_CAST; SIZE = 1; return; }
+    n = Math.min(15, n); k = Math.max(1, Math.min(n - 1, k || 1));
+    var every = n / k, cast = [];
+    for (var i = 0; i < n; i++) {
+      var imp = Math.abs((i % every)) < 0.5 && cast.filter(function (c) { return c.imp; }).length < k;
+      var spread = Math.min(2.6, 0.32 * (n - 1));             // reduced motion: a row across the front
+      cast.push({ pal: imp ? RED : GOLD, imp: imp, off: i * TAU / n, wob: 0.04 + 0.05 * ((i * 37) % 10) / 10,
+        wf: 1.1 + (i % 5) * 0.15, seed: i * 1.7, rest: Math.PI / 2 + (i / Math.max(1, n - 1) - 0.5) * spread });
+    }
+    CAST = cast;
+    SIZE = n <= 3 ? 1 : Math.max(0.56, 1 - (n - 3) * 0.04);
+  }
+
   var el, cvs, ctx, label, raf = 0, last = 0, clock = 0, scale = 1;
   var state = 'off', hideT = 0, autoT = 0, waiters = [], text = 'Loading';
   var mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -273,7 +291,7 @@
         if (c.imp) r.look = Math.max(-1, Math.min(1, r.turn * 2.5));
       }
       r.z = Math.sin(th);                                     // +1 nearest the viewer, -1 farthest
-      r.s = 0.84 + 0.08 * (r.z + 1);                          // far = smaller
+      r.s = (0.84 + 0.08 * (r.z + 1)) * SIZE;                 // far = smaller
       r.x = CX + RX * Math.cos(th);
       r.y = CY + RY * r.z;
       list.push(r);
@@ -320,7 +338,8 @@
     w.forEach(function (fn) { fn(); });
   }
 
-  function show(t, ms) {
+  function show(t, ms, cast) {
+    if (state === 'off' || cast) setCast(cast);
     setText(t);
     if (hideT) { clearTimeout(hideT); hideT = 0; }            // cancel a fade-out in progress
     if (state === 'off') clock = 0;
@@ -356,6 +375,6 @@
   window.Loader = {
     show: show,
     hide: hide,
-    preview: function (t) { clearTimeout(autoT); autoT = 0; return show(t); }
+    preview: function (t, cast) { clearTimeout(autoT); autoT = 0; return show(t, null, cast); }
   };
 })();

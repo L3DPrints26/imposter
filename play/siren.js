@@ -8,7 +8,29 @@
    allowed on this one. */
 (function () {
   "use strict";
-  let ctx = null, live = null;
+  let ctx = null, live = null, flashTimer = null;
+
+  /* While the siren sounds, the whole screen pulses into its opposite colors
+     under a red glow, and back (his ask, 2026-11-16). Under one flash a second,
+     well below the 3-a-second limit for flashing content; a steady red tint
+     instead when the phone asks for reduced motion. "Stop the siren" only
+     shows while it's going. */
+  const FLASH_CSS = `
+.sirenflash{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0;mix-blend-mode:difference;
+  background:radial-gradient(120% 90% at 50% 35%,#FF3B2B 0%,#E01408 55%,#9A0000 100%)}
+.siren-on .sirenflash{animation:sirenpulse .6s ease-in-out infinite alternate}
+@keyframes sirenpulse{from{opacity:0}to{opacity:.88}}
+html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{display:none!important}
+@media (prefers-reduced-motion:reduce){.siren-on .sirenflash{animation:none;opacity:.3;mix-blend-mode:normal}}`;
+  function flash(on) {
+    if (on && !document.querySelector(".sirenflash")) {
+      const st = document.createElement("style"); st.textContent = FLASH_CSS; document.head.appendChild(st);
+      const d = document.createElement("div"); d.className = "sirenflash"; d.setAttribute("aria-hidden", "true");
+      document.body.appendChild(d);
+    }
+    document.documentElement.classList.toggle("siren-on", on);
+    if (flashTimer) { clearTimeout(flashTimer); flashTimer = null; }
+  }
 
   function unlock() {
     try {
@@ -23,6 +45,7 @@
   document.addEventListener("keydown", unlock, { capture: true });
 
   function stop() {
+    flash(false);
     try { if (navigator.vibrate) navigator.vibrate(0); } catch (_) {}
     if (!live) return;
     const { nodes, out } = live;
@@ -83,6 +106,8 @@
     lfo.start(t0); lfo.stop(t0 + T + 0.1);
     live = { nodes, out };
     setTimeout(() => { if (live && live.out === out) live = null; }, (T + 0.3) * 1000);
+    flash(true);
+    flashTimer = setTimeout(() => flash(false), (T + 0.05) * 1000);
     if (navigator.vibrate) navigator.vibrate([600, 200, 600, 200, 600]);
   }
 
