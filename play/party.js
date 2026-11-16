@@ -61,7 +61,18 @@
       if (!on && wake) { await wake.release(); wake = null; }
     } catch (_) {}
   }
-  document.addEventListener("visibilitychange", () => { if (P && !document.hidden) keepAwake(true); });
+  // Coming back to the app after the screen went off: the phone may have
+  // dropped its connection. The host reconnects under the same code; guests
+  // are already retrying on their own.
+  document.addEventListener("visibilitychange", () => {
+    if (!P || document.hidden) return;
+    keepAwake(true);
+    if (P.role === "host" && P.peer) {
+      if (P.peer.destroyed) openAs(0, P.code);
+      else if (P.peer.disconnected) { try { P.peer.reconnect(); } catch (_) {} }
+    }
+    if (P.role === "guest" && P.me.id && (!P.conn || !P.conn.open) && P.screen !== "reconnect") guestLost(P.conn);
+  });
 
   function view(html, redrawFn, screen) {
     stopTick();
@@ -122,14 +133,16 @@
     view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Making your party...</p></div>`);
     openAs(0);
   }
-  function openAs(tries) {
-    const code = newCode();
+  // keep: the code to reuse when the host's phone wakes back up, so the
+  // party (and the round in progress) comes back under the same code.
+  function openAs(tries, keep) {
+    const code = keep || newCode();
     const peer = new Peer(PREFIX + code, { debug: 0 });
     peer.on("open", () => {
       if (!P || P.role !== "host") return peer.destroy();
       P.peer = peer; P.code = code;
       keepAwake(true);
-      lobby();
+      if (!keep) lobby();
     });
     peer.on("connection", conn => {
       conn.on("data", m => hostMsg(conn, m));
@@ -138,6 +151,7 @@
     });
     peer.on("disconnected", () => { try { if (P && P.peer === peer) peer.reconnect(); } catch (_) {} });
     peer.on("error", e => {
+      if (keep) { peer.destroy(); return setTimeout(() => P && P.role === "host" && P.code === keep && openAs(0, keep), 3000); }
       if (e.type === "unavailable-id" && tries < 6) { peer.destroy(); return openAs(tries + 1); }
       if (P && !P.code) return fail(netWhy(e));
     });
@@ -728,7 +742,7 @@
   function guestLost(conn) {
     if (!P || P.role !== "guest" || P.conn !== conn || P.leaving) return;
     if (!P.me.id) return;                                // never got in
-    if (++P.tries > 10) {
+    if (++P.tries > 48) {
       return view(`${bar("p-leave")}<div class="grow"><h2>Lost the party</h2>
         <p class="c mut">Couldn't reach the host's phone. Make sure it's still open with the screen on.</p></div>
         <button class="bar" data-a="p-retry">Try again</button>`, null, "lost");
