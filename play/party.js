@@ -1061,7 +1061,22 @@
   }
   function fromLink(code) { nameScreen(name => linkGo(code, name)); }
 
-  window.Party = { start, fromLink, active: () => !!P };
+  // What the Ask helper may know about the party: only what everyone in it
+  // can already see. Never a card, the word, or who the imposters are.
+  function info() {
+    if (!P || !P.role || !P.code) return null;
+    const R = P.round, s = P.set || {}, host = P.role === "host";
+    const o = { role: P.role, code: P.code, me: P.me && P.me.name, screen: P.screen, locked: !!P.locked,
+      players: (P.players || []).map(p => p.name + (p.kind === "local" ? " (plays on the host's phone)" : p.on === false ? " (offline)" : "")),
+      mode: modeOf(s), imposters: s.far ? 1 : s.imps, hint: !!s.hint, meetings: s.meetings, each: s.each, vote: s.vote, cluesEach: s.rounds || 1 };
+    if (R && R.phase !== "reveal") Object.assign(o, { phase: R.phase, n: R.n, impCount: R.impCount, meetLeft: R.meetLeft,
+      cat: R.cat, first: R.first, clues: (R.clues || []).length,
+      turn: R.far && R.phase === "clues" ? (host ? nameOf(turnId()) : R.turnName) : "",
+      out: (host ? Object.keys(R.out || {}) : (R.out || [])).map(nameOf) });
+    return o;
+  }
+
+  window.Party = { start, fromLink, active: () => !!P, info };
 
   // Opened from an invite link (?join=ABCD): straight to the name, then in.
   const inv = (new URLSearchParams(location.search).get("join") || "").toUpperCase().replace(/[^A-Z]/g, "");
