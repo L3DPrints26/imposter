@@ -742,13 +742,33 @@
   function guestLost(conn) {
     if (!P || P.role !== "guest" || P.conn !== conn || P.leaving) return;
     if (!P.me.id) return;                                // never got in
-    if (++P.tries > 48) {
-      return view(`${bar("p-leave")}<div class="grow"><h2>Lost the party</h2>
-        <p class="c mut">Couldn't reach the host's phone. Make sure it's still open with the screen on.</p></div>
+    // Two minutes from the moment the host's phone went quiet, counted on
+    // screen, then the party is over for this phone.
+    if (!P.lostAt) P.lostAt = Date.now();
+    const LIMIT = 120000, left = () => LIMIT - (Date.now() - P.lostAt);
+    if (left() <= 0) {
+      P.lostAt = 0;
+      return view(`${bar("p-leave")}<div class="grow"><h2>The party ended</h2>
+        <p class="c mut">The host's phone was off for 2 minutes.</p></div>
         <button class="bar" data-a="p-retry">Try again</button>`, null, "lost");
     }
-    view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Reconnecting...</p></div>`, null, "reconnect");
-    setTimeout(() => { if (P && P.role === "guest" && !P.leaving) connectGuest(); }, 2500);
+    const clock = () => { const s = Math.max(0, Math.ceil(left() / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+    if (P.screen !== "reconnect") {
+      view(`${bar("")}
+        <div class="grow">
+          <p class="c" style="font-size:20px;font-weight:700;color:var(--imp);letter-spacing:.06em">HOST'S PHONE WENT OFF</p>
+          <p class="who" id="lostclock">${clock()}</p>
+          <p class="c mut">Host, turn your phone back on and open the app. If it's not back in time, everyone gets kicked out.</p>
+          <div class="wait"><div class="spin"></div>Trying to reconnect</div>
+        </div>`, null, "reconnect");
+      tick = setInterval(() => {
+        const c = $p("#lostclock");
+        if (!c || !P || !P.lostAt) return stopTick();
+        c.textContent = clock();
+        if (left() <= 0) { stopTick(); guestLost(P.conn); }
+      }, 500);
+    }
+    setTimeout(() => { if (P && P.role === "guest" && !P.leaving && P.lostAt) connectGuest(); }, 2500);
   }
   function guestMsg(m) {
     if (!P || P.role !== "guest" || !m || typeof m !== "object") return;
@@ -758,7 +778,7 @@
       if (m.name) return nameScreen(n => join(n), m.why);
       return join(name, m.why);
     }
-    if (m.t === "welcome") { P.me.id = m.id; keepAwake(true); return; }
+    if (m.t === "welcome") { P.me.id = m.id; P.lostAt = 0; P.tries = 0; keepAwake(true); return; }
     if (m.t === "lobby") {
       P.players = m.players; P.set = m.set;
       // Between games (or before the first) the lobby is the screen; during a
@@ -833,7 +853,7 @@
     if (a === "p-rand")  { const i = $p("#pn"); if (i) i.value = NameCheck.random(P && P.players ? P.players.map(p => p.name) : []); return; }
     if (a === "p-name-ok") return nameOk();
     if (a === "p-join-go") return joinGo();
-    if (a === "p-retry")   { P.tries = 0; view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Reconnecting...</p></div>`); return connectGuest(); }
+    if (a === "p-retry")   { P.tries = 0; P.lostAt = 0; view(`${bar("")}<div class="grow"><div class="spin"></div><p class="c mut">Reconnecting...</p></div>`); return connectGuest(); }
     if (a === "p-leave" || a === "p-end") return endParty();
     if (!P) return;
     if (a === "p-lobby")   return lobby();
