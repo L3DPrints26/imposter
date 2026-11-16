@@ -482,6 +482,55 @@ body{background:
 .gm.on svg,.gm.on small{color:#1A1205}
 .gm.on::after{content:"";position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:#1A1205
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FFD84D' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/14px no-repeat}
+
+/* ---- round 4 ---- */
+/* tag cooldown, timer off: a stopwatch, two short lines, and a real switch */
+.cooltile{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;width:100%;margin-top:12px;padding:12px 14px;
+  border-radius:22px;background:linear-gradient(180deg,#1C2044,#151834);border:1px solid rgba(255,255,255,.07);box-shadow:0 10px 24px rgba(0,0,0,.28)}
+.cring{position:relative;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle,#0E1030 58%,transparent 60%),conic-gradient(var(--cy),#1C6BFF,var(--cy));box-shadow:0 0 22px rgba(53,232,255,.25)}
+.cring b{font-size:20px;line-height:1;color:var(--text)}
+.cring b small{display:block;font-size:10px;color:var(--mut);text-align:center;margin-top:1px}
+.ct b{display:block;font-size:18px}
+.ct small{display:block;font-size:13.5px;color:var(--mut);line-height:1.3}
+.sw{display:grid;justify-items:center;gap:4px;font-weight:700;font-size:11.5px;color:var(--mut)}
+.sw i{position:relative;width:46px;height:26px;border-radius:13px;background:#0B0D24;border:1px solid rgba(255,255,255,.14)}
+.sw i::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#6B728F;transition:transform .15s}
+/* timer on: the ring is a big button, so it looks like one */
+button.coolring{border:1px solid rgba(53,232,255,.35);box-shadow:0 6px 0 var(--edge),0 12px 26px rgba(0,0,0,.3);transition:transform .08s}
+button.coolring:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 var(--edge)}
+button.coolring .tapme{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:999px;background:var(--cy);color:#061433;font-size:12px;font-weight:700}
+button.coolring.live .tapme{display:none}
+/* game in progress, on the menu */
+.livebar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:20px;text-align:left;
+  background:linear-gradient(135deg,rgba(58,199,90,.22),rgba(58,199,90,.08));border:1.5px solid rgba(58,199,90,.6);box-shadow:0 5px 0 var(--edge)}
+.livebar .ldot{width:12px;height:12px;border-radius:50%;background:#3AC75A;box-shadow:0 0 0 4px rgba(58,199,90,.2),0 0 12px #3AC75A}
+.livebar b{display:block;font-size:17px}
+.livebar small{display:block;font-size:13.5px;color:#BFF0CB;font-variant-numeric:tabular-nums}
+.livebar .lgo{padding:7px 12px;border-radius:999px;background:#3AC75A;color:#06210E;font-weight:700;font-size:14px}
+/* meetings: a big alarm, the three steps, and a glow on the whole screen */
+#app[data-mode="body"]{background:radial-gradient(80% 36% at 50% 12%,rgba(255,68,54,.34),transparent 72%),
+  repeating-linear-gradient(135deg,rgba(255,68,54,.05) 0 18px,transparent 18px 36px)}
+#app[data-mode="em"]{background:radial-gradient(80% 36% at 50% 12%,rgba(255,198,26,.28),transparent 72%),
+  repeating-linear-gradient(135deg,rgba(255,198,26,.045) 0 18px,transparent 18px 36px)}
+.mtghead{display:grid;justify-items:center;gap:12px}
+.mtgicon{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:radial-gradient(circle at 35% 28%,#FF8A75,#E0261A 70%);box-shadow:0 0 0 9px rgba(255,68,54,.18),0 0 56px rgba(255,68,54,.55),inset 0 -6px 10px rgba(0,0,0,.2)}
+.mtghead.em .mtgicon{color:#1A1205;background:radial-gradient(circle at 35% 28%,#FFE680,#F2A900 70%);
+  box-shadow:0 0 0 9px rgba(255,198,26,.16),0 0 56px rgba(255,198,26,.5),inset 0 -6px 10px rgba(0,0,0,.15)}
+.mtgicon svg{width:52px;height:52px}
+.mtgtitle{font-size:30px;font-weight:700;letter-spacing:.05em;text-align:center;line-height:1.05;color:#FF6A55;text-shadow:0 0 26px rgba(255,68,54,.55)}
+.mtghead.em .mtgtitle{color:#FFD84D;text-shadow:0 0 26px rgba(255,198,26,.5)}
+.mtgwho{display:flex;align-items:center;justify-content:center;gap:12px;font-size:20px;font-weight:600}
+.msteps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.msteps span{display:grid;justify-items:center;gap:7px;padding:12px 6px;border-radius:18px;text-align:center;font-weight:600;font-size:14px;line-height:1.2;
+  background:linear-gradient(180deg,#1C2044,#151834);border:1px solid rgba(255,255,255,.07)}
+.msteps i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;background:var(--cy);color:#061433}
+.mchips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.mchips span{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);font-size:14px;font-weight:600;color:#C9CEE4}
+.mchips svg{width:16px;height:16px}
+.bar.ghost.slim svg{width:20px;height:20px}
 /* Tip the Dev: in the app only (tips.js shows it), gold-edged so it's easy to find */
 .tipbig{width:100%;align-items:center;gap:14px;min-height:66px;padding:10px 16px;border-radius:22px;text-align:left;
   background:linear-gradient(135deg,#2A2560,#1A1D45);border:2px solid #FFC61A;box-shadow:0 5px 0 var(--edge),0 10px 26px rgba(255,198,26,.16);transition:transform .08s}
@@ -560,7 +609,10 @@ let swapAt = 0, lastScreen = "", keepY = 0;
 window.addEventListener("scroll", () => { keepY = window.scrollY; }, { passive: true });
 const markScreen = () => {
   const k = String(redraw);
-  if (k !== lastScreen) { lastScreen = k; swapAt = Date.now(); window.scrollTo(0, 0); }
+  if (k !== lastScreen) {
+    lastScreen = k; swapAt = Date.now(); window.scrollTo(0, 0);
+    if (!/meeting\(|^function meeting/.test(k)) app.removeAttribute("data-mode");
+  }
   else if (Math.abs(window.scrollY - keepY) > 2) window.scrollTo(0, keepY);   // a redraw doesn't jump
 };
 const screenWatch = new MutationObserver(markScreen);
@@ -750,14 +802,14 @@ function deal() {
   Awake.on();
   G = { imp, cat: cat.name, word: w[0], hint: w[1].length ? w[1][rnd(w[1].length)] : "", first: rnd(S.players),
         idx: 0, meet: S.meetings, used: new Array(S.players).fill(0), caller: "", coolEnd: 0,
-        out: new Array(S.players).fill(false), mv: null, graceEnd: 0, callerIdx: -1 };
+        out: new Array(S.players).fill(false), mv: null, graceEnd: 0, callerIdx: -1, dealtAt: Date.now() };
 }
 let RECENT = store.get("imp_recent", []);     // kept in memory too, in case storage is blocked
 
 // The round survives a reload or the phone closing the tab: Home offers to go
 // back to it for 3 hours.
 const Round = {
-  save(at) { if (G) store.set("imp_round", { G, S: Object.assign({}, S), at, t: Date.now() }); },
+  save(at) { if (G) { G.at = at; store.set("imp_round", { G, S: Object.assign({}, S), at, t: Date.now() }); } },
   get() { const r = store.get("imp_round", null); return r && r.G && Date.now() - r.t < 3 * 3600e3 ? r : null; },
   clear() { store.del("imp_round"); }
 };
@@ -768,6 +820,7 @@ const coolSecs = () => (S.players <= 6 ? 45 : S.players <= 10 ? 30 : 20) + (S.im
 
 /* ---------------------------------------------------------------- icons */
 const I = {
+  mute: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 5M22 9l-5 5"/></svg>',
   help: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.8-.9 1.4v.6"/><path d="M12 17.2v.1"/></svg>',
   heart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
   book: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7z"/></svg>',
@@ -866,10 +919,16 @@ function gate(msg) {
   });
 }
 
+// How long the game in progress has run, from when it was dealt.
+const sinceText = r => {
+  const t = Math.max(0, Math.floor((Date.now() - (r.G.dealtAt || r.G.startedAt || r.t)) / 1000));
+  return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
+};
 function home() {
   if (!CATS) return gate();          // left a party without unlocking (website)
   redraw = home;
   clearCool();
+  const live = Round.get();
   // In the app this is the first screen (the website's home page is for the
   // website), so there's no back arrow to it.
   app.innerHTML = `
@@ -877,7 +936,9 @@ function home() {
     <div class="grow menu">
       <img class="menuart" src="icon-512.png" alt="" width="128" height="128">
       <h1 class="wm">IMPOSTER</h1>
-      ${Round.get() ? '<button class="bar" data-a="resume">Back to the round</button>' : ""}
+      ${live ? `<button class="livebar" data-a="resume"><span class="ldot"></span><span><b>Game in progress</b>
+        <small>${live.S.word ? "Word" : "Tag"} &middot; ${live.S.players} players &middot; <span id="liveclock">${sinceText(live)}</span></small></span>
+        <span class="lgo">Back to it</span></button>` : ""}
       <div class="modes">
         <button class="big y" data-a="pick-word"><span class="mi">${I.bubble}</span>Word<small>sit down</small></button>
         <button class="big o" data-a="pick-tag"><span class="mi">${I.run}</span>Tag<small>outside</small></button>
@@ -890,6 +951,23 @@ function home() {
                  : `<button class="dk" data-a="forget"><i>${I.key}</i>New code</button>`}
       </div>
     </div>`;
+  if (live) coolTimer = setInterval(() => { const c = $("#liveclock"); if (!c) return clearCool(); c.textContent = sinceText(live); }, 1000);
+}
+// Starting another game while one is going asks first.
+function newGameAsk(next) {
+  const r = Round.get();
+  if (!r) return;
+  redraw = () => newGameAsk(next);
+  clearCool();
+  app.innerHTML = `
+    ${topBar("home", "", "")}
+    <div class="grow">
+      <h2>End the game in progress?</h2>
+      <p class="c mut">Your ${r.S.word ? "Word" : "Tag"} game with ${r.S.players} players ends, and nobody's card can be seen again.${
+        next === "p-start" ? " A party starts fresh; this game doesn't come with it." : ""}</p>
+      <button class="bar ghost" data-a="end-live" data-next="${next}" style="margin-top:8px">Yes, end it</button>
+    </div>
+    <button class="bar" data-a="resume">Back to my game</button>`;
 }
 
 function setup() {
@@ -994,9 +1072,9 @@ function customScreen(msg, draft) {
 function pass() {
   redraw = pass;
   clearCool();
-  if (G.idx > 0) Round.save("pass");
+  Round.save("pass");
   app.innerHTML = `
-    ${topBar(G.idx === 0 ? "setup" : "", `${G.idx + 1}/${S.players}`, "ask")}
+    ${topBar(G.idx === 0 ? "setup-cancel" : "", `${G.idx + 1}/${S.players}`, "ask")}
     <div class="grow">
       <p class="c mut" style="font-size:20px;font-weight:600">Hand the phone to</p>
       <div class="whobox">${avatar(pname(G.idx), "lg")}<p class="who">${esc(pname(G.idx))}</p></div>
@@ -1094,7 +1172,8 @@ function ringTile(left, total, action) {
       <text id="cooln" x="46" y="55" text-anchor="middle" font-size="26" font-weight="700" fill="currentColor">${left || total}</text>
     </svg>
     <span><b id="coolk">${left ? "No tagging yet" : "Tag cooldown"}</b>
-      <span class="sub" id="coolsub">${left ? "Wait for zero." : "Imposters: tap right after a tag."}</span></span></button>`;
+      <span class="sub" id="coolsub">${left ? "Wait for zero." : "Imposters: tap right after you tag someone."}</span>
+      <span class="tapme">TAP</span></span></button>`;
 }
 function ringSet(left, total) {
   const n = $("#cooln"), arc = $("#coolarc"), t = $("#cool"), k = $("#coolk"), sub = $("#coolsub");
@@ -1104,7 +1183,7 @@ function ringSet(left, total) {
   arc.setAttribute("stroke", left ? "var(--imp)" : "var(--crew)");
   t.classList.toggle("live", !!left);
   k.textContent = left ? "No tagging yet" : "Tag cooldown";
-  sub.textContent = left ? "Wait for zero." : "Imposters: tap right after a tag.";
+  sub.textContent = left ? "Wait for zero." : "Imposters: tap right after you tag someone.";
 }
 // After a meeting: 15 seconds when nobody may tag. The cooldown button is
 // locked for real until it runs out. Shared with party.js.
@@ -1121,9 +1200,12 @@ function graceTile(left) {
     <span><b style="color:var(--acc)">No tagging yet</b><span class="sub">Everyone's just back from the meeting.</span></span></button>`;
 }
 // With the timer off: the rule, without a button anyone can be seen tapping.
-function coolNote(secs) {
-  return `<div class="coolring" style="grid-template-columns:1fr">
-    <span><b>Tag cooldown: ${secs} seconds</b><span class="sub">Imposters, count it in your head after each tag. On a shared phone, tapping a timer would give you away.</span></span></div>`;
+function coolNote(secs, noSwitch) {
+  return `<div class="cooltile">
+    <span class="cring"><b>${secs}<small>sec</small></b></span>
+    <span class="ct"><b>Tag cooldown</b><small>Imposters count it in their heads after each tag.</small></span>
+    ${noSwitch ? "" : '<button class="sw" data-a="timer-on" aria-label="Turn on the tag timer"><i></i>Timer OFF</button>'}
+  </div>`;
 }
 function graceSet(left) {
   const n = $("#cooln"), arc = $("#coolarc");
@@ -1154,21 +1236,28 @@ function meeting() {
   clearCool();
   G.coolEnd = 0;                 // a cooldown from before the meeting is over
   G.tg = [];
+  app.dataset.mode = G.body ? "body" : "em";
   app.innerHTML = `
     ${topBar("", "", "")}
-    <div class="grow">
-      <p class="c" style="font-size:20px;font-weight:700;color:var(--imp);letter-spacing:.08em">${G.body ? "BODY REPORTED" : "EMERGENCY MEETING"}</p>
-      ${G.caller ? `<div class="whobox">${avatar(G.caller, "md")}<p class="who">${esc(G.caller)}</p></div><p class="c mut" style="font-size:18px">called it</p>` : ""}
-      <div class="card" style="min-height:0;gap:6px">
-        <p style="font-size:19px;font-weight:600">Everyone come together.</p>
-        <p class="mut small">${S.vote === "loud" ? "Talk it over, then point at once on three. Most votes is out."
-          : "Talk it over. Then pass the phone around and everyone votes in secret."}</p>
-      </div>
-      <p class="c mut small">${G.meet} emergency meeting${G.meet === 1 ? "" : "s"} left</p>
-      <button class="bar ghost slim" data-a="hush">Stop the siren</button>
+    <div class="grow" style="gap:16px">
+      ${meetHead(G.body, G.caller)}
+      ${meetSteps(S.vote === "loud", G.meet, alive().length)}
+      <button class="bar ghost slim" data-a="hush">${I.mute}Stop the siren</button>
       <button class="textbtn" data-a="meet-cancel">Called by mistake? Cancel it</button>
     </div>
     <button class="bar" data-a="${S.vote === "loud" ? "mv-loud" : "mv-start"}">${S.vote === "loud" ? "Who's out?" : "Start the vote"}</button>`;
+}
+// The top of a meeting screen and its three steps. Shared with party.js.
+function meetHead(body, caller) {
+  return `<div class="mtghead ${body ? "body" : "em"}"><span class="mtgicon">${body ? I.alert : I.alarm}</span>
+    <p class="mtgtitle">${body ? "BODY REPORTED" : "EMERGENCY MEETING"}</p></div>
+    ${caller ? `<p class="mtgwho">${avatar(caller, "md")}<span>${esc(caller)} ${body ? "found a body" : "called it"}</span></p>`
+             : body ? '<p class="c mut" style="font-size:18px">Someone found a body. Freeze!</p>' : ""}`;
+}
+function meetSteps(loud, meetLeft, stillIn) {
+  return `<div class="msteps"><span><i>1</i>Come together</span><span><i>2</i>Talk it over</span>
+      <span><i>3</i>${loud ? "Point on three" : "Vote on the phone"}</span></div>
+    <div class="mchips"><span>${I.alarm}${meetLeft} meeting${meetLeft === 1 ? "" : "s"} left</span>${stillIn ? `<span>${I.group}${stillIn} still in</span>` : ""}</div>`;
 }
 /* ---------------------------------------------------------------- meeting votes */
 const alive = () => G.out.map((o, i) => o ? -1 : i).filter(i => i >= 0);
@@ -1334,6 +1423,10 @@ app.addEventListener("click", e => {
   const b = e.target.closest("[data-a]");
   if (!b || b.disabled) return;
   const a = b.dataset.a;
+  if ((a === "pick-word" || a === "pick-tag" || a === "p-start") && redraw === home && Round.get()) {
+    e.stopImmediatePropagation();        // party.js must not start a party yet
+    return newGameAsk(a);
+  }
   if (a === "fs")       { setWide(!isWide()); return redraw(); }
   if (a === "home")     return home();
   if (a === "pick-word"){ S.word = true;  saveSetup(); return setup(); }
@@ -1343,7 +1436,17 @@ app.addEventListener("click", e => {
   if (a === "names-clear") { NAMES = []; store.set("imp_names", NAMES); return namesScreen(); }
   if (a === "cats")     return catsScreen();
   if (a === "cats-done") return allCats().some(c => !OFF.includes(c.name)) ? setup() : catsScreen("Turn at least one category on.");
-  if (a === "home-ask") return leaveAsk(redraw);
+  if (a === "home-ask") { Round.save(G && G.at || "play"); return home(); }    // the game keeps going
+  if (a === "setup-cancel") { G = null; Round.clear(); Awake.off(); return setup(); }   // nobody looked yet
+  if (a === "timer-on") { S.timer = true; saveSetup(); return play(); }
+  if (a === "end-live") {
+    G = null; Round.clear(); Awake.off(); Siren.stop();
+    const n = b.dataset.next;
+    if (n === "pick-word") { S.word = true; saveSetup(); return setup(); }
+    if (n === "pick-tag") { S.word = false; saveSetup(); return setup(); }
+    if (n === "p-start" && window.Party) return Party.start();
+    return home();
+  }
   if (a === "leave-no") return leaveBack();
   if (a === "leave-yes") { G = null; Round.clear(); Awake.off(); Siren.stop(); return home(); }
   if (a === "resume") {

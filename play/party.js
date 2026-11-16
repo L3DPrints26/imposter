@@ -575,7 +575,7 @@
     const gl = graceLeft(R);
     if (gl) return graceTile(gl);
     // Someone playing on the host's phone would be seen tapping it.
-    if (P.role === "host" && P.players.some(p => p.kind === "local")) return coolNote(R.cool);
+    if (P.role === "host" && P.players.some(p => p.kind === "local")) return coolNote(R.cool, true);
     const left = R.coolEnd ? Math.max(0, Math.ceil((R.coolEnd - Date.now()) / 1000)) : 0;
     return ringTile(left, R.cool, "p-cool");
   }
@@ -629,18 +629,13 @@
   function meeting(loud) {
     const R = P.round, isHost = P.role === "host";
     R.coolEnd = 0;                       // a cooldown from before the meeting is over
+    const loudVote = (P.set && P.set.vote === "loud") || R.vote === "loud";
+    app.dataset.mode = R.body ? "body" : "em";
     view(`${bar("")}
-      <div class="grow">
-        <p class="c" style="font-size:20px;font-weight:700;color:var(--imp);letter-spacing:.08em">${R.body ? "BODY REPORTED" : "EMERGENCY MEETING"}</p>
-        <p class="who">${esc(R.caller)}</p>
-        <p class="c mut" style="font-size:18px">${R.body ? "found a body" : "called it"}</p>
-        <div class="card" style="min-height:0;gap:6px">
-          <p style="font-size:19px;font-weight:600">Everyone come together.</p>
-          <p class="mut small">${P.set && P.set.vote === "loud" || R.vote === "loud" ? "Talk it over, then point at once on three. Most votes is out."
-            : "Talk it over. Then everyone votes on their phone."}</p>
-        </div>
-        <p class="c mut small">${R.meetLeft} emergency meeting${R.meetLeft === 1 ? "" : "s"} left</p>
-        <button class="bar ghost slim" data-a="p-hush">Stop the siren</button>
+      <div class="grow" style="gap:16px">
+        ${meetHead(R.body, R.caller)}
+        ${meetSteps(loudVote, R.meetLeft, 0)}
+        <button class="bar ghost slim" data-a="p-hush">${I.mute}Stop the siren</button>
       </div>
       ${isHost ? (P.set.vote === "loud" ? '<button class="bar" data-a="p-mv-loud">Who\'s out?</button>' : '<button class="bar" data-a="p-mv-start">Start the vote</button>')
         : `<p class="c mut small" style="margin:8px 0">${(R.vote || P.set.vote) === "loud" ? "Talk it over. The host taps who's voted out." : "Talk it over. The vote opens on your phone."}</p>`}`,
