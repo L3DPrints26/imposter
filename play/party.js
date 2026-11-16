@@ -210,8 +210,12 @@
        <output>${v === 0 && zero ? zero : v}</output>
        <button data-a="p-inc" data-k="${k}" ${v >= hi ? "disabled" : ""} aria-label="More">+</button></div>`;
     const mode = modeOf(S2), mini = (k, v, lo, hi, zero) => step(k, v, lo, hi, zero);
-    const tile = (v, icon, name, sub) => `<button class="gm ${mode === v ? "on" : ""}" data-a="p-gmode" data-v="${v}">${icon}${name}<small>${sub}</small></button>`;
-    const rules = [`<div class="rcard"><span class="rl">Imposters</span>${mini("imps", S2.imps, 1, maxImp)}</div>`];
+    const tile = (v, icon, name, sub) => `<button class="gm ${(v === "word" ? mode !== "tag" : mode === v) ? "on" : ""}" data-a="p-gmode" data-v="${v}">${icon}${name}<small>${sub}</small></button>`;
+    // Far apart is Word mode with the clues typed instead of said, so it's a
+    // switch under Word, not a third game.
+    const rules = [];
+    if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Where is everyone?</span>${seg("p-where", [["here", "Same room"], ["far", "Far apart"]], mode === "far" ? "far" : "here")}</div>`);
+    rules.push(`<div class="rcard"><span class="rl">Imposters</span>${mini("imps", S2.imps, 1, maxImp)}</div>`);
     if (mode !== "tag") rules.push(`<div class="rcard"><span class="rl">Imposter hint</span>${seg("p-hint", [["on", "On"], ["off", "Off"]], S2.hint ? "on" : "off")}</div>`);
     if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues each</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
     if (mode === "tag") rules.push(`<div class="rcard"><span class="rl">Meetings</span>${mini("meetings", S2.meetings, 0, 9)}</div>`,
@@ -236,9 +240,8 @@
 
         <p class="sec">Game</p>
         <div class="gmodes">
-          ${tile("word", I.bubble, "Word", "sit and talk")}
+          ${tile("word", I.bubble, "Word", mode === "far" ? "type your clues" : "say your clues")}
           ${tile("tag", I.run, "Tag", "play outside")}
-          ${tile("far", I.globe, "Far apart", "type clues")}
         </div>
 
         <p class="sec">Rules</p>
@@ -777,7 +780,7 @@
   }
   function guestLobby() {
     const s = P.set || {}, mode = modeOf(s);
-    const what = mode === "far" ? "Far apart: type your clues" : mode === "word" ? "Word: sit and talk" : "Tag: play outside";
+    const what = mode === "far" ? "Word, far apart: you type your clues" : mode === "word" ? "Word: say your clues out loud" : "Tag: play outside";
     view(`${bar("p-leave", "Party")}
       <div class="list" style="gap:8px">
         <div class="hero">
@@ -835,7 +838,7 @@
     }
     if (a === "p-gmode") {
       const v = b.dataset.v;
-      P.set.far = v === "far"; P.set.word = v !== "tag";
+      P.set.word = v !== "tag"; if (v === "tag") P.set.far = false;
       saveSet(); shareLobby(); return lobby();
     }
     if (a === "p-copy")  return copyInvite();
