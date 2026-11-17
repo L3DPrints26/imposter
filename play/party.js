@@ -137,6 +137,10 @@
     // this phone was in the middle of: a checked name, a half-typed clue.
     const same = !!(P && screen && P.screen === screen), c0 = $p("#pclue");
     const keep = same ? { pick: picked(), by: attr("[data-by]", "by"), clue: c0 ? c0.value : "", cfor: attr('[data-a="p-clue"]', "id") } : null;
+    // The box being typed in (if any): put it back with its text and cursor, so a
+    // redraw (someone else's clue, a vote) never closes the keyboard or wipes it.
+    const ae = document.activeElement, typing = same && ae && app.contains(ae) && ae.id && /^(INPUT|TEXTAREA)$/.test(ae.tagName)
+      ? { id: ae.id, v: ae.value, a: ae.selectionStart, b: ae.selectionEnd } : null;
     stopTick();
     window.onblur = null; document.onvisibilitychange = null;
     if (P) P.screen = screen || "";
@@ -150,6 +154,11 @@
     }
     const c1 = $p("#pclue");
     if (keep.clue && c1 && attr('[data-a="p-clue"]', "id") === keep.cfor) c1.value = keep.clue;
+    const t = typing && document.getElementById(typing.id);
+    if (t && app.contains(t) && (typing.id !== "pclue" || attr('[data-a="p-clue"]', "id") === keep.cfor)) {
+      t.value = typing.v; t.focus({ preventScroll: true });
+      try { t.setSelectionRange(typing.a, typing.b); } catch (_) {}
+    }
   }
   const bar = (back, title) => topBar(back, title || "", "");
   const netWhy = e => e && e.type === "peer-unavailable" ? "No party with that code. Check it and try again."
@@ -633,8 +642,8 @@
     if (R.phase === "mvote") return mvoteScreen();
     if (R.phase === "result") return resultScreen();
     if (R.far) return farScreen();
-    const peek = myCard() ? `<button class="peek" id="hold">Hold to check your card</button>
-      <div class="card peekcard" id="card" aria-live="off"></div>` : "";
+    const peek = myCard() ? `<div class="card peekcard" id="card" aria-live="off"></div>
+      <button class="peek" id="hold">Hold to check your card</button>` : "";
     let body;
     if (R.mode === "word") {
       body = `<p class="cat"><span class="k">Category</span><span class="v">${esc(R.cat)}</span></p>
@@ -672,7 +681,7 @@
     const people = R.people || R.order.map(i => ({ id: i, name: nameOf(i) }));
     const tid = isHost ? turnId() : R.turnId, tname = isHost ? nameOf(tid) : R.turnName;
     const clues = (R.clues || []).map(c => `<div><i>${esc(c.name.slice(0, 2))}</i><span>${esc(c.text)}</span><small class="mut">${esc(c.name)}</small></div>`).join("");
-    const peek = myCard() ? `<button class="peek" id="hold">Hold to check your card</button><div class="card peekcard" id="card" aria-live="off"></div>` : "";
+    const peek = myCard() ? `<div class="card peekcard" id="card" aria-live="off"></div><button class="peek" id="hold">Hold to check your card</button>` : "";
     let body = "", foot = "";
     if (R.phase === "clues") {
       const mine = tid === me || (isHost && (P.players.find(p => p.id === tid) || {}).kind === "local");
@@ -711,7 +720,8 @@
     if (peek) holdWire(cardInner(myCard(), R));
     const inp = $p("#pclue");
     if (inp) {
-      inp.focus();
+      const turn = R.startedAt + ":" + (R.clues || []).length + ":" + tid;
+      if (P.focusTurn !== turn) { P.focusTurn = turn; inp.focus(); }      // a new turn: straight to typing
       inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $p('[data-a="p-clue"]').click(); } });
     }
   }
