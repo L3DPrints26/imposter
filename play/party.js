@@ -919,6 +919,7 @@
 
   /* ------------------------------------------------------------ guest */
   function join(name, msg) {
+    if (window.Loader) Loader.hide();                   // a failed join comes back here: never leave the loader up
     P = { role: "guest", me: { id: "", name }, players: [], set: {}, round: null, code: "", peer: null, conn: null, tries: 0 };
     view(`${bar("p-start", "Join")}
       <div class="list">
@@ -946,10 +947,10 @@
     if (P.peer) { try { P.peer.destroy(); } catch (_) {} }
     const peer = new Peer({ debug: 0 });
     P.peer = peer;
+    setTimeout(() => { if (P && P.peer === peer && !P.me.id && !P.screen) { P.slow = true; guestLost(P.conn); } }, 20000);
     peer.on("open", () => {
       const conn = peer.connect(PREFIX + P.code, { reliable: true });
       P.conn = conn;
-      setTimeout(() => { if (P && P.peer === peer && !P.me.id && !P.screen) guestLost(P.conn); }, 15000);
       conn.on("open", () => { send(conn, { t: "join", name: P.me.name, key: KEY, tab: TAB, games: myGames() }); });
       conn.on("data", m => { conn.seen = Date.now(); guestMsg(m); });
       conn.on("close", () => guestLost(conn));
@@ -963,7 +964,7 @@
   function guestLost(conn) {
     if (!P || P.role !== "guest" || P.conn !== conn || P.leaving || P.dead) return;
     if (!P.me.id) {                                      // never got in: back to the code screen
-      if (!P.screen) { try { P.peer.destroy(); } catch (_) {} join(P.me.name, netWhy()); }
+      if (!P.screen) { try { P.peer.destroy(); } catch (_) {} join(P.me.name, P.slow ? "Couldn't reach the host's phone. Check the code, then try again. If you're far apart, both of you try Wi-Fi instead of cell data." : netWhy()); }
       return;
     }
     // Two minutes from the moment the host's phone went quiet, counted on
