@@ -14,6 +14,19 @@
 "use strict";
 (function () {
   const PREFIX = "pocket-imposter-v1-";
+  // Relay for phones on different networks (college Wi-Fi, cell data), where a
+  // direct connection can't get through. PeerJS's own free relay is dead
+  // (2026-11-16), so it's our Metered TURN (free plan, hard-capped: it stops
+  // at the limit, never charges). TURN logins always ship inside the page.
+  const MT = { username: "9ed9a31bd959dc9cd59f8bf6", credential: "roOXagxvo6J80Lal" };
+  const peerOpts = () => ({ debug: 0, config: { iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun.relay.metered.ca:80" },
+    { urls: "turn:global.relay.metered.ca:80", ...MT },
+    { urls: "turn:global.relay.metered.ca:80?transport=tcp", ...MT },
+    { urls: "turn:global.relay.metered.ca:443", ...MT },
+    { urls: "turns:global.relay.metered.ca:443?transport=tcp", ...MT }
+  ], ...(window.IMP_RELAY_ONLY ? { iceTransportPolicy: "relay" } : {}) } });
   const ABC = "ABCDEFGHJKMNPQRSTUVWXYZ";
   const MAXP = 15;
   const OFF_LIMIT = 120000, OFF_GRACE = 5000;   // a phone that goes off: 2:00 on screen, then 5 quiet seconds
@@ -196,7 +209,7 @@
   // party (and the round in progress) comes back under the same code.
   function openAs(tries, keep) {
     const code = keep || newCode();
-    const peer = new Peer(PREFIX + code, { debug: 0 });
+    const peer = new Peer(PREFIX + code, peerOpts());
     peer.on("open", () => {
       if (!P || P.role !== "host") return peer.destroy();
       P.peer = peer; P.code = code;
@@ -945,7 +958,7 @@
   }
   function connectGuest() {
     if (P.peer) { try { P.peer.destroy(); } catch (_) {} }
-    const peer = new Peer({ debug: 0 });
+    const peer = new Peer(peerOpts());
     P.peer = peer;
     setTimeout(() => { if (P && P.peer === peer && !P.me.id && !P.screen) { P.slow = true; guestLost(P.conn); } }, 20000);
     peer.on("open", () => {
