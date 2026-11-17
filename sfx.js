@@ -1,7 +1,7 @@
-/* UI sounds: real recorded UI sounds from Kenney (CC0, see sfx/CREDITS.txt),
-   picked and leveled by tools/pick_sfx.py, played through Web Audio so they
-   start instantly. A speaker button on the game menu turns them off; that's
-   remembered. */
+/* UI sounds: soft marimba, kalimba and water-drop sounds made by
+   tools/make_soft_sfx.py (he picked this set 2026-11-16 over made-up beeps and
+   over stock UI blips). Played through Web Audio so they start instantly. A
+   speaker button on the game menu turns them off; that's remembered. */
 (function () {
   "use strict";
   const me = document.currentScript && document.currentScript.src || "";
@@ -27,12 +27,26 @@
       .then(buf => { bufs[n] = buf; }).catch(() => {})));
     return loading;
   }
-  function play(name, vol) {
+  // Not the same sound over and over: taps and pops land on a different note
+  // of the same scale each time (never the same one twice in a row), and the
+  // same sound fired again within a moment is skipped.
+  const STEPS = [1, 1.125, 1.25, 1.5, 0.889];      // a major-pentatonic handful
+  const lastStep = {}, lastAt = {};
+  function play(name, vol, vary) {
     if (!on) return;
     const c = ac(), b = bufs[name];
     if (!c) return;
     if (!b) { load(); return; }
+    const now = c.currentTime;
+    if (lastAt[name] && now - lastAt[name] < 0.09) return;
+    lastAt[name] = now;
     const s = c.createBufferSource(), g = c.createGain();
+    if (vary) {
+      let k;
+      do { k = Math.floor(Math.random() * STEPS.length); } while (k === lastStep[name] && STEPS.length > 1);
+      lastStep[name] = k;
+      s.playbackRate.value = STEPS[k];
+    }
     g.gain.value = vol == null ? 1 : vol;
     s.buffer = b; s.connect(g); g.connect(c.destination);
     s.start();
@@ -44,18 +58,20 @@
     if (e.target.closest && e.target.closest(".hold, .peek")) play("flip");
   }, { capture: true, passive: true });
 
-  // What a tap sounds like: the big moments get their own sound.
+  // Only real actions make a sound; back arrows, links and small icons stay quiet.
   const BIG = { start: "whoosh", "p-go": "whoosh", "mv-submit": "done", "p-mv": "done", "p-fv": "done", "mv-out": "done",
     "p-mv-out": "done", "mv-tagged": "done", "p-mv-tagged": "done", "custom-save": "done", "p-clue": "done",
     reveal: "reveal", "p-reveal-yes": "reveal", "timer-on": "toggle", sfx: "toggle" };
+  const PICK = ".opt, .chip, .gm, .seg2 button, .seg button, .sw, .tj";
+  const ACTION = ".bar, .big, .call, .together, .dk, .step button, .app, .av.add, .tipbig, .livebar, .cta, .mode, .aiform button";
   document.addEventListener("click", e => {
-    const el = e.target.closest && e.target.closest("button, a, summary, .opt");
+    const el = e.target.closest && e.target.closest("button, a, .opt");
     if (!el || el.disabled) return;
     const a = el.dataset && el.dataset.a;
     if (a && BIG[a]) return play(BIG[a]);
     if (el.matches(".hold, .peek")) return;
-    if (el.matches(".opt, .chip, .gm, .seg2 button, .seg button, .sw, .tj")) return play("pop", 0.9);
-    play("tap", 0.8);
+    if (el.matches(PICK)) return play("pop", 0.85, true);
+    if (el.matches(ACTION)) play("tap", 0.8, true);
   }, true);
 
   window.Sfx = {
