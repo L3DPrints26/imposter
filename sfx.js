@@ -1,8 +1,7 @@
-/* UI sounds. The sounds are real-sounding recordings made by tools/make_sfx.py
-   (a wood tap, a bubble pop, a card flick, a whoosh, a marimba "done", a drum
-   and bell for the reveal), played through Web Audio so they start instantly.
-   His ask (2026-11-16): good click sounds, not annoying beeps. A speaker
-   button on the game menu turns them off; that's remembered. */
+/* UI sounds: real recorded UI sounds from Kenney (CC0, see sfx/CREDITS.txt),
+   picked and leveled by tools/pick_sfx.py, played through Web Audio so they
+   start instantly. A speaker button on the game menu turns them off; that's
+   remembered. */
 (function () {
   "use strict";
   const me = document.currentScript && document.currentScript.src || "";
