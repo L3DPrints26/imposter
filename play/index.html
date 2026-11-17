@@ -644,15 +644,19 @@ const markScreen = () => {
   const k = String(redraw);
   if (k !== lastScreen) {
     lastScreen = k; swapAt = Date.now(); window.scrollTo(0, 0);
-    if (!/meeting\(|^function meeting/.test(k)) app.removeAttribute("data-mode");
+    if (!/^function meeting|^\(\) => meeting\(/.test(k)) app.removeAttribute("data-mode");
   }
   else if (Math.abs(window.scrollY - keepY) > 2) window.scrollTo(0, keepY);   // a redraw doesn't jump
 };
 const screenWatch = new MutationObserver(markScreen);
 screenWatch.observe(app, { childList: true });
+let lastTap = { x: -999, y: -999, t: 0 };
 app.addEventListener("click", e => {
   if (screenWatch.takeRecords().length) markScreen();     // a swap this same moment
-  if (Date.now() - swapAt < 350 && e.target.closest("[data-a], .opt")) { e.stopPropagation(); e.preventDefault(); }
+  const now = Date.now(), x = e.clientX, y = e.clientY;
+  const sameSpot = Math.abs(x - lastTap.x) < 60 && Math.abs(y - lastTap.y) < 60 && now - lastTap.t < 450;
+  lastTap = { x, y, t: now };
+  if (now - swapAt < 350 && sameSpot && e.target.closest("[data-a], .opt")) { e.stopPropagation(); e.preventDefault(); }
 }, true);
 
 // The iPhone app's own native helpers (screen on, AI). Null on the website.
@@ -797,7 +801,7 @@ const AVC = ["#FFC61A", "#35E8FF", "#3AC75A", "#FF8A3D", "#8E7CFF", "#4DA3FF", "
 const avc = name => AVC[[...String(name)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % AVC.length];
 const avatar = (name, cls) => {
   const n = String(name || "").trim(), seat = /^Player (\d+)$/.exec(n);
-  return `<i class="pav ${cls || ""}" style="background:${avc(n)}">${seat ? seat[1] : esc((n[0] || "?").toUpperCase())}</i>`;
+  return `<i class="pav ${cls || ""}" style="background:${avc(n)}">${seat ? seat[1] : esc(([...n][0] || "?").toUpperCase())}</i>`;
 };
 // A two-way switch, as one pill.
 const seg = (action, opts, cur) => `<div class="seg2">${opts.map(([v, label]) =>
@@ -959,6 +963,8 @@ const sinceText = r => {
   const t = Math.max(0, Math.floor((Date.now() - (r.G.dealtAt || r.G.startedAt || r.t)) / 1000));
   return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
 };
+// Sounds on? (sfx.js may not have loaded yet on the very first screen.)
+const soundOn = () => window.Sfx ? Sfx.isOn() : (() => { try { return localStorage.getItem("imp_sfx") !== "off"; } catch (_) { return true; } })();
 function home() {
   if (!CATS) return gate();          // left a party without unlocking (website)
   redraw = home;
@@ -967,7 +973,7 @@ function home() {
   // In the app this is the first screen (the website's home page is for the
   // website), so there's no back arrow to it.
   app.innerHTML = `
-    ${topBar(IN_APP ? "" : "site", "", "", `<button class="icon sfxbtn" data-a="sfx" aria-label="${!window.Sfx || Sfx.isOn() ? "Turn sounds off" : "Turn sounds on"}">${!window.Sfx || Sfx.isOn() ? I.sound : I.mute}</button>`)}
+    ${topBar(IN_APP ? "" : "site", "", "", `<button class="icon sfxbtn" data-a="sfx" aria-label="${soundOn() ? "Turn sounds off" : "Turn sounds on"}">${soundOn() ? I.sound : I.mute}</button>`)}
     <div class="grow menu">
       <img class="menuart" src="icon-512.png" alt="" width="128" height="128">
       <h1 class="wm">IMPOSTER</h1>
@@ -991,7 +997,8 @@ function home() {
 }
 // Share the app: Messages, Mail, a copied link, or the phone's own share sheet.
 const APP_URL = "https://apps.apple.com/app/id6835169828";
-const APP_TEXT = "Play Pocket Imposter with me! One of you is lying. It's free: " + APP_URL;
+const SHARE_TEXT = "Play Pocket Imposter with me! One of you is lying. It's free:";
+const APP_TEXT = SHARE_TEXT + " " + APP_URL;
 function shareSheet() {
   const old = document.querySelector(".aiwrap");
   if (old) old.remove();
@@ -1018,8 +1025,8 @@ function shareSheet() {
       try { navigator.clipboard.writeText(APP_URL).then(() => note("Link copied."), () => note(APP_URL)); } catch (_) { note(APP_URL); }
       return;
     }
-    if (Native && Native.share) return Native.share({ text: APP_TEXT, url: APP_URL }).catch(() => note(APP_URL));
-    if (navigator.share) return navigator.share({ title: "Pocket Imposter", text: APP_TEXT, url: APP_URL }).catch(() => {});
+    if (Native && Native.share) return Native.share({ text: SHARE_TEXT, url: APP_URL }).catch(() => note(APP_URL));
+    if (navigator.share) return navigator.share({ title: "Pocket Imposter", text: SHARE_TEXT, url: APP_URL }).catch(() => {});
     note(APP_URL);
   });
   document.body.appendChild(w);
@@ -1407,6 +1414,7 @@ function mvResult(res) {
   redraw = () => mvResult(res);
   clearCool(); Siren.stop();
   const win = tagWinner();
+  if (!win) Round.save("play");          // a reload after the vote keeps who's out
   app.innerHTML = `
     ${topBar("", "", "")}
     <div class="grow">
@@ -1510,7 +1518,7 @@ app.addEventListener("click", e => {
   if (a === "home-ask") { Round.save(G && G.at || "play"); return home(); }    // the game keeps going
   if (a === "setup-cancel") { G = null; Round.clear(); Awake.off(); return setup(); }   // nobody looked yet
   if (a === "share-app") return shareSheet();
-  if (a === "sfx")      { if (window.Sfx) Sfx.setOn(!Sfx.isOn()); return home(); }
+  if (a === "sfx")      { if (window.Sfx) Sfx.setOn(!Sfx.isOn()); else { try { localStorage.setItem("imp_sfx", soundOn() ? "off" : "on"); } catch (_) {} } return home(); }
   if (a === "timer-on") { S.timer = true; saveSetup(); return play(); }
   if (a === "end-live") {
     G = null; Round.clear(); Awake.off(); Siren.stop();

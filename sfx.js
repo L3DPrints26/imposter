@@ -27,12 +27,11 @@
       .then(buf => { bufs[n] = buf; }).catch(() => {})));
     return loading;
   }
-  // Not the same sound over and over: taps and pops land on a different note
-  // of the same scale each time (never the same one twice in a row), and the
-  // same sound fired again within a moment is skipped.
-  const STEPS = [1, 1.125, 1.25, 1.5, 0.889];      // a major-pentatonic handful
-  const lastStep = {}, lastAt = {};
-  function play(name, vol, vary) {
+  // Each kind of button has its own sound, and the same kind always sounds the
+  // same (his call: "group them, don't change the sound each time you click").
+  // A sound fired again within a moment is skipped.
+  const lastAt = {};
+  function play(name, vol, rate) {
     if (!on) return;
     const c = ac(), b = bufs[name];
     if (!c) return;
@@ -41,12 +40,7 @@
     if (lastAt[name] && now - lastAt[name] < 0.09) return;
     lastAt[name] = now;
     const s = c.createBufferSource(), g = c.createGain();
-    if (vary) {
-      let k;
-      do { k = Math.floor(Math.random() * STEPS.length); } while (k === lastStep[name] && STEPS.length > 1);
-      lastStep[name] = k;
-      s.playbackRate.value = STEPS[k];
-    }
+    s.playbackRate.value = rate || 1;
     g.gain.value = vol == null ? 1 : vol;
     s.buffer = b; s.connect(g); g.connect(c.destination);
     s.start();
@@ -58,20 +52,29 @@
     if (e.target.closest && e.target.closest(".hold, .peek")) play("flip");
   }, { capture: true, passive: true });
 
-  // Only real actions make a sound; back arrows, links and small icons stay quiet.
+  // The big moments get their own sound.
   const BIG = { start: "whoosh", "p-go": "whoosh", "mv-submit": "done", "p-mv": "done", "p-fv": "done", "mv-out": "done",
     "p-mv-out": "done", "mv-tagged": "done", "p-mv-tagged": "done", "custom-save": "done", "p-clue": "done",
     reveal: "reveal", "p-reveal-yes": "reveal", "timer-on": "toggle", sfx: "toggle" };
-  const PICK = ".opt, .chip, .gm, .seg2 button, .seg button, .sw, .tj";
-  const ACTION = ".bar, .big, .call, .together, .dk, .step button, .app, .av.add, .tipbig, .livebar, .cta, .mode, .aiform button";
+  // Button families -> [sound, pitch, volume]. First match wins. Back arrows,
+  // links and small icons stay quiet.
+  const GROUPS = [
+    [".hold, .peek", null],
+    [".opt, .chip, .seg2 button, .seg button, .tj", ["pop", 1, 0.85]],           // picking something
+    [".sw", ["toggle", 1, 1]],                                                    // switches
+    [".call", ["tap", 0.67, 1]],                                                  // meeting buttons: deep
+    [".big, .gm, .mode", ["tap", 0.75, 0.9]],                                     // big game tiles: low
+    [".step button", ["tap", 1.33, 0.7]],                                         // + and -: a light tick
+    [".bar.ghost, .dk, .together, .livebar, .app, .av.add, .cta.ghost", ["tap", 0.89, 0.8]],  // second buttons
+    [".bar, .tipbig, .cta, .aiform button", ["tap", 1, 0.8]],                    // main buttons
+  ];
   document.addEventListener("click", e => {
     const el = e.target.closest && e.target.closest("button, a, .opt");
     if (!el || el.disabled) return;
     const a = el.dataset && el.dataset.a;
     if (a && BIG[a]) return play(BIG[a]);
-    if (el.matches(".hold, .peek")) return;
-    if (el.matches(PICK)) return play("pop", 0.85, true);
-    if (el.matches(ACTION)) play("tap", 0.8, true);
+    const g = GROUPS.find(([sel]) => el.matches(sel));
+    if (g && g[1]) play(g[1][0], g[1][2], g[1][1]);
   }, true);
 
   window.Sfx = {

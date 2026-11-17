@@ -32,7 +32,7 @@
     n = Math.min(15, n); k = Math.max(1, Math.min(n - 1, k || 1));
     var every = n / k, cast = [];
     for (var i = 0; i < n; i++) {
-      var imp = Math.abs((i % every)) < 0.5 && cast.filter(function (c) { return c.imp; }).length < k;
+      var imp = Math.floor((i + 1) * k / n) > Math.floor(i * k / n);      // exactly k red, spread out
       var spread = Math.min(2.6, 0.32 * (n - 1));             // reduced motion: a row across the front
       cast.push({ pal: imp ? RED : GOLD, imp: imp, off: i * TAU / n, wob: 0.04 + 0.05 * ((i * 37) % 10) / 10,
         wf: 1.1 + (i % 5) * 0.15, seed: i * 1.7, rest: Math.PI / 2 + (i / Math.max(1, n - 1) - 0.5) * spread });

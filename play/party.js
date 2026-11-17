@@ -66,7 +66,7 @@
   const newCode = () => Array.from({ length: 4 }, () => ABC[Math.floor(Math.random() * ABC.length)]).join("");
   const send = (c, m) => { try { if (c && c.open) c.send(m); } catch (_) {} };
   const okStr = (v, max) => typeof v === "string" && v.length <= max;
-  const REPORT = '<a class="textbtn" href="https://l3dprints26.github.io/imposter/help/#feedback" target="_blank" rel="noopener">Report a problem</a>';
+  const REPORT = '<a class="textbtn" href="https://l3dprints26.github.io/imposter/help/?type=report#feedback" target="_blank" rel="noopener">Report a problem</a>';
   // This phone's key: a returning guest is matched by it, so a quick drop
   // (screen lock, Wi-Fi to cell) can't lock them out or let someone else
   // take their spot by typing their name.
@@ -250,7 +250,7 @@
       // Only the same page, or a player who's gone offline, can take a spot
       // back. Before, a second tab with the same key knocked the first one out.
       const back = P.players.find(p => p.kind === "phone" &&
-        (key ? p.key === key && (!p.on || (tab && p.tab === tab)) : !p.on && !p.key && p.name.toLowerCase() === lname));
+        (key ? p.key === key && (!p.on || p.tab === tab) : !p.on && !p.key && p.name.toLowerCase() === lname));
       if (back) {
         back.tab = tab; delete back.offAt;
         const old = P.conns.get(back.id);
@@ -258,7 +258,12 @@
         back.on = true; conn.pid = back.id; P.conns.set(back.id, conn);
         send(conn, { t: "welcome", id: back.id, code: P.code });
         send(conn, lobbyMsg());
-        if (P.round) send(conn, P.round.phase === "reveal" && P.round.revealMsg ? P.round.revealMsg : roundFor(back.id));
+        if (P.round) {
+          const R = P.round;
+          if (R.phase === "reveal" && R.revealMsg) send(conn, R.revealMsg);
+          else if (R.cards[back.id]) send(conn, roundFor(back.id));
+          else if (P.set.late) lateDeal(back.id, conn);
+        }
         shareLobby(); refresh();
         return;
       }
@@ -292,7 +297,7 @@
     if (m.t === "leave") {
       const pl = P.players.find(p => p.id === pid);
       P.conns.delete(pid);
-      if (pl) { if (P.round) pl.on = false; else P.players = P.players.filter(p => p.id !== pid); }
+      if (pl) { if (P.round) { pl.on = false; pl.offAt = Date.now() - OFF_LIMIT; } else P.players = P.players.filter(p => p.id !== pid); }
       try { conn.close(); } catch (_) {}
       shareLobby(); refresh();
     }
@@ -302,10 +307,7 @@
     if (P.conns.get(conn.pid) !== conn) return;     // already replaced by a rejoin
     P.conns.delete(conn.pid);
     const pl = P.players.find(p => p.id === conn.pid);
-    if (pl) {
-      if (P.round) { pl.on = false; pl.offAt = Date.now(); }
-      else P.players = P.players.filter(p => p.id !== conn.pid);
-    }
+    if (pl) { pl.on = false; pl.offAt = Date.now(); }
     shareLobby(); if (P.round) syncAll(); else refresh();
   }
   // Every second on the host: anyone off for longer than 2:00 (+5 s) is removed.
@@ -319,12 +321,17 @@
       const R = P.round;
       if (R) {
         if (R.mode === "tag") R.out[pl.id] = true;           // gone counts as out
+        if (R.mv) R.mv.voters = R.mv.voters.filter(x => x !== pl.id);
         if (R.far && R.phase === "clues" && turnId() === pl.id) {
           R.clues.push({ id: pl.id, name: pl.name, text: "(left)" }); advanceTurn();
         }
       }
     });
-    shareLobby(); if (P.round) syncAll(); else refresh();
+    shareLobby();
+    const R = P.round;
+    if (R && R.mode === "tag" && R.phase === "mvote" && R.mv && R.mv.voters.every(v => R.mv.votes[v])) return mvCount();
+    if (R && R.mode === "tag" && R.phase === "on" && tagWinnerP()) return finishVote("", [], true);
+    if (R) syncAll(); else refresh();
   }
   // Redraw the host's screen when it shows something that just changed.
   function refresh() { if (P && (P.screen === "lobby" || P.screen === "on")) redraw(); }
@@ -461,7 +468,7 @@
     (P && P.players || []).forEach(p => {
       if (p.on || p.kind !== "phone") { delete offUntil[p.id]; return; }
       if (P.role === "host") { if (p.offAt) offUntil[p.id] = p.offAt + OFF_LIMIT; }
-      else if (p.offLeft) offUntil[p.id] = now + p.offLeft;
+      else if (p.offBy) offUntil[p.id] = p.offBy;
     });
   }
   setInterval(() => {
@@ -942,6 +949,7 @@
     peer.on("open", () => {
       const conn = peer.connect(PREFIX + P.code, { reliable: true });
       P.conn = conn;
+      setTimeout(() => { if (P && P.peer === peer && !P.me.id && !P.screen) guestLost(P.conn); }, 15000);
       conn.on("open", () => { send(conn, { t: "join", name: P.me.name, key: KEY, tab: TAB, games: myGames() }); });
       conn.on("data", m => { conn.seen = Date.now(); guestMsg(m); });
       conn.on("close", () => guestLost(conn));
@@ -954,7 +962,10 @@
   }
   function guestLost(conn) {
     if (!P || P.role !== "guest" || P.conn !== conn || P.leaving || P.dead) return;
-    if (!P.me.id) return;                                // never got in
+    if (!P.me.id) {                                      // never got in: back to the code screen
+      if (!P.screen) { try { P.peer.destroy(); } catch (_) {} join(P.me.name, netWhy()); }
+      return;
+    }
     // Two minutes from the moment the host's phone went quiet, counted on
     // screen, then the party is over for this phone.
     if (!P.lostAt) P.lostAt = Date.now();
@@ -997,6 +1008,7 @@
     if (m.t === "welcome") { P.me.id = m.id; P.lostAt = 0; keepAwake(true); return; }
     if (m.t === "lobby") {
       P.players = m.players; P.set = m.set;
+      m.players.forEach(p => { if (p.offLeft) p.offBy = Date.now() + p.offLeft; });
       // Between games (or before the first) the lobby is the screen; during a
       // game this is just the player list changing, so the game stays up.
       if (!m.inRound) { P.round = null; Siren.stop(); return guestLobby(); }
@@ -1009,12 +1021,12 @@
       P.round = Object.assign({}, m, { coolEnd: P.round && !fresh ? P.round.coolEnd : 0,
         graceEnd: m.graceLeft ? Date.now() + m.graceLeft : 0 });
       if (!fresh && P.screen === "card") return;          // they'll see it after "Got it"
-      if (m.phase === "meeting") return meeting(false);
       if (fresh && m.card) {
-        countGame();
+        if (store.get("imp_last_deal", 0) !== m.startedAt) { store.set("imp_last_deal", m.startedAt); countGame(); }
         if (window.Loader) Loader.show("Dealing cards", 1100, { players: m.n, imps: m.impCount });
         return showCard(m.card, "Your card", gameOn, P.round);
       }
+      if (m.phase === "meeting") return meeting(false);
       return gameOn();
     }
     if (m.t === "meeting") {
@@ -1182,7 +1194,7 @@
     if (a === "p-reveal-yes") return revealNow();
     if (a === "p-again") {
       P.round = null;
-      P.players = P.players.filter(p => p.on || p.kind === "local");
+      P.players = P.players.filter(p => p.on || p.kind === "local" || p.offAt);
       shareLobby(); return lobby();
     }
   });

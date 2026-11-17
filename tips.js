@@ -77,7 +77,7 @@
     if (window.IMP_TIP_MOCK) prices = window.IMP_TIP_MOCK;     // screenshots only
     if (prices) return Promise.resolve(prices);
     if (!loading) loading = call("tipProducts", { ids: TIPS.map(t => t.id) })
-      .then(r => { prices = {}; (r.products || []).forEach(p => { prices[p.id] = p.price; }); return prices; })
+      .then(r => { const ps = r.products || []; if (!ps.length) { loading = null; return null; } prices = {}; ps.forEach(p => { prices[p.id] = p.price; }); return prices; })
       .catch(() => { loading = null; return null; });
     return loading;
   }
@@ -122,7 +122,7 @@
       try {
         const r = await call("tip", { id: b.dataset.tip });
         if (r.result === "thanks") return done("Thank you!", "That means a lot. You just helped keep Pocket Imposter free, with no ads.");
-        if (r.result === "pending") return done("Waiting for approval", "A parent needs to approve it on their phone. Thanks for asking!");
+        if (r.result === "pending") return done("Waiting for approval", "This tip needs approval first. If it's approved, it goes through on its own.");
         open();                                // cancelled: back to the jar
       } catch (_) {
         done("That didn't go through", "Nothing was charged. Check your internet and try again.");

@@ -9,7 +9,7 @@
   "use strict";
   const rev = s => s.split("").reverse().join("");
   // Blocked anywhere inside a name.
-  const ANY_LIST = ["kcuf", "tihs", "hctib", "tnuc", "yssup", "erohw", "tuls", "ggin", "toggaf", "drater", "nrop", "sinep", "anigav", "elohssa", "dratsab", "tawt", "zzij", "odlid", "ynroh", "ssip", "reltih", "kkk", "kcuc", "ekik", "kcabtew", "ynnart", "renaeb", "elppin", "yxes", "ysup", "elohsa", "togaf", "kuf", "kcf", "kcuhp", "quf", "tyhs", "t1hs", "hctaib", "hctb", "tnuk", "rohw", "t0ls", "aggin", "rgin", "agin", "nr0p", "nigav", "elohesra", "rotarbiv", "einroh", "dessip", "kc1d", "yttit", "seittit", "xxes", "msagro", "flim", "toht", "bojwolb", "bojdnah", "renob", "elcitset", "mutorcs", "nemes", "mreps", "modnoc", "tsecni", "elihpodep", "elifodep", "tselom", "edicius", "smk", "mrahfles", "flesymtuc", "tsirorret", "sisi", "akitsaws", "eniacoc", "gnob", "ysatsce", "lynatnef", "xanax", "daehkcarc", "eiggurd", "ftw", "ufts", "gfmo", "oafml", "lmf", "tihsllub", "ssabmud", "ssakcaj", "ssatrams", "ssadab", "daehtihs", "daehkcid", "elohttub", "gulpttub", "sbweb", "sboob", "reppirts", "rekooh", "etutitsorp", "yddadragus", "seussiyddad", "snafylno", "reredrum", "rebmob", "ssataf", "ostaf", "ssadral", "ypeerc", "timmad", "nmaddog", "ypparc", "rotaredom"].map(rev);
+  const ANY_LIST = ["kcvf", "kucf", "kuhp", "ggln", "ggjn", "lohzza", "knaks", "iatneh", "tohsmuc", "hcuod", "tnuhekim", "ssajhguh", "revodneb", "ztubruomyes", "kcuf", "tihs", "hctib", "tnuc", "yssup", "erohw", "tuls", "ggin", "toggaf", "drater", "nrop", "sinep", "anigav", "elohssa", "dratsab", "tawt", "zzij", "odlid", "ynroh", "ssip", "reltih", "kkk", "kcuc", "ekik", "kcabtew", "ynnart", "renaeb", "elppin", "yxes", "ysup", "elohsa", "togaf", "kuf", "kcf", "kcuhp", "quf", "tyhs", "t1hs", "hctaib", "hctb", "tnuk", "rohw", "t0ls", "aggin", "rgin", "agin", "nr0p", "nigav", "elohesra", "rotarbiv", "einroh", "dessip", "kc1d", "yttit", "seittit", "xxes", "msagro", "flim", "toht", "bojwolb", "bojdnah", "renob", "elcitset", "mutorcs", "nemes", "mreps", "modnoc", "tsecni", "elihpodep", "elifodep", "tselom", "edicius", "smk", "mrahfles", "flesymtuc", "tsirorret", "sisi", "akitsaws", "eniacoc", "gnob", "ysatsce", "lynatnef", "xanax", "daehkcarc", "eiggurd", "ftw", "ufts", "gfmo", "oafml", "lmf", "tihsllub", "ssabmud", "ssakcaj", "ssatrams", "ssadab", "daehtihs", "daehkcid", "elohttub", "gulpttub", "sbweb", "sboob", "reppirts", "rekooh", "etutitsorp", "yddadragus", "seussiyddad", "snafylno", "reredrum", "rebmob", "ssataf", "ostaf", "ssadral", "ypeerc", "timmad", "nmaddog", "ypparc", "rotaredom"].map(rev);
   // Blocked only as a whole word, because they hide inside fine words
   // (peacock, grape, hello, button, raccoon, Sussex, cucumber, canal).
   const WORD_SET = new Set(["kcoc", "epar", "ttub", "ssa", "muc", "xes", "nooc", "omoh", "cips", "knihc", "koog", "gaf", "nmad", "parc", "lleh", "stit", "edun", "dekan", "lana", "eoh", "kcus", "skcus", "esra", "koc", "tsipar", "suna", "smuc", "tit", "seoh", "izan", "sizan", "orgen", "deew", "nioreh", "kcarc", "htem", "top", "epod", "hgih", "evals", "sevals", "syk", "odep", "sodep", "knaw", "reknaw", "ekyd", "96yag", "syag", "sb", "fa", "htw", "uf", "kf", "ths", "pp", "eep", "oop", "poop", "sttub", "ytoob", "mub", "smub", "tun", "stun", "sllab", "llab", "kcas", "tsoh", "dom", "sved", "ved", "mg", "llik", "sllik", "eid", "seid", "daed", "htaed", "rellik", "toohs", "nug", "doolb", "bats", "pirts", "tnulb", "bmud", "rekcus", "pmip", "trocse", "peerc", "kaerf", "bmob", "ffats", "metsys", "troppus", "elppa", "laiciffo", "nimda", "erog", "redrum", "1ssup", "5inep", "denots", "resol", "ylgu", "sedun", "boob", "norom", "toidi", "diputs", "odriew", "vrep", "trevrep", "kcid", "kid", "ctib", "elfir", "retoohs", "flesruoyllik", "dsl", "namssa", "tahssa", "epiwssa", "nwolcssa", "sessa"].map(rev));
@@ -22,18 +22,26 @@
   // people's phones.
   const CONTACT = /https?:|www\.|\.(com|net|org|io|gg|me|co|tv|app|xyz|ly)\b|@|\d{5,}|\d{3}[\s.-]\d{3}[\s.-]?\d{4}/i;
 
+  // Accents off, and look-alike letters (fullwidth, dotless i, ß...) turned
+  // into plain ones, so they can't hide a bad word.
+  const LOOK = { "ı": "i", "ł": "l", "ø": "o", "ß": "ss", "æ": "ae", "œ": "oe", "đ": "d", "ƒ": "f" };
+  const toPlain = t => String(t).normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[ıłøßæœđƒ]/gi, c => LOOK[c.toLowerCase()] || c);
+  // Real names and words that happen to contain a blocked piece.
+  const OKW = /^(\w+shita|shital|fuku\w*|pornthip|semenov|milford|tanigawa|dev|ball|gore|blunt)$/;
   function check(raw) {
     const name = (raw || "").replace(/\s+/g, " ").trim();
     if (name.length < 2) return { ok: false, why: "Type a name, at least 2 letters." };
     if (name.length > 14) return { ok: false, why: "Keep it to 14 letters or fewer." };
-    if (!/^[A-Za-z0-9 .'\-]+$/.test(name)) return { ok: false, why: "Letters, numbers and spaces only." };
-    if (!/[A-Za-z]/.test(name)) return { ok: false, why: "Put at least one letter in it." };
+    if (!/^[\p{Script=Latin}0-9 .'\-]+$/u.test(name)) return { ok: false, why: "Letters, numbers and spaces only." };
+    if (!/\p{Script=Latin}/u.test(name)) return { ok: false, why: "Put at least one letter in it." };
+    const plain = toPlain(name);                                        // Zoë -> Zoe, ｆ -> f
+    if (/[^\x00-\x7f]/.test(plain)) return { ok: false, why: "Letters, numbers and spaces only." };
     if (CONTACT.test(name)) return { ok: false, why: "No links or long numbers in names." };
     if (/(^|\D)(69|420|666|80085|8008|5318008)(\D|$)/.test(name)) return { ok: false, why: "Pick a different name. That one isn't allowed." };
-    const n = norm(name);
-    const flat = n.replace(/[^a-z]/g, "");
-    const words = n.split(/[^a-z]+/).filter(Boolean);
-    const rawWords = name.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+    const n = norm(plain);
+    const words = n.split(/[^a-z]+/).filter(w => w && !OKW.test(w));
+    const flat = words.join("");
+    const rawWords = plain.toLowerCase().split(/[^a-z]+/).filter(w => w && !OKW.test(w));
     const trimmed = flat.replace(/^x+|x+$/g, "");
     const bad =
       ANY_LIST.some(w => flat.includes(w) || squash(flat).includes(w)) ||
@@ -62,6 +70,8 @@
   // Clues go to everyone's phone, so they get the same word check (no length
   // or letters-only rules: "hot sauce" and "50s" are fine clues).
   function clean(raw) {
+    raw = toPlain(raw || "");
+    if (/[^\x00-\x7f]/.test(raw)) return false;
     if (CONTACT.test(String(raw || ""))) return false;
     if (/(^|\D)(69|420|80085|5318008)(\D|$)/.test(String(raw || ""))) return false;
     const n = norm(String(raw || ""));

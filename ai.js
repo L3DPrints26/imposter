@@ -44,7 +44,7 @@
       p: "It runs on the iPhone itself, so it needs the Pocket Imposter app on an iPhone 15 Pro or newer, with Apple Intelligence on." },
     update: { t: "Update Pocket Imposter",
       p: "This copy of the app doesn't have the AI part yet.",
-      steps: ["Open the <b>TestFlight</b> app.", "Tap <b>Pocket Imposter</b>, then <b>Update</b>.", "Open Pocket Imposter again and tap the bubble."] },
+      steps: ["Open the <b>App Store</b> and tap your picture at the top right.", "Find <b>Pocket Imposter</b> and tap <b>Update</b>.", "Open Pocket Imposter again and tap the bubble."] },
     os: { t: "Update your iPhone first",
       p: "This iPhone can run AI help, but it needs iOS 26 or newer.",
       steps: [SETTINGS, "Tap <b>General</b>, then <b>Software Update</b>.", "Tap <b>Update Now</b> and let the iPhone restart.",
@@ -553,7 +553,9 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     const prompt = (now === lastFacts && !fresh ? "Facts: same as before.\n\n" : "Facts:\n" + now + "\n\n") + "Question: " + text;
     let reply;
     try {
-      reply = (await nat().aiAsk({ prompt, instructions: RULES, fresh })).text;
+      // A model that never answers can't lock the chat: give up after 40 s.
+      const slow = new Promise((_, no) => setTimeout(() => no({ code: "slow" }), 40000));
+      reply = (await Promise.race([nat().aiAsk({ prompt, instructions: RULES, fresh }), slow])).text;
       lastFacts = now;
     } catch (e) {
       const code = e && e.code;
@@ -571,6 +573,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
         : code === "busy" ? "Still working on the last one. Try again in a second."
         : code === "downloading" || code === "os" ? (check(), "AI help isn't ready on this iPhone right now. Try again in a few minutes.")
         : code === "language" ? "I can only answer in a language Apple Intelligence supports, like English."
+        : code === "slow" ? (warmed = false, (() => { try { nat().aiReset(); } catch (_) {} })(), "That took too long. Try again.")
         : "Something went wrong. Try again.";
     }
     log.push({ who: "ai", text: tidy(reply) || "Something went wrong. Try again." });

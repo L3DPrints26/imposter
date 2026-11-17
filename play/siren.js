@@ -34,8 +34,8 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{displa
 
   function unlock() {
     try {
-      // iPhone: play even with the ring/silent switch on silent.
-      if (navigator.audioSession) navigator.audioSession.type = "playback";
+      // (The siren switches the phone to "play even on silent" only while it
+      // sounds; see play(). Everyday taps follow the silent switch.)
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
       // Safari says "interrupted" after a lock or a call, not "suspended".
       if (ctx.state !== "running") ctx.resume();
@@ -46,6 +46,7 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{displa
 
   function stop() {
     flash(false);
+    setLoud(false);
     try { if (navigator.vibrate) navigator.vibrate(0); } catch (_) {}
     if (!live) return;
     const { nodes, out } = live;
@@ -59,10 +60,14 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{displa
     } catch (_) {}
   }
 
+  function setLoud(on) {
+    try { if (navigator.audioSession) navigator.audioSession.type = on ? "playback" : "auto"; } catch (_) {}
+  }
   function play(seconds) {
     unlock();
     if (!ctx) return;
     stop();
+    setLoud(true);                      // iPhone: the siren plays even on silent (after stop(), which turns it off)
     const T = Math.max(3, seconds || 8);
     const t0 = ctx.currentTime + 0.05;
     const up = Math.min(2.4, T * 0.3), down = Math.min(1.8, T * 0.22), hold = T - up - down;
@@ -107,7 +112,7 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{displa
     live = { nodes, out };
     setTimeout(() => { if (live && live.out === out) live = null; }, (T + 0.3) * 1000);
     flash(true);
-    flashTimer = setTimeout(() => flash(false), (T + 0.05) * 1000);
+    flashTimer = setTimeout(() => { flash(false); setLoud(false); }, (T + 0.05) * 1000);
     if (navigator.vibrate) navigator.vibrate([600, 200, 600, 200, 600]);
   }
 
