@@ -592,6 +592,9 @@ button.coolring.live .tapme{display:none}
 .dock{gap:4px}
 .dk{white-space:nowrap;font-size:min(13.5px,3.4vw)}
 .av em{text-align:center;line-height:1.15}
+.row.stack{flex-direction:column;align-items:stretch;gap:10px}
+.row.stack .seg2{min-width:0}
+.row.stack .seg2 button{white-space:nowrap;padding:0 4px;font-size:14.5px}
 /* The meeting screen fits a small phone while the siren plays. */
 @media (max-height:700px){#app[data-mode] .mtgicon{width:68px;height:68px}#app[data-mode] .grow{gap:10px!important}}
 @media (max-height:600px){#app[data-mode] .mtghead{grid-template-columns:auto auto;align-items:center;gap:12px}#app[data-mode] .mtgicon{width:52px;height:52px}#app[data-mode] .mtgicon svg{width:30px;height:30px}#app[data-mode] .mtgtitle{font-size:24px;text-align:left}#app[data-mode] .grow{gap:8px!important}#app[data-mode] .bar.slim{min-height:42px}}
@@ -708,9 +711,20 @@ const Native = (() => {
     if (!C || !C.isNativePlatform || !C.isNativePlatform() || typeof C.nativePromise !== "function") return null;
     const call = m => o => C.nativePromise("ImpNative", m, o || {});
     return { keepAwake: call("keepAwake"), aiStatus: call("aiStatus"), aiAsk: call("aiAsk"), aiReset: call("aiReset"), aiWarm: call("aiWarm"),
-             share: call("share") };
+             share: call("share"), haptic: call("haptic"), review: call("review") };
   } catch (_) { return null; }
 })();
+// A tap you feel in your hand (the iPhone app). Phones with the web vibrate
+// API get a short buzz instead.
+const buzz = s => { try { if (Native) Native.haptic({ style: s }).catch(() => {}); else if (navigator.vibrate) navigator.vibrate(s === "heavy" || s === "warning" ? 120 : 25); } catch (_) {} };
+// After a few finished games, Apple's "Enjoying the app?" stars. iOS decides
+// whether it really shows (at most 3 times a year).
+function askRating() {
+  if (!Native) return;
+  const n = store.get("imp_done", 0) + 1;
+  store.set("imp_done", n);
+  if (n === 3 || n === 12 || n === 40) setTimeout(() => { Native.review().catch(() => {}); }, 1800);
+}
 // Keep the screen on during a round: a phone that locks on the ground can't
 // call a meeting. The app does it natively; browsers use the Wake Lock API.
 const Awake = (() => {
@@ -758,7 +772,7 @@ async function unlock(code) {
 
 /* ---------------------------------------------------------------- state */
 let CATS = null;
-const S = Object.assign({ word: true, players: 8, imps: 2, hint: true, meetings: 3, each: 0, vote: "phone", timer: false },
+const S = Object.assign({ word: true, players: 8, imps: 2, hint: true, close: false, meetings: 3, each: 0, vote: "phone", timer: false },
                         store.get("imp_setup", {}));
 // Imposters are always fewer than the crew. Half was allowed before, and 2 of
 // 4 meant the imposters had already "won" before anyone was tagged.
@@ -888,6 +902,9 @@ function deal() {
   G = { imp, cat: cat.name, word: w[0], hint: w[1].length ? w[1][rnd(w[1].length)] : "", first: rnd(S.players),
         idx: 0, meet: S.meetings, used: new Array(S.players).fill(0), caller: "", coolEnd: 0,
         out: new Array(S.players).fill(false), mv: null, graceEnd: 0, callerIdx: -1, dealtAt: Date.now() };
+  // Close word: imposters get another word from the same category instead, so
+  // they don't know they're the imposter.
+  if (S.word && S.close) { const o = cat.words.filter(x => x[0] !== w[0]); G.close = o.length ? o[rnd(o.length)][0] : ""; }
 }
 let RECENT = store.get("imp_recent", []);     // kept in memory too, in case storage is blocked
 
@@ -1110,7 +1127,7 @@ function setup() {
       <div class="row"><div><b>Players</b><div class="sub">3 to 15</div></div>${stepper("players", S.players, 3, 15)}</div>
       <div class="row"><div><b>Imposters</b><div class="sub">fewer than the crew</div></div>${stepper("imps", S.imps, 1, maxImp)}</div>
       ${S.word
-        ? `<div class="row"><div><b>Hint</b><div class="sub">a clue for the imposter</div></div>${seg("hint", [["on", "On"], ["off", "Off"]], S.hint ? "on" : "off")}</div>`
+        ? `<div class="row stack"><div><b>Imposter gets</b><div class="sub">${S.close ? "a close word, so they don't know they're the imposter" : S.hint ? "a one-word hint" : "just the category"}</div></div>${seg("twist", [["hint", "Hint"], ["none", "Nothing"], ["close", "Close word"]], S.close ? "close" : S.hint ? "hint" : "none")}</div>`
         : `<div class="row"><div><b>Meetings</b><div class="sub">shared by everyone</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>
            <details class="more" ${moreOpen ? "open" : ""}><summary><span><b>More rules</b>
              <small>${S.vote === "loud" ? "Vote out loud" : "Vote on the phone"}, timer ${S.timer ? "on" : "off"}${S.each ? ", " + S.each + " per player" : ""}</small></span></summary>
@@ -1190,11 +1207,39 @@ function customScreen(msg, draft) {
       <textarea id="cw" class="ftxt" autocomplete="off" placeholder="Pizza night&#10;The lake house&#10;Grandma's dog">${esc(C.words)}</textarea>
       <p class="mut small">The imposter doesn't get a hint for these, just the category name.</p>
       <p class="err">${esc(msg || "")}</p>
-      ${customCat() ? '<button class="bar ghost slim" data-a="custom-del">Delete my words</button>' : ""}
+      ${customCat() ? '<div class="btns"><button class="bar ghost slim" data-a="custom-share">Share my words</button><button class="bar ghost slim" data-a="custom-del">Delete</button></div>' : ""}
+      <button class="textbtn" data-a="custom-import" style="align-self:center;padding:8px">Got a code from a friend? Paste it</button>
     </div>
     <button class="bar" data-a="custom-save">Save</button>`;
 }
 
+// Your words as a code to send a friend: "w1." + the name and words, one per
+// line, in URL-safe base64. Pasting it (or the whole message) loads them.
+const wordsCode = c => "w1." + btoa(unescape(encodeURIComponent(c.name + "\n" + parseWords(c.words).join("\n"))))
+  .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+function readWordsCode(text) {
+  const m = /w1\.([A-Za-z0-9_-]{4,})/.exec(String(text || ""));
+  if (!m) return null;
+  try {
+    const raw = decodeURIComponent(escape(atob(m[1].replace(/-/g, "+").replace(/_/g, "/"))));
+    const [name, ...rest] = raw.split("\n");
+    const ok = t => !window.NameCheck || NameCheck.clean(t);       // the same word check as clues
+    const words = rest.map(x => x.trim()).filter(x => x && x.length <= WORD_MAX && ok(x)).slice(0, 200);
+    if (words.length < 2) return null;
+    return { name: (ok(name) ? name : "Shared words").slice(0, 24), words: words.join("\n") };
+  } catch (_) { return null; }
+}
+function importScreen(msg) {
+  redraw = () => importScreen();
+  app.innerHTML = `
+    ${topBar("custom", "Friend's words", "")}
+    <div class="list">
+      <p class="c mut small">Paste the code a friend sent you. The whole message is fine too.</p>
+      <textarea id="ic" class="ftxt" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="w1.AbC..." style="height:110px"></textarea>
+      <p class="err">${esc(msg || "")}</p>
+    </div>
+    <button class="bar" data-a="custom-import-go">Use these words</button>`;
+}
 function pass() {
   redraw = pass;
   clearCool();
@@ -1213,8 +1258,8 @@ function card() {
   redraw = card;
   const imp = G.imp[G.idx];
   let inner;
-  if (S.word && !imp)
-    inner = `<p class="lbl">Word</p><p class="word" data-fit>${esc(G.word)}</p>`;
+  if (S.word && (!imp || (S.close && G.close)))           // a close-word imposter's card looks just like crew
+    inner = `<p class="lbl">Word</p><p class="word" data-fit>${esc(imp ? G.close : G.word)}</p>`;
   else if (imp && S.word && S.hint && G.hint)
     inner = `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${esc(G.hint)}</p>`;
   else
@@ -1238,7 +1283,7 @@ function card() {
   // one player's word on screen for the next person to read.
   const hold = $("#hold"), box = $("#card");
   const blank = box.innerHTML;
-  const show = e => { e.preventDefault(); hold.classList.add("on"); box.innerHTML = inner; fitWord(); };
+  const show = e => { e.preventDefault(); hold.classList.add("on"); box.innerHTML = inner; fitWord(); buzz("light"); };
   const hide = () => { hold.classList.remove("on"); box.innerHTML = blank; };
   hold.addEventListener("pointerdown", show);
   ["pointerup", "pointercancel", "pointerleave", "lostpointercapture"].forEach(t => hold.addEventListener(t, hide));
@@ -1465,6 +1510,7 @@ function mvResult(res) {
   clearCool(); Siren.stop();
   const win = tagWinner();
   Round.save(win ? "won" : "play");       // a reload keeps who's out, or goes to the reveal
+  buzz(win ? "success" : "medium");
   app.innerHTML = `
     ${topBar("", "", "")}
     <div class="grow">
@@ -1519,13 +1565,13 @@ function runCool() {
     if (G.graceEnd) {
       const gl = graceLeft(G);
       if (gl > 0) return graceSet(gl);
-      G.graceEnd = 0; if (navigator.vibrate) navigator.vibrate(200);
+      G.graceEnd = 0; buzz("warning");
       return play();
     }
     if (G.coolEnd) {
       const l = coolLeft();
       ringSet(l, coolSecs());
-      if (l <= 0) { G.coolEnd = 0; if (navigator.vibrate) navigator.vibrate(200); }
+      if (l <= 0) { G.coolEnd = 0; buzz("warning"); }
     }
   }, 250);
 }
@@ -1540,11 +1586,13 @@ function reveal() {
     <div class="grow">
       ${S.word ? `<p class="c mut" style="font-size:18px;font-weight:600">The word was</p>
                   <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${esc(G.word)}</p>` : ""}
+      ${S.word && S.close && G.close ? `<p class="c mut" style="font-size:17px">The imposter${who.length === 1 ? "'s" : "s'"} word was <b style="color:var(--imp)">${esc(G.close)}</b></p>` : ""}
       <p class="c mut" style="font-size:20px;font-weight:600;margin-top:10px">${who.length === 1 ? "Imposter" : "Imposters"}</p>
       <div class="imps">${who.map(n => `<span>${avatar(n, "md")}${esc(n)}</span>`).join("")}</div>
     </div>
     <button class="bar" data-a="again">NEW GAME</button>`;
   fitWord();
+  if (!G.done) { G.done = 1; buzz("success"); askRating(); }
 }
 
 /* ---------------------------------------------------------------- actions */
@@ -1594,6 +1642,25 @@ app.addEventListener("click", e => {
   if (a === "cats-all")  { OFF = []; store.set("imp_off", OFF); return catsScreen(); }
   if (a === "cats-none") { OFF = allCats().map(c => c.name); store.set("imp_off", OFF); return catsScreen(); }
   if (a === "custom")   return customScreen();
+  if (a === "custom-import") return importScreen();
+  if (a === "custom-import-go") {
+    const d = readWordsCode($("#ic").value);
+    if (!d) { const e = app.querySelector(".err"); if (e) e.textContent = "That code didn't work. Copy the whole message and try again."; return; }
+    customScreen(`Got "${d.name}". Check the words, then tap Save.`, d);
+    const e = app.querySelector(".err"); if (e) e.style.color = "var(--cy)";      // good news, not an error
+    return;
+  }
+  if (a === "custom-share") {
+    const c = customCat() && CUSTOM;
+    if (!c) return;
+    const code = wordsCode(c);
+    const text = `Play my Pocket Imposter words, "${c.name || "Our words"}"! In the app: Word > Categories > Edit your words > "Got a code from a friend?", then paste this: ${code}`;
+    const note = t => { const e = app.querySelector(".err"); if (e) e.textContent = t; };
+    const copy = () => { try { navigator.clipboard.writeText(text).then(() => note("Copied. Paste it in a text."), () => note(code)); } catch (_) { note(code); } };
+    if (Native && Native.share) return Native.share({ text, url: APP_URL }).catch(copy);
+    if (navigator.share) return navigator.share({ title: "Pocket Imposter words", text }).catch(() => {});
+    return copy();
+  }
   if (a === "custom-save" || a === "custom-del") {
     const old = customCat(), wasOff = !!old && OFF.includes(old.name);
     if (a === "custom-save") {
@@ -1617,6 +1684,7 @@ app.addEventListener("click", e => {
   if (a === "inc" || a === "dec") {
     S[b.dataset.k] += a === "inc" ? 1 : -1; clampSetup(); saveSetup(); return setup();
   }
+  if (a === "twist")    { S.hint = b.dataset.v === "hint"; S.close = b.dataset.v === "close"; saveSetup(); return setup(); }
   if (a === "hint")     { S.hint = b.dataset.v ? b.dataset.v === "on" : !S.hint; saveSetup(); return setup(); }
   if (a === "start")    { deal(); pass(); if (window.Loader) Loader.show("Dealing cards", 1400, { players: S.players, imps: S.imps }); return; }
   if (a === "view")     return card();

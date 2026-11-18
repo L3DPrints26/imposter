@@ -25,7 +25,8 @@
   // Accents off, and look-alike letters (fullwidth, dotless i, ß...) turned
   // into plain ones, so they can't hide a bad word.
   const LOOK = { "ı": "i", "ł": "l", "ø": "o", "ß": "ss", "æ": "ae", "œ": "oe", "đ": "d", "ƒ": "f" };
-  const toPlain = t => String(t).normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[ıłøßæœđƒ]/gi, c => LOOK[c.toLowerCase()] || c);
+  const toPlain = t => String(t).normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[ıłøßæœđƒ]/gi, c => LOOK[c.toLowerCase()] || c)
+    .replace(/[‘’ʼ]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-");   // iPhone curly quotes and dashes
   // Real names and words that happen to contain a blocked piece.
   const OKW = /^(\w+shita|shital|fuku\w*|pornthip|semenov|milford|tanigawa|dev|ball|gore|blunt)$/;
   function check(raw) {

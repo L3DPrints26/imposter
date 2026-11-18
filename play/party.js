@@ -100,7 +100,7 @@
   const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   const coolFor = (n, imps) => (n <= 6 ? 45 : n <= 10 ? 30 : 20) + (imps - 1) * 10;
   const SET_KEY = "imp_party_set";
-  const loadSet = () => Object.assign({ word: true, imps: 1, hint: true, meetings: 3, each: 0, far: false, rounds: 1, vote: "phone" }, store.get(SET_KEY, {}));
+  const loadSet = () => Object.assign({ word: true, imps: 1, hint: true, close: false, meetings: 3, each: 0, far: false, rounds: 1, vote: "phone" }, store.get(SET_KEY, {}));
   // The invite: a link to the website's game with the code in it. Opening it
   // (in any phone's browser) goes straight to "What's your name?" and then
   // into the party.
@@ -376,7 +376,7 @@
     const rules = [];
     if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Where is everyone?</span>${seg("p-where", [["here", "Same room"], ["far", "Far apart"]], mode === "far" ? "far" : "here")}</div>`);
     rules.push(`<div class="rcard"><span class="rl">Imposters</span>${far ? mini("imps", 1, 1, 1) : mini("imps", S2.imps, 1, maxImp)}</div>`);
-    if (mode !== "tag") rules.push(`<div class="rcard"><span class="rl">Imposter hint</span>${seg("p-hint", [["on", "On"], ["off", "Off"]], S2.hint ? "on" : "off")}</div>`);
+    if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Imposter gets</span>${seg("p-twist", [["hint", "Hint"], ["none", "Nothing"], ["close", "Close word"]], S2.close ? "close" : S2.hint ? "hint" : "none")}</div>`);
     if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues per player</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
     if (mode === "tag") rules.push(`<div class="rcard"><span class="rl">Meetings</span>${mini("meetings", S2.meetings, 0, 9)}</div>`,
       `<div class="rcard"><span class="rl">Voting</span>${seg("p-vmode", [["phone", "Phones"], ["loud", "Out loud"]], S2.vote === "loud" ? "loud" : "phone")}</div>`,
@@ -442,18 +442,21 @@
     const n = ps.length, imps = P.set.far ? 1 : Math.min(impMax(n), Math.max(1, P.set.imps));
     const impIds = new Set();
     while (impIds.size < imps) impIds.add(ps[rnd(n)].id);
-    let cat = null, w = null, hint = "";
+    let cat = null, w = null, hint = "", close = "";
     const far = !!P.set.far;
     if (P.set.word || far) {
       const recent = store.get("imp_recent", []), pool = partyPool();
       for (let t = 0; t < 40; t++) { cat = pool[rnd(pool.length)]; w = cat.words[rnd(cat.words.length)]; if (!recent.includes(w[0])) break; }
       recent.push(w[0]); store.set("imp_recent", recent.slice(-16));
       hint = P.set.hint && w[1].length ? w[1][rnd(w[1].length)] : "";
+      // Close word: imposters get another word from the same category and
+      // don't know they're the imposter.
+      if (P.set.close) { const o = cat.words.filter(x => x[0] !== w[0]); close = o.length ? o[rnd(o.length)][0] : ""; hint = ""; }
     }
     const cards = {};
     ps.forEach(p => {
       const imp = impIds.has(p.id);
-      cards[p.id] = { imp, word: !imp && w ? w[0] : "", hint: imp ? hint : "" };
+      cards[p.id] = imp && close ? { imp, word: close, hint: "", close: true } : { imp, word: !imp && w ? w[0] : "", hint: imp ? hint : "" };
     });
     // Far apart: clues go round the group in a fixed order, starting with a
     // random player, so everyone sees whose turn it is.
@@ -461,7 +464,7 @@
     P.round = { mode: P.set.word || far ? "word" : "tag", cards, far, order, turn: 0, rounds: P.set.rounds || 1,
       clues: [], votes: {}, out: {}, mv: null, result: null, graceEnd: 0, cat: cat ? cat.name : "", word: w ? w[0] : "",
       imps: ps.filter(p => impIds.has(p.id)).map(p => p.name), first: ps[start].name, n, impCount: imps,
-      names: Object.fromEntries(ps.map(p => [p.id, p.name])),
+      names: Object.fromEntries(ps.map(p => [p.id, p.name])), closeWord: close,
       meetLeft: P.set.meetings, each: P.set.each, used: {}, phase: far ? "clues" : "on", startedAt: Date.now(),
       cool: coolFor(n, imps), coolEnd: 0, caller: "", body: false,
       queue: ps.filter(p => p.kind !== "phone").map(p => p.id), dealing: true };
@@ -556,7 +559,8 @@
   }
   function roundFor(id) {
     const R = P.round;
-    return { t: "round", mode: R.mode, card: R.cards[id] || null, cat: R.cat, first: R.first, n: R.n,
+    const cd = R.cards[id] || null;
+    return { t: "round", mode: R.mode, card: cd && cd.close ? { imp: false, word: cd.word, hint: "" } : cd, cat: R.cat, first: R.first, n: R.n,
       impCount: R.impCount, meetLeft: R.meetLeft, each: R.each, used: R.used[id] || 0, startedAt: R.startedAt,
       cool: R.cool, phase: R.phase, caller: R.caller, body: R.body,
       far: R.far, rounds: R.rounds, clues: R.clues, turnId: turnId(), turnName: nameOf(turnId()),
@@ -637,7 +641,7 @@
     const out = top.length === 1 ? top[0] : null;              // a tie means nobody is out
     const caught = !!(out && R.cards[out.id] && R.cards[out.id].imp);
     R.phase = "reveal";
-    const r = { t: "reveal", mode: "word", word: R.word, cat: R.cat, imps: R.imps, far: true,
+    const r = { t: "reveal", mode: "word", word: R.word, cat: R.cat, imps: R.imps, far: true, close: R.closeWord || "",
       tally: ranked.filter(x => x.votes), out: out ? out.name : "", caught };
     R.revealMsg = r;                     // for anyone who rejoins now
     broadcast(r); Siren.stop();
@@ -646,14 +650,14 @@
 
   /* ------------------------------------------------------------ cards */
   function cardInner(card, R) {
-    if (R.mode === "word" && !card.imp) return `<p class="lbl">Word</p><p class="word" data-fit>${esc(card.word)}</p>`;
+    if (R.mode === "word" && (!card.imp || card.close)) return `<p class="lbl">Word</p><p class="word" data-fit>${esc(card.word)}</p>`;
     if (R.mode === "word" && card.imp && card.hint) return `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${esc(card.hint)}</p>`;
     return `<p class="role" style="color:var(${card.imp ? "--imp" : "--crew"})">${card.imp ? "IMPOSTER" : "CREW"}</p>
             <p class="mut small">${card.imp ? (R.mode === "word" ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
   }
   function holdWire(inner) {
     const hold = $p("#hold"), box = $p("#card"), blank = box.innerHTML;
-    const show = e => { e.preventDefault(); hold.classList.add("on"); box.innerHTML = inner; fitWord(); };
+    const show = e => { e.preventDefault(); hold.classList.add("on"); box.innerHTML = inner; fitWord(); buzz("light"); };
     const hide = () => { hold.classList.remove("on"); box.innerHTML = blank; };
     hold.addEventListener("pointerdown", show);
     ["pointerup", "pointercancel", "pointerleave", "lostpointercapture"].forEach(t => hold.addEventListener(t, hide));
@@ -783,13 +787,13 @@
       if (R.graceEnd) {
         const gl = graceLeft(R);
         if (gl > 0) return graceSet(gl);
-        R.graceEnd = 0; if (navigator.vibrate) navigator.vibrate(200);
+        R.graceEnd = 0; buzz("warning");
         return gameOn();
       }
       if (R.coolEnd) {
         const l = Math.max(0, Math.ceil((R.coolEnd - Date.now()) / 1000));
         ringSet(l, R.cool);
-        if (!l) { R.coolEnd = 0; if (navigator.vibrate) navigator.vibrate(200); }
+        if (!l) { R.coolEnd = 0; buzz("warning"); }
       }
     }, 250);
   }
@@ -958,7 +962,7 @@
   /* ------------------------------------------------------------ reveal */
   function revealNow() {
     const R = P.round; R.phase = "reveal";
-    const r = { t: "reveal", mode: R.mode, word: R.word, cat: R.cat, imps: R.imps };
+    const r = { t: "reveal", mode: R.mode, word: R.word, cat: R.cat, imps: R.imps, close: R.closeWord || "" };
     R.revealMsg = r;
     broadcast(r); Siren.stop();
     return reveal(r);
@@ -969,6 +973,7 @@
       <div class="grow">
         ${r.mode === "word" ? `<p class="c mut" style="font-size:18px;font-weight:600">The word was</p>
           <p class="word c" data-fit style="font-size:52px;font-weight:700;color:var(--acc);white-space:nowrap">${esc(r.word)}</p>` : ""}
+        ${r.close ? `<p class="c mut" style="font-size:17px">The imposter's word was <b style="color:var(--imp)">${esc(r.close)}</b></p>` : ""}
         ${r.far ? `<p class="c" style="font-size:22px;font-weight:700;color:${r.caught ? "var(--crew)" : "var(--imp)"}">${
             r.out ? esc(r.out) + " was voted out. " + (r.caught ? "Crew win!" : "Wrong one. Imposters win!") : (r.tally && r.tally.length ? "It's a tie, so nobody's out. Imposters win!" : "No votes, so nobody's out. Imposters win!")}</p>
           <p class="c mut small">${(r.tally || []).map(x => esc(x.name) + " " + x.votes).join(" &nbsp;·&nbsp; ")}</p>` : ""}
@@ -978,6 +983,7 @@
       ${isHost ? '<button class="bar" data-a="p-again">Next game</button>' : '<p class="c mut small" style="margin:8px 0">Waiting for the host to start the next game.</p>'}`,
       () => reveal(r), "reveal");
     fitWord();
+    if (!r.counted) { r.counted = 1; buzz("success"); askRating(); }
   }
 
   /* ------------------------------------------------------------ guest */
@@ -1189,6 +1195,7 @@
     if (a === "p-lock")  { P.locked = b.dataset.v === "locked"; return lobby(); }
     if (a === "p-late")  { P.set.late = b.dataset.v === "on"; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-skip")  return P.role === "host" && skipTurn();
+    if (a === "p-twist") { P.set.hint = b.dataset.v === "hint"; P.set.close = b.dataset.v === "close"; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-hint")  { P.set.hint = b.dataset.v ? b.dataset.v === "on" : !P.set.hint; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-inc" || a === "p-dec") {
       const k = b.dataset.k, lim = { imps: [1, 7], meetings: [0, 9], each: [0, 3], rounds: [1, 3] }[k];
@@ -1288,7 +1295,7 @@
     const R = P.round, s = P.set || {}, host = P.role === "host";
     const o = { role: P.role, code: P.code, me: P.me && P.me.name, screen: P.screen, locked: !!P.locked,
       players: (P.players || []).map(p => p.name + (p.kind === "local" ? " (plays on the host's phone)" : p.on === false ? " (offline)" : "")),
-      mode: modeOf(s), imposters: s.far ? 1 : s.imps, hint: !!s.hint, meetings: s.meetings, each: s.each, vote: s.vote, cluesEach: s.rounds || 1 };
+      mode: modeOf(s), imposters: s.far ? 1 : s.imps, hint: !!s.hint, close: !!s.close, meetings: s.meetings, each: s.each, vote: s.vote, cluesEach: s.rounds || 1 };
     if (R && R.phase !== "reveal") Object.assign(o, { phase: R.phase, n: R.n, impCount: R.impCount, meetLeft: R.meetLeft,
       cat: R.cat, first: R.first, clues: (R.clues || []).length,
       turn: R.far && R.phase === "clues" ? (host ? nameOf(turnId()) : R.turnName) : "",

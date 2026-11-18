@@ -113,7 +113,8 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibi
     setTimeout(() => { if (live && live.out === out) live = null; }, (T + 0.3) * 1000);
     flash(true);
     flashTimer = setTimeout(() => { flash(false); setLoud(false); }, (T + 0.05) * 1000);
-    if (navigator.vibrate) navigator.vibrate([600, 200, 600, 200, 600]);
+    if (typeof buzz === "function") { buzz("heavy"); setTimeout(() => buzz("heavy"), 500); }
+    else if (navigator.vibrate) navigator.vibrate([600, 200, 600, 200, 600]);
   }
 
   window.Siren = { play, stop, unlock };

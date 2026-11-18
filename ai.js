@@ -122,7 +122,7 @@ When the facts include "Worked out", those numbers are exact. Use them as they a
 THE GAME: works with 3 to 15 players (a party too). Two games, Word and Tag. To change the number of players, tap + or - next to Players on the setup screen.
 
 WORD (sit in a circle)
-Setup: Home > "Word". Set Players, Imposters and Hint (on: the imposter gets a one-word hint; off: only the category). "Categories" picks which word lists are on; "Make your own" adds your own words (no hints for those). "Player names" is optional. Tap "START".
+Setup: Home > "Word". Set Players, Imposters and "Imposter gets": Hint (a one-word hint), Nothing (only the category) or Close word (the imposter gets a different word from the same category, sees it like a normal word, and doesn't know they're the imposter). "Categories" picks which word lists are on; "Make your own" adds your own words (no hints for those). "Player names" is optional. Tap "START".
 Cards: "Hand the phone to [name]", that player taps "Then tap here", holds "HOLD" to see their card, lets go, taps "Next player". Crew see the word. Imposters see IMPOSTER and maybe a hint. Everyone sees the category.
 "Game started" says who goes first. Go around once, one clue word each about the secret word. Talk it over, then everyone points on three. Most votes is out. Tap "Reveal", then "Yes, reveal" to see the word and the imposters. "NEW GAME" deals a new word; no word repeats within 16 rounds.
 Crew win if they vote out every imposter. Imposters win if they survive the vote. Optional house rule: a voted-out imposter still wins by naming the word.
@@ -220,7 +220,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     if (typeof S === "undefined" || typeof G === "undefined") return f;
     const n = S.players, I = S.imps;
     f.push(`Setup on this phone: ${S.word ? "Word" : "Tag"}, ${n} players, ${plural(I, "imposter")} and ${n - I} crew` +
-      (S.word ? `, imposter hint ${S.hint ? "on" : "off"}` +
+      (S.word ? `, imposter gets ${S.close ? "a close word" : S.hint ? "a hint" : "nothing"}` +
                 (typeof CATS !== "undefined" && CATS ? `, ${liveCats().length} of ${allCats().length} categories on` : "")
               : `, ${plural(S.meetings, "emergency meeting")} for the group` +
                 (S.each ? `, at most ${S.each} per player` : ", no limit per player") +
@@ -268,7 +268,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     f.push(`Players (${p.players.length}): ${list(p.players)}.`);
     f.push(`Game: ${mode}, ${plural(p.imposters, "imposter")}` + (p.mode === "tag"
       ? `, ${plural(p.meetings, "emergency meeting")}${p.each ? ", at most " + p.each + " each" : ""}, voting ${p.vote === "loud" ? "out loud" : "on phones"}`
-      : `, hint ${p.hint ? "on" : "off"}` + (p.mode === "far" ? `, ${p.cluesEach} clue${p.cluesEach === 1 ? "" : "s"} each` : "")) + ".");
+      : `, imposter gets ${p.close ? "a close word" : p.hint ? "a hint" : "nothing"}` + (p.mode === "far" ? `, ${p.cluesEach} clue${p.cluesEach === 1 ? "" : "s"} each` : "")) + ".");
     if (p.phase) {
       f.push(`Round: ${p.phase === "clues" ? "typing clues" : p.phase === "vote" ? "voting" : p.phase === "on" ? "playing" : p.phase}. ${p.n} players, ${plural(p.impCount, "imposter")} at the start. Category ${p.cat}. ${p.first} went first.`);
       if (p.turn) f.push(`It's ${p.turn}'s turn to type a clue. Clues so far: ${p.clues}.`);
