@@ -61,7 +61,7 @@
 .tjcard{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin:18px 0 0;padding:16px;border-radius:22px;
   background:linear-gradient(135deg,#2A2560,#171A3D);border:1px solid rgba(255,198,26,.35)}
 .tjcard b{display:block;font-size:18px}
-.tjcard span{display:block;color:#AEB4D0;font-size:15px;line-height:1.4}
+.tjcard b+span{display:block;color:#AEB4D0;font-size:15px;line-height:1.4}
 .tjcard button{grid-column:1/-1;height:50px;border-radius:16px;border:0;font-family:inherit;font-weight:700;font-size:17px;color:#1A1205;
   background:linear-gradient(180deg,#FFE070,#F2A900);box-shadow:0 5px 0 #B47A00}`;
 
@@ -99,7 +99,7 @@
 
   function done(h, p) {
     frame(`${head}<div class="tjdone"><span class="tjic">${ico(HEART)}</span><h3>${esc(h)}</h3><p>${esc(p)}</p>
-      <div class="btns" style="display:grid;width:100%"><button class="ok" data-x style="height:52px;border-radius:18px;border:0;font-family:inherit;font-weight:700;font-size:17px;color:#1A1205;background:linear-gradient(180deg,#FFE070,#F2A900);box-shadow:0 5px 0 #B47A00">OK</button></div></div>`);
+      <div class="btns" style="display:grid;grid-template-columns:1fr;width:100%"><button class="ok" data-x style="height:52px;border-radius:18px;border:0;font-family:inherit;font-weight:700;font-size:17px;color:#1A1205;background:linear-gradient(180deg,#FFE070,#F2A900);box-shadow:0 5px 0 #B47A00">OK</button></div></div>`);
   }
 
   async function open() {

@@ -111,7 +111,7 @@ How to answer:
 - For numbers, use the facts and the tables below. Never make up numbers, names or rules.
 - "What now?" or "I'm on this screen": look at Screen and Buttons in the facts, and say the next thing to tap or do.
 - You never know the secret word or who the imposters are.
-- If the rules and facts don't cover it, say you're not sure and point to the "Learn" tab. Never guess.
+- If the rules and facts don't cover it, say you're not sure and point to How to play. Never guess.
 - Only ask a question back if you can't answer without it.
 - Players make typos and use slang. Work out what they mean.
 - "Shorter" means say your last answer in fewer words. "Simpler" means use easier words, like for a 9-year-old.
@@ -149,7 +149,7 @@ If a guest's phone dies or drops, they open the game, tap "Join", type the same 
 "Report a problem" reports a player.
 
 THE APP
-Bottom tabs: Home, Learn (how to play), Play, Box, Help. During a round the Home button asks "Leave this round?". If the app closes mid-round, the Play screen shows "Back to the round". Everything works offline except Play together. Help has answers and a feedback form.
+The main menu has Word, Tag and Play together, plus How to play, Help, Share and Tip the Dev. During a game the Home button keeps the game going: the menu shows "Game in progress" with "Back to it". Starting a new game while one is going asks "End the game in progress?" first. Everything works offline except Play together. Help has answers and a way to send feedback.
 The Pocket Imposter box is a small handheld version of the game. The app doesn't need it.
 
 HOW GOOD ANSWERS LOOK
@@ -414,7 +414,18 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
   background:#35E8FF;color:#06213A;font-weight:700;font-size:15px}
 .aisteps li b{color:#fff}
 .aiwhy .still{color:#FFC61A;font-weight:600;font-size:15px}
-.aiwhy .btns{display:grid;gap:8px;width:100%;margin-top:4px}
+.aiwhy .btns{display:grid;grid-template-columns:1fr;gap:8px;width:100%;margin-top:4px}
+.aihead small,.aihead button{white-space:nowrap}
+.aihead button{flex:none}
+.aihead>span:nth-child(2){min-width:0}
+.aihead small{overflow:hidden;text-overflow:ellipsis}
+.ailog{min-height:64px}
+@media (max-height:560px){
+ .aiwrap{padding:max(6px,env(safe-area-inset-top)) 8px 6px}
+ .aisheet{max-height:100%}
+ .aihead{padding:8px 10px 8px 12px} .aihead .aiorb{width:32px;height:32px}
+ .aichips{flex-wrap:nowrap;overflow-x:auto} .aichips button{flex:none}
+ .aisheet:has(.aiform input:focus) .aichips{display:none}}
 .aiwhy .ok{height:52px;border-radius:18px;border:0;font-family:inherit;font-weight:700;font-size:17px;color:#06213A;
   background:radial-gradient(circle at 30% 0%,#D4FBFF 0,#35E8FF 45%,#1C9BFF 100%)}
 .aiwhy .ok.ghost{background:rgba(255,255,255,.06);color:#CFD4E2;border:1px solid rgba(255,255,255,.12)}
@@ -469,6 +480,7 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
         ${!w.steps && learn ? `<p class="note">The rules are in <a href="${learn.getAttribute("href")}" style="color:#35E8FF">How to play</a>.</p>` : ""}
         <div class="btns">${w.again ? '<button class="ok" data-recheck>Check again</button><button class="ok ghost" data-x>Close</button>'
                                     : '<button class="ok" data-x>OK</button>'}</div></div>`);
+    const st = box.querySelector(".still"); if (st) st.scrollIntoView({ block: "center" });
     const rb = box.querySelector("[data-recheck]");
     if (rb) rb.addEventListener("click", async () => {
       rb.disabled = true; rb.textContent = "Checking...";

@@ -20,7 +20,7 @@
   background:radial-gradient(120% 90% at 50% 35%,#FF3B2B 0%,#E01408 55%,#9A0000 100%)}
 .siren-on .sirenflash{animation:sirenpulse .6s ease-in-out infinite alternate}
 @keyframes sirenpulse{from{opacity:0}to{opacity:.88}}
-html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{display:none!important}
+html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibility:hidden;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.siren-on .sirenflash{animation:none;opacity:.3;mix-blend-mode:normal}}`;
   function flash(on) {
     if (on && !document.querySelector(".sirenflash")) {

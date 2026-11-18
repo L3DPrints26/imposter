@@ -31,7 +31,7 @@
 html,body,button,a,input,label{touch-action:manipulation}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--disp);
   -webkit-font-smoothing:antialiased;height:100%}
-body{display:flex;justify-content:center}
+body{display:flex;justify-content:center;align-items:flex-start}
 #app{width:100%;max-width:480px;min-height:100%;display:flex;flex-direction:column;
   padding:max(16px,env(safe-area-inset-top)) 18px max(20px,env(safe-area-inset-bottom))}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
@@ -142,8 +142,7 @@ textarea.ftxt{height:auto;min-height:150px;padding:10px 12px;resize:vertical;fon
    iPad or a small iPhone): the page scrolls instead. Boxes with overflow:hidden
    (name lists, vote lists) could shrink to a 2px line, hiding what you type. */
 #app > *,.list > *{flex-shrink:0}
-/* Typing a clue: the peek button and links step aside so Send stays above the keyboard. */
-#app:has(#pclue:focus) > .grow{display:none}
+.bar.sendclue{margin-top:2px}
 textarea.ftxt{height:150px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{padding:10px 14px;border-radius:999px;background:var(--surf);color:var(--mut);font-weight:600;
@@ -264,7 +263,7 @@ h2.ask{text-align:left;margin:2px 2px 4px}
 .app.msg i{background:linear-gradient(180deg,#67F27E,#14C437);color:#fff}
 .app.mail i{background:linear-gradient(180deg,#2FA7FF,#0A67F2);color:#fff}
 .app.link i{background:linear-gradient(180deg,#9A9AA2,#5E5E66);color:#fff}
-.app.more i{background:var(--surf2);color:var(--text)}
+.app.shmore i{background:var(--surf2);color:var(--text)}
 .app:active i{transform:scale(.94)}
 
 /* the game-on screen */
@@ -291,7 +290,9 @@ h2.ask{text-align:left;margin:2px 2px 4px}
 .peek.on{background:var(--crew);color:#fff}
 .peekcard{min-height:0;padding:0;background:none}
 .peekcard:empty{display:none}
-.peekcard:not(:empty){padding:16px;background:var(--surf);margin-bottom:12px}
+/* The peek card floats over the screen, so nothing moves under the finger. */
+.peekcard:not(:empty){position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);width:min(444px,calc(100% - 36px));z-index:50;
+  margin:0;padding:16px;background:var(--surf);pointer-events:none;box-shadow:0 20px 60px rgba(0,0,0,.6)}
 /* A held finger never selects (highlights) the word on a card. */
 .card,.peekcard,.peek,.hold{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .chat{display:grid;gap:6px;margin:4px 0 10px}
@@ -351,12 +352,12 @@ body.wide .hold{width:180px;height:180px}
    action, cyan for secondary, red for danger, green for go. Buttons have a
    darker bottom edge and press in when tapped. No pink, nothing flashes. */
 :root{--bg:#0A0B1D;--surf:#181B3A;--surf2:#10122B;--line:#2A2F5A;--mut:#8D94B6;--cy:#35E8FF;--edge:#07081A;--gold-d:#B47A00}
-html{background:#0A0B1D}
-body{background:
+html{background:
   radial-gradient(900px 520px at 50% -14%,rgba(53,232,255,.14),transparent 62%),
   radial-gradient(640px 460px at 110% 112%,rgba(255,198,26,.08),transparent 60%),
   linear-gradient(rgba(255,255,255,.024) 1px,transparent 1px) 0 0/30px 30px,
   linear-gradient(90deg,rgba(255,255,255,.024) 1px,transparent 1px) 0 0/30px 30px,#0A0B1D;background-attachment:fixed}
+body{background:transparent}
 /* panels: one recipe, so cards, rows and lists read as one family */
 .row,.go,.more,.opts,.where,.rcard,.wait,.codecard,.coolring,.av,.gm,.peekcard:not(:empty),
 .names:has(> label),.names:has(> .addrow){
@@ -454,7 +455,7 @@ body{background:
 .ftxt{background:#0E1030}
 
 /* ---- round 3: menu, avatars, tappable tiles ---- */
-.menu{gap:16px}
+.menu{gap:14px}
 .menuart{align-self:center;width:128px;height:128px;border-radius:34px;
   box-shadow:0 0 0 1px rgba(255,255,255,.09),0 16px 40px rgba(0,0,0,.45),0 0 70px rgba(53,232,255,.2)}
 .menu .wm{margin-top:-2px}
@@ -554,7 +555,7 @@ button.coolring.live .tapme{display:none}
   background:linear-gradient(135deg,#222866,#161A3D);border:1px solid rgba(53,232,255,.3)}
 .shcard img{width:62px;height:62px;border-radius:16px}
 .shcard b{display:block;font-size:19px}
-.shcard span{display:block;color:#AEB4D0;font-size:14px;line-height:1.35}
+.shcard b+span{display:block;color:#AEB4D0;font-size:14px;line-height:1.35}
 .shbody .apps{gap:10px}
 .shnote{text-align:center;font-size:14px;color:#9FE9F5;min-height:20px}
 /* ---- round 6: player cards, late-joining code ---- */
@@ -567,7 +568,33 @@ button.coolring.live .tapme{display:none}
 .pstats div{display:grid;gap:2px;padding:12px 8px;border-radius:16px;background:linear-gradient(180deg,#1C2044,#151834);border:1px solid rgba(255,255,255,.07)}
 .pstats b{font-size:24px;color:var(--acc)}
 .pstats span{font-size:13px;color:var(--mut)}
-.latecode{display:flex;align-items:center;justify-content:center;gap:8px;margin:-4px 0 12px;font-size:14px;color:#9FE9F5;font-weight:600}
+.latecode{display:flex;align-items:center;justify-content:center;gap:8px;margin:-4px auto 12px;padding:6px 8px 6px 14px;font-size:14px;color:#9FE9F5;font-weight:600;
+  border:1px solid rgba(53,232,255,.25);border-radius:999px;background:rgba(53,232,255,.06)}
+.latecode svg{width:18px;height:18px;flex:none}
+.latecode:active{transform:scale(.97)}
+.codebig{display:grid;justify-items:center;gap:4px;padding:16px;border-radius:20px;border:1px solid rgba(255,198,26,.35);
+  background:linear-gradient(135deg,#2A2560,#171A3D);color:var(--text)}
+.codebig small{font-size:12px;letter-spacing:.14em;color:#AEB4D0;font-weight:700}
+.codebig b{font-size:44px;letter-spacing:.18em;color:var(--acc);line-height:1.1}
+.codebig span{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;color:#D6FAFF}
+.codebig span svg{width:18px;height:18px}
+.codebig:active{transform:scale(.98)}
+/* Long names and words never push the page sideways. */
+.whobox{grid-template-columns:minmax(0,1fr)}
+.who{min-width:0;max-width:100%}
+.opt .ol{min-width:0;overflow-wrap:anywhere}
+.chat span,.chat small{min-width:0;overflow-wrap:anywhere}
+.rgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:359px){.rgrid{grid-template-columns:minmax(0,1fr)}}
+.apps{grid-template-columns:repeat(4,minmax(0,1fr))}
+.apps .app{padding:0;min-width:0}
+.shbody{grid-template-columns:minmax(0,1fr)}
+.dock{gap:4px}
+.dk{white-space:nowrap;font-size:min(13.5px,3.4vw)}
+.av em{text-align:center;line-height:1.15}
+/* The meeting screen fits a small phone while the siren plays. */
+@media (max-height:700px){#app[data-mode] .mtgicon{width:68px;height:68px}#app[data-mode] .grow{gap:10px!important}}
+@media (max-height:600px){#app[data-mode] .mtghead{grid-template-columns:auto auto;align-items:center;gap:12px}#app[data-mode] .mtgicon{width:52px;height:52px}#app[data-mode] .mtgicon svg{width:30px;height:30px}#app[data-mode] .mtgtitle{font-size:24px;text-align:left}#app[data-mode] .grow{gap:8px!important}#app[data-mode] .bar.slim{min-height:42px}}
 .latecode b{padding:3px 10px;border-radius:999px;background:rgba(255,198,26,.14);color:var(--acc);letter-spacing:.14em}
 /* ---- round 7: a player's phone went off ---- */
 .offbar{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;border-radius:16px;
@@ -658,6 +685,7 @@ const markScreen = () => {
     if (!/^function meeting|^\(\) => meeting\(/.test(k)) app.removeAttribute("data-mode");
   }
   else if (Math.abs(window.scrollY - keepY) > 2) window.scrollTo(0, keepY);   // a redraw doesn't jump
+  fitWord();
 };
 const screenWatch = new MutationObserver(markScreen);
 screenWatch.observe(app, { childList: true });
@@ -780,10 +808,11 @@ const liveCats = () => { const on = allCats().filter(c => !OFF.includes(c.name))
 // be kept), then shows the meeting.
 const canCall = i => S.each === 0 || G.used[i] < S.each;
 // What a player has left, in words: "1 meeting left to call".
-const meetsLeft = (each, used) => {
+const meetsLeft = (each, used, pool) => {
   const n = n => n + " meeting" + (n === 1 ? "" : "s");
   if (!each) return used ? "Called " + n(used) + " so far" : "Hasn't called one yet";
-  return each - used > 0 ? n(each - used) + " left to call" : "No meetings left to call";
+  const l = Math.min(each - used, pool == null ? Infinity : pool);
+  return l > 0 ? n(l) + " left to call" : "No meetings left to call";
 };
 const meetOpen = () => G.meet > 0 && G.used.some((_, i) => canCall(i) && !G.out[i]);
 
@@ -810,9 +839,16 @@ app.addEventListener("click", e => {
 // when they have no name. Same colors as the party lobby's bubbles.
 const AVC = ["#FFC61A", "#35E8FF", "#3AC75A", "#FF8A3D", "#8E7CFF", "#4DA3FF", "#F2F4F8"];
 const avc = name => AVC[[...String(name)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % AVC.length];
+const firstChar = n => {
+  let c;
+  try { c = new Intl.Segmenter().segment(n)[Symbol.iterator]().next().value.segment; } catch (_) { c = [...n][0]; }
+  c = c || "?";
+  const u = c.toUpperCase();
+  return u.length === c.length ? u : c;
+};
 const avatar = (name, cls) => {
   const n = String(name || "").trim(), seat = /^Player (\d+)$/.exec(n);
-  return `<i class="pav ${cls || ""}" style="background:${avc(n)}">${seat ? seat[1] : esc(([...n][0] || "?").toUpperCase())}</i>`;
+  return `<i class="pav ${cls || ""}" style="background:${avc(n)}">${seat ? seat[1] : esc(firstChar(n))}</i>`;
 };
 // A two-way switch, as one pill.
 const seg = (action, opts, cur) => `<div class="seg2">${opts.map(([v, label]) =>
@@ -908,7 +944,7 @@ const topBar = (back, count, home, extra) =>
 
 // Long words shrink to fit on one line. They never break or hyphenate.
 function fitWord() {
-  document.querySelectorAll("[data-fit]").forEach(el => {
+  document.querySelectorAll("[data-fit], .who, .cat .v").forEach(el => {
     let px = parseFloat(getComputedStyle(el).fontSize);
     while (el.scrollWidth > el.clientWidth && px > 20) { px -= 2; el.style.fontSize = px + "px"; }
     if (el.scrollWidth > el.clientWidth) { el.style.whiteSpace = "normal"; el.style.overflowWrap = "anywhere"; }
@@ -971,7 +1007,7 @@ function gate(msg) {
 
 // How long the game in progress has run, from when it was dealt.
 const sinceText = r => {
-  const t = Math.max(0, Math.floor((Date.now() - (r.G.dealtAt || r.G.startedAt || r.t)) / 1000));
+  const t = Math.max(0, Math.floor((Date.now() - (r.G.startedAt || r.G.dealtAt || r.t)) / 1000));
   return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
 };
 // Sounds on? (sfx.js may not have loaded yet on the very first screen.)
@@ -1023,12 +1059,12 @@ function shareSheet() {
         <a class="app msg" href="sms:?&body=${encodeURIComponent(APP_TEXT)}"><i>${I.msgIcon}</i>Messages</a>
         <a class="app mail" href="mailto:?subject=${encodeURIComponent("Play Pocket Imposter with me")}&body=${encodeURIComponent(APP_TEXT)}"><i>${I.mailIcon}</i>Mail</a>
         <button class="app link" data-share="copy"><i>${I.linkIcon}</i>Copy link</button>
-        <button class="app more" data-share="more"><i>${I.share}</i>More</button>
+        <button class="app shmore" data-share="more"><i>${I.share}</i>More</button>
       </div>
       <p class="shnote" id="shnote"></p>
     </div></div>`;
   w.addEventListener("click", e => {
-    if (e.target === w || e.target.closest("[data-x]")) return w.remove();
+    if (e.target === w || e.target.closest("[data-x]")) { document.documentElement.style.overflow = ""; return w.remove(); }
     const b = e.target.closest("[data-share]");
     if (!b) return;
     const note = t => { const n = w.querySelector("#shnote"); if (n) n.textContent = t; };
@@ -1041,6 +1077,7 @@ function shareSheet() {
     note(APP_URL);
   });
   document.body.appendChild(w);
+  document.documentElement.style.overflow = "hidden";
 }
 // Starting another game while one is going asks first.
 function newGameAsk(next) {
@@ -1233,6 +1270,8 @@ function started() {
 function play() {
   redraw = play;
   window.onblur = null; document.onvisibilitychange = null;
+  if (G.graceEnd && !graceLeft(G)) G.graceEnd = 0;
+  if (G.coolEnd && !coolLeft()) G.coolEnd = 0;
   const left = coolLeft();
   if (!G.startedAt) G.startedAt = Date.now();
   Round.save("play");
@@ -1307,7 +1346,7 @@ function meetPick() {
   redraw = meetPick;
   let rows = "";
   for (let i = 0; i < S.players; i++) {
-    const sub = meetsLeft(S.each, G.used[i]);
+    const sub = meetsLeft(S.each, G.used[i], G.meet);
     const ok = canCall(i) && !G.out[i];
     rows += `<button class="go" data-a="meet-by" data-i="${i}" ${ok ? "" : "disabled"}>
       ${avatar(pname(i))}<span><b>${esc(pname(i))}</b><span class="sub">${G.out[i] ? "Out of the game" : sub}</span></span></button>`;
@@ -1425,7 +1464,7 @@ function mvResult(res) {
   redraw = () => mvResult(res);
   clearCool(); Siren.stop();
   const win = tagWinner();
-  if (!win) Round.save("play");          // a reload after the vote keeps who's out
+  Round.save(win ? "won" : "play");       // a reload keeps who's out, or goes to the reveal
   app.innerHTML = `
     ${topBar("", "", "")}
     <div class="grow">
@@ -1545,7 +1584,7 @@ app.addEventListener("click", e => {
     const r = Round.get();
     if (!r) return home();
     G = r.G; Object.assign(S, r.S); clampSetup(); saveSetup(); Awake.on();
-    return r.at === "pass" ? pass() : r.at === "started" ? started() : play();
+    return r.at === "pass" ? pass() : r.at === "started" ? started() : r.at === "won" ? reveal() : play();
   }
   if (a === "cat") {
     const n = b.dataset.n;
@@ -1561,9 +1600,10 @@ app.addEventListener("click", e => {
       const draft = { name: $("#cn").value.trim().slice(0, 24), words: $("#cw").value.slice(0, 4000) };
       const words = parseWords(draft.words), long = words.find(w => w.length > WORD_MAX);
       const nm = (draft.name || "Our words").toLowerCase();
-      if (long) return customScreen(`"${long.slice(0, 18)}..." is too long. Keep each one under ${WORD_MAX} letters.`, draft);
-      if (words.length < 2) return customScreen("Add at least 2 words.", draft);
-      if (CATS.some(c => c.name.toLowerCase() === nm)) return customScreen("There's already a category with that name. Pick another.", draft);
+      const err = m => { const e = app.querySelector(".err"); if (e) e.textContent = m; };
+      if (long) return err(`"${long.slice(0, 18)}..." is too long. Keep each one to ${WORD_MAX} characters or fewer.`);
+      if (words.length < 2) return err("Add at least 2 words.");
+      if (CATS.some(c => c.name.toLowerCase() === nm)) return err("There's already a category with that name. Pick another.");
       CUSTOM = draft;
     } else CUSTOM = { name: "", words: "" };
     store.set("imp_custom", CUSTOM);
@@ -1587,7 +1627,7 @@ app.addEventListener("click", e => {
   if (a === "meet-by")  {
     const i = +b.dataset.i;
     if (!meetOpen() || !canCall(i)) return play();
-    G.meet--; G.used[i]++; G.caller = pname(i); G.callerIdx = i; G.body = false;
+    G.meet--; G.used[i]++; G.caller = pname(i); G.callerIdx = i; G.body = false; Round.save("play");
     meeting(); Siren.play(8); return;
   }
   if (a === "body")     { G.caller = ""; G.callerIdx = -1; G.body = true; meeting(); Siren.play(8); return; }
@@ -1611,7 +1651,7 @@ app.addEventListener("click", e => {
     if (!v) return;
     M.votes[who] = v;
     if (v === "tagged") {
-      G.out[who] = true; (G.why = G.why || {})[who] = "tagged";
+      G.out[who] = true; (G.why = G.why || {})[who] = "tagged"; Round.save("play");
       // Enough tags can hand the imposters the win before the vote ends.
       if (tagWinner()) { G.mv = null; return mvResult({ outIdx: -1, early: true }); }
     }

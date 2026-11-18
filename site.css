@@ -144,7 +144,7 @@ section{padding:26px 0}
 
 /* ---------- learn: Word / Tag switch ---------- */
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surf);border-radius:18px;padding:6px;
-  position:sticky;top:70px;z-index:10;margin:8px 0 6px}
+  position:sticky;top:calc(70px + env(safe-area-inset-top));z-index:10;margin:8px 0 6px}
 .seg button{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;border:0;
   border-radius:13px;background:none;color:var(--mut);font:700 18px/1 var(--disp);cursor:pointer}
 .seg button svg{width:22px;height:22px}
@@ -418,3 +418,8 @@ body{background:
 .seg button:not([aria-selected="true"]) svg{color:var(--cyan)}
 .seg button[aria-selected="true"]{box-shadow:0 4px 0 rgba(0,0,0,.35)}
 @media (prefers-reduced-motion:reduce){.cta,.mode{transition:none}}
+
+/* small phones and typing (sweep 2026-11-17) */
+.cta{text-align:center}
+@media (max-width:359px){.seg button small{display:none}}
+body:has(input:focus,textarea:focus) :is(.tabbar,.aibubble){display:none}
