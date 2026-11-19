@@ -11,11 +11,74 @@
   const bufs = {};
   try { on = localStorage.getItem("imp_sfx") !== "off"; } catch (_) {}
 
+  /* One sound engine for the taps and the siren (siren.js asks ImpAudio.ctx()).
+     Leaving the app and coming back used to leave it silent for good. Hopscraper
+     hit the same thing; what it learned, all of it needed on iOS:
+     - the app re-activates its audio session natively (AppDelegate.swift);
+     - a context comes back "interrupted", and resume() from there only works
+       inside a tap, so keep retrying for 3 s and also retry on the next tap;
+     - sometimes it says "running" but its clock is frozen. The clock is the
+       only honest signal, so a watchdog checks it, and a frozen one is thrown
+       away and rebuilt (at most twice per incident: WebKit allows only a few).
+     Never suspend it ourselves when the app hides. */
+  const make = () => { const A = window.AudioContext || window.webkitAudioContext; try { ctx = A ? new A() : null; } catch (_) { ctx = null; } };
   function ac() {
-    if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (A) ctx = new A(); }
-    if (ctx && ctx.state !== "running") { try { ctx.resume(); } catch (_) {} }
+    if (!ctx) make();
+    if (ctx && ctx.state !== "running" && !document.hidden) { try { ctx.resume().catch(() => {}); } catch (_) {} }
     return ctx;
   }
+  let rebuilds = 0, frozen = 0, wakeT = null, armed = false, gen = 0, wdLast = -1;
+  const healthy = () => { rebuilds = 0; frozen = 0; };
+  function rebuild() {
+    if (rebuilds >= 2) return false;
+    rebuilds++;
+    try { if (ctx && ctx.close) ctx.close().catch(() => {}); } catch (_) {}
+    ctx = null; make();
+    return !!ctx;
+  }
+  const EV = ["pointerdown", "touchstart", "touchend", "mousedown", "keydown"];
+  const onTap = () => wake(0, true);
+  function arm() { if (armed) return; armed = true; EV.forEach(e => addEventListener(e, onTap, true)); }
+  function disarm() { if (!armed) return; armed = false; EV.forEach(e => removeEventListener(e, onTap, true)); }
+  function watch() {
+    if (!ctx || document.hidden) return;
+    const t0 = ctx.currentTime;
+    setTimeout(() => {
+      if (!ctx || document.hidden) return;
+      if (ctx.currentTime - t0 > 0.005) { healthy(); disarm(); return; }
+      if (++frozen > 2) return;
+      if (ctx.state !== "running") return wake(0, true);
+      if (rebuild()) watch();
+    }, 600);
+  }
+  function wake(tries, tap) {
+    if (!ctx) { make(); if (!ctx) return; }
+    if (document.hidden) return;
+    const t = tries || 0;
+    watch();
+    if (tap && t === 0 && ctx.state !== "running" && gen > 0 && rebuild()) { disarm(); return; }
+    if (tap && ctx.state === "running" && frozen > 0 && rebuild()) { frozen = 0; disarm(); return; }
+    try { ctx.resume().catch(() => {}); } catch (_) {}
+    if (wakeT) { clearTimeout(wakeT); wakeT = null; }
+    if (ctx.state === "running") return;
+    arm();
+    if (t < 12) { wakeT = setTimeout(() => wake(t + 1), 250); return; }
+    gen++;
+  }
+  document.addEventListener("visibilitychange", () => { if (ctx && !document.hidden) wake(0); });
+  addEventListener("pageshow", () => { if (ctx && !document.hidden) wake(0); });
+  addEventListener("focus", () => { if (ctx && !document.hidden) wake(0); });
+  addEventListener("blur", () => { if (ctx && !document.hidden) arm(); });     // iPad Home doesn't always send visibilitychange
+  setInterval(() => {
+    if (!ctx || document.hidden) { wdLast = -1; return; }
+    let now = -1; try { now = ctx.currentTime; } catch (_) { return; }
+    const was = wdLast; wdLast = now;
+    if (was < 0) return;
+    if (now - was > 0.005) { healthy(); return; }
+    if (ctx.state !== "running") { wake(0); return; }
+    if (rebuild()) wdLast = -1;
+  }, 2000);
+  window.ImpAudio = { ctx: ac };
   // Fetch every sound once. (The iPhone app serves its own files with fetch
   // status 0, so read the body whatever the status says.)
   function load() {
@@ -36,7 +99,7 @@
     const c = ac(), b = bufs[name];
     if (!c) return;
     if (!b) { load(); return; }
-    const now = c.currentTime;
+    const now = performance.now() / 1000;
     if (lastAt[name] && now - lastAt[name] < 0.09) return;
     lastAt[name] = now;
     const s = c.createBufferSource(), g = c.createGain();

@@ -36,6 +36,8 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibi
     try {
       // (The siren switches the phone to "play even on silent" only while it
       // sounds; see play(). Everyday taps follow the silent switch.)
+      // The shared engine in sfx.js keeps itself alive after the app was left.
+      if (window.ImpAudio) { ctx = ImpAudio.ctx(); return; }
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
       // Safari says "interrupted" after a lock or a call, not "suspended".
       if (ctx.state !== "running") ctx.resume();
@@ -49,10 +51,10 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibi
     setLoud(false);
     try { if (navigator.vibrate) navigator.vibrate(0); } catch (_) {}
     if (!live) return;
-    const { nodes, out } = live;
+    const { nodes, out, c } = live;
     live = null;
     try {
-      const t = ctx.currentTime;
+      const t = c.currentTime;
       out.gain.cancelScheduledValues(t);
       out.gain.setValueAtTime(out.gain.value, t);
       out.gain.linearRampToValueAtTime(0, t + 0.15);
@@ -109,7 +111,7 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibi
       nodes.push(o);
     });
     lfo.start(t0); lfo.stop(t0 + T + 0.1);
-    live = { nodes, out };
+    live = { nodes, out, c: ctx };
     setTimeout(() => { if (live && live.out === out) live = null; }, (T + 0.3) * 1000);
     flash(true);
     flashTimer = setTimeout(() => { flash(false); setLoud(false); }, (T + 0.05) * 1000);

@@ -593,6 +593,7 @@ button.coolring.live .tapme{display:none}
 .dk{white-space:nowrap;font-size:min(13.5px,3.4vw)}
 .av em{text-align:center;line-height:1.15}
 .row.stack{flex-direction:column;align-items:stretch;gap:10px}
+.card .team{font-size:19px;font-weight:700;color:#FF8A7A;margin:4px 0 2px}
 .row.stack .seg2{min-width:0}
 .row.stack .seg2 button{white-space:nowrap;padding:0 4px;font-size:14.5px}
 /* The meeting screen fits a small phone while the siren plays. */
@@ -1262,6 +1263,11 @@ function card() {
     inner = `<p class="lbl">Word</p><p class="word" data-fit>${esc(imp ? G.close : G.word)}</p>`;
   else if (imp && S.word && S.hint && G.hint)
     inner = `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${esc(G.hint)}</p>`;
+  else if (imp && !S.word && S.imps > 1) {
+    const team = G.imp.map((v, i) => v && i !== G.idx ? esc(pname(i)) : "").filter(Boolean);
+    inner = `<p class="role" style="color:var(--imp)">IMPOSTER</p>
+             <p class="team">Your team: ${team.join(", ")}</p><p class="mut small">Don't tag each other.</p>`;
+  }
   else
     inner = `<p class="role" style="color:var(${imp ? "--imp" : "--crew"})">${imp ? "IMPOSTER" : "CREW"}</p>
              <p class="mut small">${imp ? (S.word ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
@@ -1458,7 +1464,7 @@ function mvVote() {
   const items = alive().filter(i => i !== who).map(i => ({ v: i, label: esc(pname(i)), av: pname(i) }))
     .concat([{ v: "skip", label: "Skip vote", cls: "skip" }])
     // Imposters can't be tagged, so they don't get the choice.
-    .concat(G.imp[who] ? [] : [{ v: "tagged", label: "I got tagged", sub: "so I'm out", cls: "skip" }]);
+    .concat([{ v: "tagged", label: "I got tagged", sub: "so I'm out", cls: "skip" }]);
   app.innerHTML = `
     ${topBar("", "Vote " + (M.i + 1) + " of " + M.order.length, "")}
     <div class="list">
@@ -1719,9 +1725,9 @@ app.addEventListener("click", e => {
     if (!v) return;
     M.votes[who] = v;
     if (v === "tagged") {
+      // Out, but nothing is announced until the vote is in: a "death" might be
+      // an imposter faking it, and that mustn't show mid-meeting.
       G.out[who] = true; (G.why = G.why || {})[who] = "tagged"; Round.save("play");
-      // Enough tags can hand the imposters the win before the vote ends.
-      if (tagWinner()) { G.mv = null; return mvResult({ outIdx: -1, early: true }); }
     }
     M.i++; return mvPass();
   }
@@ -1729,10 +1735,7 @@ app.addEventListener("click", e => {
   if (a === "mv-tagged") {
     // Kept to one side until the vote is in, so Back can still change it.
     G.tg = [...app.querySelectorAll(".opt.on")].map(o => +o.dataset.v);
-    G.tg.forEach(i => { G.out[i] = true; });
-    if (tagWinner()) { G.why = G.why || {}; G.tg.forEach(i => { G.why[i] = "tagged"; }); G.tg = []; return mvResult({ outIdx: -1, early: true }); }
-    G.tg.forEach(i => { G.out[i] = false; });
-    return mvLoud();
+    return mvLoud();                      // the win (if any) shows with the vote result
   }
   if (a === "mv-out")   {
     const v = picked(); if (!v) return;

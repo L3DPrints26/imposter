@@ -456,6 +456,8 @@
     const cards = {};
     ps.forEach(p => {
       const imp = impIds.has(p.id);
+      const team = !(P.set.word || far) && imps > 1 && imp ? ps.filter(q => q.id !== p.id && impIds.has(q.id)).map(q => q.name) : null;
+      if (team) { cards[p.id] = { imp, word: "", hint: "", team }; return; }
       cards[p.id] = imp && close ? { imp, word: close, hint: "", close: true } : { imp, word: !imp && w ? w[0] : "", hint: imp ? hint : "" };
     });
     // Far apart: clues go round the group in a fixed order, starting with a
@@ -652,6 +654,8 @@
   function cardInner(card, R) {
     if (R.mode === "word" && (!card.imp || card.close)) return `<p class="lbl">Word</p><p class="word" data-fit>${esc(card.word)}</p>`;
     if (R.mode === "word" && card.imp && card.hint) return `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${esc(card.hint)}</p>`;
+    if (card.imp && card.team && card.team.length)
+      return `<p class="role" style="color:var(--imp)">IMPOSTER</p><p class="team">Your team: ${card.team.map(esc).join(", ")}</p><p class="mut small">Don't tag each other.</p>`;
     return `<p class="role" style="color:var(${card.imp ? "--imp" : "--crew"})">${card.imp ? "IMPOSTER" : "CREW"}</p>
             <p class="mut small">${card.imp ? (R.mode === "word" ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
   }
@@ -857,13 +861,10 @@
     const R = P.round;
     if (!R || R.phase !== "mvote" || !R.mv.voters.includes(pid) || R.mv.votes[pid]) return false;
     if (v !== "skip" && v !== "tagged" && (!aliveIds().includes(v) || v === pid)) return false;
-    if (v === "tagged" && R.cards[pid] && R.cards[pid].imp) return false;     // imposters can't be tagged
     R.mv.votes[pid] = v;
-    if (v === "tagged") {
-      R.out[pid] = true;
-      // Enough tags can hand the imposters the win before the vote ends.
-      if (tagWinnerP()) { R.mv = null; finishVote("", [], true); return true; }
-    }
+    // Out, but nothing is announced until the vote is in: a "death" might be an
+    // imposter faking it, and that mustn't show mid-meeting.
+    if (v === "tagged") R.out[pid] = true;
     if (Object.keys(R.mv.votes).length >= R.mv.voters.length) { mvCount(); return true; }
     syncAll();
     return true;
@@ -902,10 +903,9 @@
     let body, foot = "";
     if (next) {
       const ids = R.order || (R.people || []).map(x => x.id);
-      const nextImp = isHost ? !!(R.cards[next] && R.cards[next].imp) : !!(R.card && R.card.imp);
       const items = ids.filter(id => !isOut(id) && id !== next).map(id => ({ v: id, label: esc(nameOf(id)), av: nameOf(id) }))
         .concat([{ v: "skip", label: "Skip vote", cls: "skip" }])
-        .concat(nextImp ? [] : [{ v: "tagged", label: "I got tagged", sub: "so I'm out", cls: "skip" }]);
+        .concat([{ v: "tagged", label: "I got tagged", sub: "so I'm out", cls: "skip" }]);
       body = `<h2 class="ask">${next === me ? "Who do you vote out?" : esc(nameOf(next)) + ", who do you vote out?"}</h2>
         ${next !== me ? '<p class="mut small">Hand the phone over. Votes are secret.</p>' : ""}
         ${pickList(items)}`;
@@ -1247,10 +1247,7 @@
       // Kept to one side until the vote is in, so Back can still change it.
       const R = P.round;
       R.tg = [...app.querySelectorAll(".opt.on")].map(o => o.dataset.v);
-      R.tg.forEach(id => { R.out[id] = true; });
-      if (tagWinnerP()) { R.tg = []; return finishVote("", [], true); }
-      R.tg.forEach(id => { delete R.out[id]; });
-      return loudPick();
+      return loudPick();                  // the win (if any) shows with the vote result
     }
     if (a === "p-mv-out") {
       const v = picked(), R = P.round;
