@@ -373,14 +373,20 @@
     const tile = (v, icon, name, sub) => `<button class="gm ${(v === "word" ? mode !== "tag" : mode === v) ? "on" : ""}" data-a="p-gmode" data-v="${v}">${icon}${name}<small>${sub}</small></button>`;
     // Far apart is Word mode with the clues typed instead of said, so it's a
     // switch under Word, not a third game.
-    const rules = [];
-    if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Where is everyone?</span>${seg("p-where", [["here", "Same room"], ["far", "Far apart"]], mode === "far" ? "far" : "here")}</div>`);
-    rules.push(`<div class="rcard"><span class="rl">Imposters</span>${far ? mini("imps", 1, 1, 1) : mini("imps", S2.imps, 1, maxImp)}</div>`);
-    if (mode !== "tag") rules.push(`<div class="rcard" style="grid-column:1/-1"><span class="rl">Imposter gets</span>${seg("p-twist", [["hint", "Hint"], ["none", "Nothing"], ["close", "Close word"]], S2.close ? "close" : S2.hint ? "hint" : "none")}</div>`);
-    if (mode === "far") rules.push(`<div class="rcard"><span class="rl">Clues per player</span>${mini("rounds", S2.rounds, 1, 3)}</div>`);
-    if (mode === "tag") rules.push(`<div class="rcard"><span class="rl">Meetings</span>${mini("meetings", S2.meetings, 0, 9)}</div>`,
-      `<div class="rcard"><span class="rl">Voting</span>${seg("p-vmode", [["phone", "Phones"], ["loud", "Out loud"]], S2.vote === "loud" ? "loud" : "phone")}</div>`,
-      `<div class="rcard"><span class="rl">Meetings per player</span>${mini("each", S2.each, 0, 3, "Any")}</div>`);
+    // The rules people change go up front; the rest sit under "More rules".
+    const card = (label, ctl, full) => `<div class="rcard"${full ? ' style="grid-column:1/-1"' : ""}><span class="rl">${label}</span>${ctl}</div>`;
+    const main = [], more = [];
+    if (mode !== "tag") main.push(card("Where is everyone?", seg("p-where", [["here", "Same room"], ["far", "Far apart"]], mode === "far" ? "far" : "here"), true));
+    main.push(card("Imposters", far ? mini("imps", 1, 1, 1) : mini("imps", S2.imps, 1, maxImp), mode === "word"));
+    if (mode === "far") main.push(card("Clues each", mini("rounds", S2.rounds, 1, 3)));
+    if (mode === "tag") main.push(card("Meetings", mini("meetings", S2.meetings, 0, 9)));
+    if (mode !== "tag") main.push(card("Imposter gets", seg("p-twist", [["hint", "Hint"], ["none", "Nothing"], ["close", "Close word"]], S2.close ? "close" : S2.hint ? "hint" : "none"), true));
+    if (mode === "tag") more.push(card("How to vote", seg("p-vmode", [["phone", "Secret"], ["loud", "Out loud"]], S2.vote === "loud" ? "loud" : "phone")),
+      card("Meetings each", mini("each", S2.each, 0, 3, "Any")));
+    const joining = P.locked ? "closed" : S2.late ? "anytime" : "before";
+    more.push(card("Who can join", seg("p-joinmode", [["closed", "Nobody"], ["before", "Before start"], ["anytime", "Anytime"]], joining), true));
+    const moreSum = (mode === "tag" ? (S2.vote === "loud" ? "Vote out loud, " : "Secret votes, ") : "") +
+      (joining === "closed" ? "nobody else can join" : joining === "anytime" ? "people can join anytime" : "people can join before start");
     view(`${bar("p-end", "Your party")}
       <div class="list" style="gap:8px">
         <div class="hero">
@@ -396,30 +402,31 @@
         </div>
 
         <p class="sec">Players <span>${P.players.length}</span></p>
-        <div class="avs">${bubbles(P.players, true)}<button class="av add" data-a="p-add"><i>+</i><span>Add</span><em>on your phone</em></button></div>
+        <div class="avs">${bubbles(P.players, true)}<button class="av add" data-a="p-add"><i>+</i><span>Add</span><em>no phone</em></button></div>
 
         <p class="sec">Game</p>
         <div class="gmodes">
-          ${tile("word", I.bubble, "Word", mode === "far" ? "type your clues" : "say your clues")}
-          ${tile("tag", I.run, "Tag", "play outside")}
+          ${tile("word", I.bubble, "Word", mode === "far" ? "type clues" : "say clues")}
+          ${tile("tag", I.run, "Tag", "run and tag")}
         </div>
 
         <p class="sec">Rules</p>
-        <div class="rgrid">${rules.join("")}
-          <div class="rcard" ${(rules.length - (mode !== "tag" ? 1 : 0)) % 2 ? "" : 'style="grid-column:1/-1"'}><span class="rl">New players</span>${seg("p-lock", [["open", "Open"], ["locked", "Locked"]], P.locked ? "locked" : "open")}</div>
-          <div class="rcard" style="grid-column:1/-1"><span class="rl">Allow late joining</span>${seg("p-late", [["off", "Off"], ["on", "On"]], S2.late ? "on" : "off")}</div>
-        </div>
+        <div class="rgrid">${main.join("")}</div>
+        <details class="more" ${P.moreOpen ? "open" : ""}><summary><span><b>More rules</b><small>${moreSum}</small></span></summary>
+          <div class="rgrid">${more.join("")}</div></details>
         <p class="err">${esc(msg || "")}</p>
         ${REPORT}
       </div>
       <button class="bar" data-a="p-go" ${n >= 3 ? "" : "disabled"}>${n >= 3 ? "START" : "Need 3 players"}</button>`, () => lobby(), "lobby");
+    const d = app.querySelector("details.more");
+    if (d) d.addEventListener("toggle", () => { P.moreOpen = d.open; });
   }
 
   function addLocal(msg) {
     view(`${bar("p-lobby", "Add a player")}
       <div class="list">
-        <h2>Who's playing on your phone?</h2>
-        <p class="c mut small">They look at their card on your phone when the game starts.</p>
+        <h2>Add someone without a phone</h2>
+        <p class="c mut small">They'll use your phone to see their card.</p>
         <div class="names"><label><input id="pn" class="ftxt" maxlength="14" autocomplete="off" autocapitalize="words" enterkeyhint="done" placeholder="Their name"></label></div>
         <button class="bar ghost slim" data-a="p-rand">Random name</button>
         <p class="err" id="perr">${esc(msg || "")}</p>
@@ -582,7 +589,7 @@
         <p class="c mut" style="font-size:20px;font-weight:600">Hand your phone to</p>
         <div class="whobox">${avatar(pl.name, "lg")}<p class="who">${esc(pl.name)}</p></div>
       </div>
-      <button class="bar" data-a="p-handed">Then tap here</button>`, () => {}, "pass");
+      <button class="bar" data-a="p-handed">I have the phone</button>`, () => {}, "pass");
     P.afterHand = () => showCard(R.cards[id], esc(pl.name) + "'s card", nextHostCard, R);
   }
 
@@ -655,9 +662,9 @@
     if (R.mode === "word" && (!card.imp || card.close)) return `<p class="lbl">Word</p><p class="word" data-fit>${esc(card.word)}</p>`;
     if (R.mode === "word" && card.imp && card.hint) return `<p class="lbl imp">IMPOSTER</p><p class="word" data-fit>Hint: ${esc(card.hint)}</p>`;
     if (card.imp && card.team && card.team.length)
-      return `<p class="role" style="color:var(--imp)">IMPOSTER</p><p class="team">Your team: ${card.team.map(esc).join(", ")}</p><p class="mut small">Don't tag each other.</p>`;
+      return `<p class="role" style="color:var(--imp)">IMPOSTER</p><p class="team">Your team: ${card.team.map(esc).join(", ")}</p><p class="mut small">Don't tag them.</p>`;
     return `<p class="role" style="color:var(${card.imp ? "--imp" : "--crew"})">${card.imp ? "IMPOSTER" : "CREW"}</p>
-            <p class="mut small">${card.imp ? (R.mode === "word" ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
+            <p class="mut small">${card.imp ? (R.mode === "word" ? "You get no hint. Fake it using the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
   }
   function holdWire(inner) {
     const hold = $p("#hold"), box = $p("#card"), blank = box.innerHTML;
@@ -697,7 +704,7 @@
       body = `<p class="cat"><span class="k">Category</span><span class="v">${esc(R.cat)}</span></p>
         <div class="card" style="min-height:0"><p style="font-size:22px;font-weight:600">${esc(R.first)} starts.</p>
         <p class="mut">One clue each. ${R.impCount} imposter${R.impCount === 1 ? "" : "s"}.</p></div>
-        <p class="c mut small">Go around, one word each. Talk it over, then point on three.</p>`;
+        <p class="c mut small">Everyone says one word about it, one at a time. Then point at who you think is lying on 3.</p>`;
     } else {
       // The host's buttons work for everyone playing on the host's phone.
       const mine = isHost ? P.players.filter(p => p.kind !== "phone").map(p => p.id) : [P.me.id];
@@ -707,7 +714,7 @@
       body = `<div class="calls">
           <button class="call em" data-a="p-meet" ${canEm ? "" : "disabled"}>${I.alarm}<span class="k">Emergency meeting</span>
             <span class="s">${R.meetLeft} left${R.each ? " &middot; " + R.each + " per player" : ""}</span></button>
-          <button class="call body" data-a="p-body" ${meOut || R.dealing ? "disabled" : ""}>${I.alert}<span class="k">Report a body</span><span class="s">${meOut ? "you're out" : R.dealing ? "cards still going out" : "free, any time"}</span></button>
+          <button class="call body" data-a="p-body" ${meOut || R.dealing ? "disabled" : ""}>${I.alert}<span class="k">Report a body</span><span class="s">${meOut ? "you're out" : R.dealing ? "cards still going out" : "always allowed"}</span></button>
         </div>
         ${coolTile(R)}`;
     }
@@ -828,7 +835,7 @@
       return `<button class="go" data-a="p-meet-by" data-id="${p.id}" ${ok ? "" : "disabled"}><span><b>${esc(p.name)}</b>
         <span class="sub">${isOut(p.id) ? "Out of the game" : meetsLeft(R.each, R.used[p.id] || 0)}</span></span></button>`;
     }).join("");
-    view(`${bar("p-on", "Meeting")}<div class="list"><h2>Who's calling it?</h2>
+    view(`${bar("p-on", "Meeting")}<div class="list"><h2>Who called the meeting?</h2>
       <p class="c mut small">People with their own phone call it from there.</p><div class="names">${rows}</div></div>`, hostMeetPick, "pick");
   }
   function meeting(loud) {
@@ -920,8 +927,8 @@
   }
   function loudTagged() {
     const R = P.round;
-    view(`${bar("p-meeting", "")}<div class="list"><h2 class="ask">Anyone tagged?</h2>
-      <p class="c mut small">Check everyone who got tagged. Nobody? Just tap Next.</p>
+    view(`${bar("p-meeting", "")}<div class="list"><h2 class="ask">Who got tagged?</h2>
+      <p class="c mut small">Tap everyone who got tagged. If nobody did, just tap Next.</p>
       ${pickList(aliveIds().map(id => ({ v: id, label: esc(nameOf(id)), av: nameOf(id), cls: (R.tg || []).includes(id) ? "on" : "" })), true)}</div>
       <button class="bar" data-a="p-mv-tagged">Next</button>`, loudTagged, "loudtag");
   }
@@ -1192,6 +1199,7 @@
       return send(P.conn, { t: "clue", text: t });
     }
     if (a === "p-count") return countVotes();
+    if (a === "p-joinmode") { P.locked = b.dataset.v === "closed"; P.set.late = b.dataset.v === "anytime"; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-lock")  { P.locked = b.dataset.v === "locked"; return lobby(); }
     if (a === "p-late")  { P.set.late = b.dataset.v === "on"; saveSet(); shareLobby(); return lobby(); }
     if (a === "p-skip")  return P.role === "host" && skipTurn();

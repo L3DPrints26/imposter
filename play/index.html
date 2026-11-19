@@ -1046,10 +1046,10 @@ function home() {
         <small>${live.S.word ? "Word" : "Tag"} &middot; ${live.S.players} players &middot; <span id="liveclock">${sinceText(live)}</span></small></span>
         <span class="lgo">Back to it</span></button>` : ""}
       <div class="modes">
-        <button class="big y" data-a="pick-word"><span class="mi">${I.bubble}</span>Word<small>sit down</small></button>
-        <button class="big o" data-a="pick-tag"><span class="mi">${I.run}</span>Tag<small>outside</small></button>
+        <button class="big y" data-a="pick-word"><span class="mi">${I.bubble}</span>Word<small>say clues</small></button>
+        <button class="big o" data-a="pick-tag"><span class="mi">${I.run}</span>Tag<small>run and tag</small></button>
       </div>
-      <button class="together" data-a="p-start"><span class="ti">${I.group}</span><span><b>Play together</b><small>one phone each</small></span><span class="chev">&rsaquo;</span></button>
+      <button class="together" data-a="p-start"><span class="ti">${I.group}</span><span><b>Play together</b><small>everyone on their own phone</small></span><span class="chev">&rsaquo;</span></button>
       <div class="dock">
         <a class="dk" href="../how-to-play/"><i>${I.book}</i>How to play</a>
         <a class="dk" href="../help/"><i>${I.help}</i>Help</a>
@@ -1126,15 +1126,15 @@ function setup() {
     ${topBar("home", S.word ? "Word" : "Tag", "")}
     <div class="grow" style="justify-content:flex-start;gap:12px">
       <div class="row"><div><b>Players</b><div class="sub">3 to 15</div></div>${stepper("players", S.players, 3, 15)}</div>
-      <div class="row"><div><b>Imposters</b><div class="sub">fewer than the crew</div></div>${stepper("imps", S.imps, 1, maxImp)}</div>
+      <div class="row"><div><b>Imposters</b><div class="sub">${S.word ? "they don't get the word" : "they do the tagging"}</div></div>${stepper("imps", S.imps, 1, maxImp)}</div>
       ${S.word
         ? `<div class="row stack"><div><b>Imposter gets</b><div class="sub">${S.close ? "a close word, so they don't know they're the imposter" : S.hint ? "a one-word hint" : "just the category"}</div></div>${seg("twist", [["hint", "Hint"], ["none", "Nothing"], ["close", "Close word"]], S.close ? "close" : S.hint ? "hint" : "none")}</div>`
-        : `<div class="row"><div><b>Meetings</b><div class="sub">shared by everyone</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>
+        : `<div class="row"><div><b>Meetings</b><div class="sub">how many the group can call</div></div>${stepper("meetings", S.meetings, 0, 9)}</div>
            <details class="more" ${moreOpen ? "open" : ""}><summary><span><b>More rules</b>
-             <small>${S.vote === "loud" ? "Vote out loud" : "Vote on the phone"}, timer ${S.timer ? "on" : "off"}${S.each ? ", " + S.each + " per player" : ""}</small></span></summary>
-             <div class="row"><div><b>Voting</b></div>${seg("vote-mode", [["phone", "On phone"], ["loud", "Out loud"]], S.vote)}</div>
-             <div class="row"><div><b>Tag timer</b><div class="sub">countdown after each tag</div></div>${seg("timer-mode", [["off", "Off"], ["on", "On"]], S.timer ? "on" : "off")}</div>
-             <div class="row"><div><b>Meetings per player</b><div class="sub">Any = no limit</div></div>${stepper("each", S.each, 0, 3, "Any")}</div>
+             <small>${S.vote === "loud" ? "Vote out loud" : "Secret votes"}, timer ${S.timer ? "on" : "off"}${S.each ? ", " + S.each + " per player" : ""}</small></span></summary>
+             <div class="row"><div><b>How to vote</b></div>${seg("vote-mode", [["phone", "Secret"], ["loud", "Out loud"]], S.vote)}</div>
+             <div class="row"><div><b>Tag timer</b><div class="sub">the phone counts down between tags</div></div>${seg("timer-mode", [["off", "Off"], ["on", "On"]], S.timer ? "on" : "off")}</div>
+             <div class="row"><div><b>Meetings each</b><div class="sub">how many one person can call</div></div>${stepper("each", S.each, 0, 3, "Any")}</div>
            </details>`}
       ${S.word ? `<button class="go" data-a="cats"><span><b>Categories</b><span class="sub">${catsLabel()}</span></span><span class="arr">&rsaquo;</span></button>` : ""}
       <button class="go" data-a="names"><span><b>Player names</b><span class="sub">${namedCount() ? namedCount() + " of " + S.players + " named" : "Optional"}</span></span><span class="arr">&rsaquo;</span></button>
@@ -1252,7 +1252,7 @@ function pass() {
       <div class="whobox">${avatar(pname(G.idx), "lg")}<p class="who">${esc(pname(G.idx))}</p></div>
       <p class="c mut" style="font-size:18px">${G.idx + 1} of ${S.players}</p>
     </div>
-    <button class="bar" data-a="view">Then tap here</button>`;
+    <button class="bar" data-a="view">I have the phone</button>`;
 }
 
 function card() {
@@ -1266,11 +1266,11 @@ function card() {
   else if (imp && !S.word && S.imps > 1) {
     const team = G.imp.map((v, i) => v && i !== G.idx ? esc(pname(i)) : "").filter(Boolean);
     inner = `<p class="role" style="color:var(--imp)">IMPOSTER</p>
-             <p class="team">Your team: ${team.join(", ")}</p><p class="mut small">Don't tag each other.</p>`;
+             <p class="team">Your team: ${team.join(", ")}</p><p class="mut small">Don't tag them.</p>`;
   }
   else
     inner = `<p class="role" style="color:var(${imp ? "--imp" : "--crew"})">${imp ? "IMPOSTER" : "CREW"}</p>
-             <p class="mut small">${imp ? (S.word ? "No hint. Bluff off the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
+             <p class="mut small">${imp ? (S.word ? "You get no hint. Fake it using the category." : "Tag them. Blend in.") : "Find the imposters."}</p>`;
   const last = G.idx === S.players - 1;
   app.innerHTML = `
     ${topBar("", `${G.idx + 1}/${S.players}`, "")}
@@ -1312,8 +1312,8 @@ function started() {
         <p class="starts">${avatar(pname(G.first), "md")}<span style="font-size:22px;font-weight:600">${esc(pname(G.first))} starts.</span></p>
         <p class="mut">One clue each. ${S.imps} imposter${S.imps === 1 ? "" : "s"}.</p>
       </div>
-      <p class="c mut small">Go around the circle, one word each. Talk it over, then point on
-      three. Tap Reveal when you've voted.</p>
+      <p class="c mut small">Everyone says one word about it, one at a time. Then point at who you
+      think is lying on 3. Tap Reveal to see who it was.</p>
     </div>
     <button class="bar" data-a="reveal-ask">Reveal</button>`;
 }
@@ -1332,7 +1332,7 @@ function play() {
     <div class="calls">
       <button class="call em" data-a="meet" ${meetOpen() ? "" : "disabled"}>${I.alarm}<span class="k">Emergency meeting</span>
         <span class="s">${G.meet} left${S.each ? " &middot; " + S.each + " per player" : ""}</span></button>
-      <button class="call body" data-a="body">${I.alert}<span class="k">Report a body</span><span class="s">free, any time</span></button>
+      <button class="call body" data-a="body">${I.alert}<span class="k">Report a body</span><span class="s">always allowed</span></button>
     </div>
     ${graceLeft(G) ? graceTile(graceLeft(G)) : S.timer ? ringTile(left, coolSecs(), "cool") : coolNote(coolSecs())}
     <div class="grow"><p class="c mut small">${G.out.some(Boolean) ? "Out: " + G.out.map((o, i) => o ? esc(pname(i)) : "").filter(Boolean).join(", ") + ". " : ""}Leave the phone where everyone can reach it.</p></div>
@@ -1361,8 +1361,8 @@ function ringSet(left, total) {
   arc.setAttribute("stroke-dashoffset", left ? RING * (1 - left / total) : 0);
   arc.setAttribute("stroke", left ? "var(--imp)" : "var(--crew)");
   t.classList.toggle("live", !!left);
-  k.textContent = left ? "No tagging yet" : "Tag cooldown";
-  sub.textContent = left ? "Wait for zero." : "Imposters: tap right after you tag someone.";
+  k.textContent = left ? "No tagging yet" : "Wait between tags";
+  sub.textContent = left ? "Wait for zero." : "Imposters: tap this right after you tag someone.";
 }
 // After a meeting: 15 seconds when nobody may tag. The cooldown button is
 // locked for real until it runs out. Shared with party.js.
@@ -1382,8 +1382,8 @@ function graceTile(left) {
 function coolNote(secs, noSwitch) {
   return `<div class="cooltile">
     <span class="cring"><b>${secs}<small>sec</small></b></span>
-    <span class="ct"><b>Tag cooldown</b><small>Imposters count it in their heads after each tag.</small></span>
-    ${noSwitch ? "" : '<button class="sw" data-a="timer-on" aria-label="Turn on the tag timer"><i></i>Timer OFF</button>'}
+    <span class="ct"><b>Wait between tags</b><small>Imposters count to ${secs} in their heads after each tag.</small></span>
+    ${noSwitch ? "" : '<button class="sw" data-a="timer-on" aria-label="Turn on the tag timer"><i></i>Phone timer: off</button>'}
   </div>`;
 }
 function graceSet(left) {
@@ -1405,7 +1405,7 @@ function meetPick() {
   app.innerHTML = `
     ${topBar("play", "Meeting", "")}
     <div class="list">
-      <h2>Who's calling it?</h2>
+      <h2>Who called the meeting?</h2>
       <div class="names">${rows}</div>
     </div>`;
 }
@@ -1456,7 +1456,7 @@ function mvPass() {
       <div class="whobox">${avatar(pname(M.order[M.i]), "lg")}<p class="who">${esc(pname(M.order[M.i]))}</p></div>
       <p class="c mut small">Votes are secret.</p>
     </div>
-    <button class="bar" data-a="mv-ready">Then tap here</button>`;
+    <button class="bar" data-a="mv-ready">I have the phone</button>`;
 }
 function mvVote() {
   const M = G.mv, who = M.order[M.i];
@@ -1493,8 +1493,8 @@ function mvTagged() {
   app.innerHTML = `
     ${topBar("meeting", "", "")}
     <div class="list">
-      <h2 class="ask">Anyone tagged?</h2>
-      <p class="c mut small">Check everyone who got tagged. Nobody? Just tap Next.</p>
+      <h2 class="ask">Who got tagged?</h2>
+      <p class="c mut small">Tap everyone who got tagged. If nobody did, just tap Next.</p>
       ${pickList(alive().map(i => ({ v: i, label: esc(pname(i)), av: pname(i), cls: (G.tg || []).includes(i) ? "on" : "" })), true)}
     </div>
     <button class="bar" data-a="mv-tagged">Next</button>`;
