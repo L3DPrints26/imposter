@@ -121,35 +121,32 @@ When the facts include "Worked out", those numbers are exact. Use them as they a
 
 THE GAME: works with 3 to 15 players (a party too). Two games, Word and Tag. To change the number of players, tap + or - next to Players on the setup screen.
 
-WORD (sit in a circle)
-Setup: Home > "Word". Set Players, Imposters and "Imposter gets": Hint (a one-word hint), Nothing (only the category) or Close word (the imposter gets a different word from the same category, sees it like a normal word, and doesn't know they're the imposter). "Categories" picks which word lists are on; "Make your own" adds your own words (no hints for those). "Player names" is optional. Tap "START".
-Cards: "Hand the phone to [name]", that player taps "Then tap here", holds "HOLD" to see their card, lets go, taps "Next player". Crew see the word. Imposters see IMPOSTER and maybe a hint. Everyone sees the category.
-"Game started" says who goes first. Go around once, one clue word each about the secret word. Talk it over, then everyone points on three. Most votes is out. Tap "Reveal", then "Yes, reveal" to see the word and the imposters. "NEW GAME" deals a new word; no word repeats within 16 rounds.
-Crew win if they vote out every imposter. Imposters win if they survive the vote. Optional house rule: a voted-out imposter still wins by naming the word.
+WORD (sit together, say clues)
+Setup: Home > "Word". Set Players, Imposters and "Imposter gets": Hint (a one-word hint), Nothing (just the category) or Close word (the imposter gets a different word from the same category, sees it like a normal word, and doesn't know they're the imposter). "Categories" turns word lists on or off; "Make your own" adds your own words, and "Share my words" turns them into a code a friend can paste in. "Player names" is optional. Tap "START".
+Cards: "Hand the phone to [name]", that player taps "I have the phone", holds "HOLD" to see their card, lets go, taps "Next player". Crew see the word. Imposters see IMPOSTER and maybe a hint. Everyone sees the category. In Word, imposters don't know who the other imposters are.
+"Game started" says who goes first. Everyone says one word about the secret word, one at a time. Then everyone points at who they think is lying on 3. Tap "Reveal", then "Yes, reveal" to see the word and the imposters. "NEW GAME" deals a new word.
+Crew win if they vote out every imposter. Imposters win if they survive the vote.
 
-TAG (outside)
-Setup: Home > "Tag". Players, Imposters, Meetings (0 to 9, shared by the group). "More rules": Voting ("On phone" or "Out loud"), Tag timer (off by default. On one shared phone, people could see who taps it, so imposters count the cooldown in their heads. Turning it on is fine in Play together, where each imposter has their own phone), "Meetings per player" (the most one player can call; Any means no limit).
-Cards say CREW or IMPOSTER. Then leave the phone where everyone can reach it.
-Imposters tag people by touching them, so Tag needs everyone in the same place. Tag can't be played far apart. A tagged player lies down right there. After a tag, an imposter waits out the tag cooldown before tagging again: 45 seconds with 3 to 6 players, 30 with 7 to 10, 20 with 11 to 15, plus 10 more for each imposter after the first.
-"Report a body" is free, any time. "Emergency meeting" uses one of the group's meetings and asks "Who's calling it?". A siren plays for 8 seconds; "Stop the siren" on the meeting screen stops it sooner. "Called by mistake? Cancel it" gives the meeting back.
-Voting on the phone: "Start the vote", pass the phone, each player taps a name or "Skip vote", then "Submit vote". A tagged player picks "I got tagged" instead and is out.
-Voting out loud: tap "Who's out?", check who got tagged, tap "Next", then pick who got voted out, or "Nobody".
-Most votes is out. If two or more players tie for the most votes, nobody is out. If at least as many players skip as voted for the top player, nobody is out. A vote for someone who turns out to be tagged counts as a skip.
-Then everyone says "3, 2, 1, UP!" and tagged players stand up. "Back to the game" starts 15 seconds of no tagging.
-Out players are ghosts: quiet, no voting, no meetings.
-To end a round any time: tap "Reveal", then "Yes, reveal".
-Crew win when every imposter is out. Imposters win as soon as the imposters still in are at least as many as the crew still in. The phone checks after every vote. It doesn't say if a voted-out player was an imposter until Reveal.
+TAG (play outside, run and tag)
+Setup: Home > "Tag". Players, Imposters, Meetings (how many the group can call, 0 to 9). "More rules": How to vote ("Secret" on the phone or "Out loud"), Tag timer (the phone counts down between tags; off by default because on one shared phone people could see who taps it), "Meetings each" (the most one person can call; Any means no limit).
+Cards say CREW or IMPOSTER. With 2 or more imposters, each imposter's card shows "Your team" so they don't tag each other. Then leave the phone where everyone can reach it.
+Imposters tag people by touching them, so everyone has to be in the same place. A tagged player lies down right there. Imposters can fake a death too. After a tag, an imposter waits before tagging again: 45 seconds with 3 to 6 players, 30 with 7 to 10, 20 with 11 to 15, plus 10 more for each imposter after the first.
+"Report a body" is always allowed. "Emergency meeting" uses one of the group's meetings and asks "Who called the meeting?". A siren plays for 8 seconds; "Stop the siren" stops it sooner. "Called by mistake? Cancel it" gives the meeting back.
+Secret vote: "Start the vote", pass the phone, each person taps "I have the phone", then a name, "Skip vote" or "I got tagged" (they're out), then "Submit vote".
+Out loud: tap "Who's out?", tap everyone who got tagged, tap "Next", then pick who the group voted out, or "Nobody".
+Most votes is out. A tie means nobody is out. The result shows after the vote, never in the middle of a meeting, so a faked death isn't given away.
+Then everyone says "3, 2, 1, UP!" and "Back to the game" starts 15 seconds of no tagging. Out players are ghosts: no voting, no meetings.
+Crew win when every imposter is out. Imposters win when the imposters still in are at least as many as the crew still in. The phone doesn't say if a voted-out player was an imposter until "Reveal".
 
-PLAY TOGETHER (one phone each, needs internet)
-Home > "Play together". "Host" gets a 4-letter party code. Invite with "Messages", "Mail", "Copy link" or "More"; tapping the invite opens the game, they type a name and they're in. Or they tap "Join" and type the code. Everyone needs a name (2 to 14 letters; "Random name" works). Up to 15 players. New players join between rounds.
-The host can "Add" a player with no phone (they look at their card on the host's phone), remove anyone with the x (they can't come back), and set "New players" to "Locked".
-Word with "Where is everyone?" set to "Far apart" is for friends in different places: one imposter, players take turns typing a clue (1 to 3 each), then everyone votes on their own phone. A tie means the imposters win. The host can "Skip" someone's turn or "End round".
-Tag in a party: everyone is in the same place (tagging is by touch); anyone calls a meeting or reports a body from their own phone, and everyone votes on theirs. Someone far away can't play Tag. They can play Word with "Far apart".
-If a guest's phone dies or drops, they open the game, tap "Join", type the same code and they're back in, card and all. If the host's phone goes off, the others see a 2-minute countdown; the host just opens the app again.
+PLAY TOGETHER (everyone on their own phone, needs internet)
+Home > "Play together". "Host" makes a 4-letter party code. Invite with "Messages", "Mail", "Copy link" or "More"; they tap the link, type a name and they're in. Or they tap "Join" and type the code. Names are 2 to 14 letters ("Random name" works). Up to 15 players.
+The host can "Add" someone with no phone (they use the host's phone to see their card) and remove anyone with the x. "More rules" has "Who can join": Nobody, Before start, or Anytime (people can join a game that's going; tap the code at the top to invite them).
+Word with "Where is everyone?" set to "Far apart" is for friends in different places: one imposter, everyone takes turns typing a clue, then votes on their own phone. Tag needs everyone in the same place.
+During a game, "Hold to check your card" shows your card again. If a phone drops, open the game, tap "Join", type the same code and you're back in. If the host's phone goes off, the others see a 2-minute countdown.
 "Report a problem" reports a player.
 
 THE APP
-The main menu has Word, Tag and Play together, plus How to play, Help, Share and Tip the Dev. During a game the Home button keeps the game going: the menu shows "Game in progress" with "Back to it". Starting a new game while one is going asks "End the game in progress?" first. Everything works offline except Play together. Help has answers and a way to send feedback.
+The menu has Word, Tag and Play together, plus How to play, Help, Share and Tip the Dev. During a game the Home button keeps the game going: the menu shows "Game in progress" with "Back to it". Everything works offline except Play together.
 The Pocket Imposter box is a small handheld version of the game. The app doesn't need it.
 
 HOW GOOD ANSWERS LOOK
@@ -237,10 +234,10 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     const out = [], tagged = [], voted = [];
     G.out.forEach((o, i) => { if (!o) return; out.push(i); ((G.why || {})[i] === "tagged" ? tagged : voted).push(i); });
     const still = n - out.length;
-    let lo = Math.max(1, I - voted.length), hi = Math.min(I, Math.floor((still - 1) / 2));
+    let lo = Math.max(1, I - out.length), hi = Math.min(I, Math.floor((still - 1) / 2));
     if (hi < lo) hi = lo;
     f.push(`Still in: ${still} of ${n}. Out: ${list(out.map(pname))}.` +
-      (tagged.length ? ` Tagged (so crew, imposters can't be tagged): ${list(tagged.map(pname))}.` : "") +
+      (tagged.length ? ` Said they got tagged (could be a faked death; the phone never says): ${list(tagged.map(pname))}.` : "") +
       (voted.length ? ` Voted out (the phone doesn't say if they were imposters until Reveal): ${list(voted.map(pname))}.` : ""));
     f.push(`Imposters at the start: ${I}. Imposters still in: ${lo === hi ? "exactly " + lo : "between " + lo + " and " + hi}` +
       ` (the game is still going, so at least 1, and fewer than the crew still in).`);
@@ -311,6 +308,104 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     else if (/cool|wait|tag/.test(t)) for (let i = 1; i <= Math.min(3, maxImp(n)); i++)
       out.push(`Tag cooldown with ${n} players and ${i} imposter${i === 1 ? "" : "s"}: ${coolOf(n, i)} seconds.`);
     return out;
+  }
+
+  /* ------------------------------------------------------------ instant answers
+     The phone's model is small and fumbles easy questions. The ones people
+     actually ask are answered here, straight from the game, with no model. */
+  const NEXT = {
+    home: 'Pick a game: "Word" to sit together and give clues, "Tag" to play outside, or "Play together" if everyone has a phone.',
+    setup: 'Set how many players and imposters, then tap "START".',
+    namesScreen: 'Type everyone\'s names in the order you\'re sitting, then tap "Done".',
+    catsScreen: 'Tap categories to turn them on or off, then tap "Done".',
+    customScreen: 'Type a name and at least 2 words, one per line, then tap "Save".',
+    importScreen: 'Paste the code your friend sent, then tap "Use these words".',
+    pass: 'Give the phone to the person shown. They tap "I have the phone".',
+    card: 'Hold "HOLD" to see your card, let go, then tap "Next player".',
+    started: 'Everyone says one word about the secret word, one at a time. Then point at who you think is lying on 3, and tap "Reveal".',
+    play: 'Go play! Imposters tag people. Find someone lying down? Tap "Report a body". Want to talk it over? Tap "Emergency meeting".',
+    meetPick: 'Tap the name of whoever called the meeting.',
+    meeting: 'Everyone comes together and talks it over. Then tap "Start the vote", or "Who\'s out?" if you vote out loud.',
+    mvPass: 'Give the phone to the person shown. They tap "I have the phone" and vote in secret.',
+    mvVote: 'Tap who you want out, "Skip vote", or "I got tagged" if you got tagged. Then tap "Submit vote".',
+    mvTagged: 'Tap everyone who got tagged, then "Next". If nobody did, just tap "Next".',
+    mvLoud: 'Pick who the group voted out, or "Nobody", then tap "Done".',
+    mvResult: 'Everyone says "3, 2, 1, UP!" Then tap "Back to the game" for 15 seconds of no tagging.',
+    revealAsk: 'Tap "Yes, reveal" to see the word and the imposters, or "Keep playing".',
+    reveal: 'Tap "NEW GAME" to play again.'
+  };
+  function partyNext(p) {
+    const host = p.role === "host";
+    switch (p.screen) {
+      case "lobby": return host ? 'Send people the code with "Messages" or "Mail", or they tap "Play together", "Join" and type it. Once 3 or more are in, tap "START".'
+                                : "You're in. Wait for the host to tap START.";
+      case "name": return 'Type your name or tap "Random name", then tap "Next".';
+      case "code": return 'Type the 4-letter code from the host\'s phone, then tap "Join".';
+      case "add": return 'Type their name, then tap "Add". They\'ll use your phone to see their card.';
+      case "pass": return 'Give your phone to the person shown. They tap "I have the phone".';
+      case "card": return 'Hold "HOLD" to see your card, then tap "Got it".';
+      case "on":
+        if (p.mode === "far") return p.turn ? (p.turn === p.me ? "It's your turn. Type a one or two word clue about the secret word and tap Send." : `It's ${p.turn}'s turn to type a clue. Yours comes up when it's your turn.`) : "Vote for who you think is the imposter.";
+        if (p.mode === "tag") return 'Go play! Imposters tag people. Find someone lying down? Tap "Report a body". Want to talk it over? Tap "Emergency meeting".';
+        return 'Everyone says one word about the secret word, one at a time. Then point at who you think is lying on 3.' + (host ? ' Tap "Reveal" when you\'re done.' : "");
+      case "pick": return "Tap the name of whoever called the meeting.";
+      case "meeting": return "Talk it over, then vote.";
+      case "mvote": return 'Vote on your phone: tap a name, "Skip vote" or "I got tagged", then submit it.';
+      case "result": return 'Everyone says "3, 2, 1, UP!" and the game goes on.';
+      case "reveal": return host ? 'Tap "Next game" to play again.' : "Wait for the host to start the next game.";
+      default: return "";
+    }
+  }
+  const SECRET = "The phone keeps that secret until Reveal.";
+  const HOW_WORD = 'Word: everyone gets the same secret word except the imposters. Take turns saying one word about it. The imposters fake it. Then point at who you think is lying, and tap "Reveal".';
+  const HOW_TAG = 'Tag: play outside. Imposters secretly tag people, who lie down. Anyone can call a meeting or report a body, then everyone votes someone out. Crew win when every imposter is out.';
+  let lastQuick = "";
+  function quick(text) {
+    const t = " " + String(text).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ") + " ";
+    const p = window.Party && Party.info ? Party.info() : null;
+    const one = typeof S !== "undefined" && document.querySelector("#app") ? S : null;
+    const k = screenKey(), word = p ? p.mode !== "tag" : one && k !== "home" ? !!one.word : null;
+    const inTag = p ? p.mode === "tag" && !!p.phase : !!(one && !one.word && typeof G !== "undefined" && G && IN_ROUND.has(k));
+    if (/^ (shorter|simpler) $/.test(t)) return lastQuick || null;
+    if (/ (whats|what is|tell me|say) (the )?(secret )?word | who (is|are|s) (the )?imp| whos (the )?imp| who is lying /.test(t)) return SECRET;
+    if (/ (what (do|should) (i|we) do|now what|what now|whats next|what next|next step|what do i press|what do i tap|what do i do now) /.test(t)) {
+      const a = p ? partyNext(p) : NEXT[k];
+      if (a) return a;
+    }
+    // numbers in the question: players, imposters, cooldown
+    const pm = t.match(/ (\d+) (players?|ppl|people|persons?|kids|friends|guys|of us) /), im = t.match(/ (\d+) (imposters?|impostors?|imps?) /);
+    const n = pm ? +pm[1] : 0, kk = im ? +im[1] : 0;
+    if (n && (n < 3 || n > 15)) return `The game needs 3 to 15 players.${n < 3 ? " Grab " + (3 - n) + " more!" : ""}`;
+    if (n && kk) return kk > maxImp(n) ? `No, ${kk} is too many for ${n} players. The most is ${maxImp(n)}.` : `Yes, ${n} players can have ${kk} imposter${kk === 1 ? "" : "s"}.`;
+    if (n && / imp| how many /.test(t) && !/ cool| wait /.test(t)) return `With ${n} players you can have up to ${maxImp(n)} imposter${maxImp(n) === 1 ? "" : "s"}.`;
+    if (/ cool ?down | cool off | how long .*wait| wait .*tag| tag again /.test(t)) {
+      const pn = n || (p ? p.n || p.players.length : one ? one.players : 0), pk = kk || (p ? p.impCount || p.imposters : one ? one.imps : 0);
+      if (pn >= 3 && pk) return `After a tag, an imposter waits ${coolOf(pn, pk)} seconds before tagging again (${pn} players, ${pk} imposter${pk === 1 ? "" : "s"}).`;
+      return "After a tag, an imposter waits before tagging again: 45 seconds with 3 to 6 players, 30 with 7 to 10, 20 with 11 to 15, plus 10 for each extra imposter.";
+    }
+    if (/ how many (people|players|ppl)| (min|max)(imum)? (players|people)| how many can play /.test(t)) return "Pocket Imposter works with 3 to 15 players.";
+    if (/ close word /.test(t)) return "With Close word, the imposter gets a different word from the same category, like Cat instead of Dog. It looks like a normal word, so they don't even know they're the imposter. The reveal shows both words.";
+    if (/ (team|teammate|each other|other imp|partner)/.test(t) && / imp|team|teammate|partner/.test(t))
+      return word === false ? 'Yes. In Tag, each imposter\'s card shows "Your team", so you don\'t tag each other.' : 'In Word, imposters don\'t know who the others are. In Tag, each imposter\'s card shows "Your team".';
+    if (/ word or tag | difference | which (game|mode) | what is tag | whats tag | what is word | whats word /.test(t)) return HOW_WORD + " " + HOW_TAG;
+    if (/ how (do (i|we|you) |to )play | rules | how does (this|it|the game) work | how (do|does) (this|it) work /.test(t)) return word === false ? HOW_TAG : word ? HOW_WORD : HOW_WORD + " " + HOW_TAG;
+    if (/ fake (a |my )?death | fake (being )?dead | pretend (to be )?dead /.test(t)) return 'Yes, imposters can fake a death. In the vote they can pick "I got tagged" like anyone else, and nothing is given away until the vote result.';
+    if (/ (see|check|look at) (my )?(card|word|role) again | forgot (my )?(word|card|role) /.test(t))
+      return p && p.phase ? 'Hold "Hold to check your card" at the bottom of the screen.' : "Once the phone moves on, cards can't be shown again. If someone forgot, tap the home button and start a new game.";
+    if (/ invite | (add|get) (my )?friends? (in|to)| how (do|can) (they|people|my friends?|others) join | join (my|the|a) (game|party) /.test(text.toLowerCase() + " ") || / invite /.test(t)) {
+      if (p && p.role === "host") return 'Tap "Messages" or "Mail" to send the invite. They tap the link, type a name and they\'re in. Or they tap "Play together", "Join" and type ' + p.code + ".";
+      if (p) return `Have them tap "Play together", then "Join", and type ${p.code}.`;
+      return 'Tap "Play together", then "Host". Send the code with "Messages" or "Mail", and your friends tap the link to join.';
+    }
+    if (/ far (apart|away) | different (place|places|house|houses|city|state)| long distance /.test(t)) return 'Use "Play together" and pick Word with "Where is everyone?" set to "Far apart". Everyone types their clues on their own phone. Tag needs everyone in the same place.';
+    if (/ how (do (we|i) |to )vote | voting /.test(t)) return word ? "Point at who you think is lying on 3. Most points is out." + (p ? "" : ' Then tap "Reveal".') : (one && one.vote === "loud") || (p && p.vote === "loud") ? 'Tap "Who\'s out?", tap everyone who got tagged, then pick who the group voted out.' : 'Tap "Start the vote" and pass the phone. Each person taps "I have the phone", picks someone, "Skip vote" or "I got tagged", then "Submit vote".';
+    if (/ (end|stop|finish|quit) (the )?(game|round) | how (do|to) reveal /.test(t)) return p && p.role !== "host" ? 'Only the host can end it. They tap "Reveal".' : 'Tap "Reveal", then "Yes, reveal".';
+    if (/ report (a )?body /.test(t)) return '"Report a body" is for when you find someone lying down. It\'s always allowed and starts a meeting.';
+    if (/ emergency meeting | call a meeting /.test(t) && !/ left /.test(t)) return '"Emergency meeting" brings everyone together to talk and vote. The group only gets so many, set on the setup screen.';
+    if (/ meetings? left /.test(t)) { const m = p ? p.meetLeft : (typeof G !== "undefined" && G ? G.meet : null); if (m != null) return `${m} emergency meeting${m === 1 ? "" : "s"} left. "Report a body" is always allowed.`; }
+    if (/ whose turn | who goes /.test(t) && p && p.turn) return p.turn === p.me ? "It's your turn to type a clue." : `It's ${p.turn}'s turn.`;
+    if (/ share (my )?words | friends? code | my own words | custom words | make (my|your) own /.test(t)) return 'Go to "Word", then "Categories", then "Make your own". Add a name and words, tap "Save". "Share my words" makes a code; your friend taps "Got a code from a friend?" and pastes it.';
+    return null;
   }
 
   function facts() {
@@ -558,6 +653,14 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
 
   async function ask(text) {
     log.push({ who: "me", text });
+    let q = null;
+    try { q = quick(text); } catch (_) {}
+    if (q) {                                   // a sure answer: no model, no wait
+      lastQuick = q;
+      log.push({ who: "ai", text: q }); saveLog(); render();
+      return;
+    }
+    lastQuick = "";
     busy = true; render();
     const math = questionMath(text);
     const now = facts() + (math.length ? "\nWorked out for this question: " + math.join(" ") : "");
@@ -599,5 +702,5 @@ Start the answer right away. Never write "Facts:", "Q:", "A:" or "Asked".`;
     open();
   });
 
-  window.ImpAI = { open, facts, check, questionMath, status: () => status, RULES, SPARK };
+  window.ImpAI = { open, facts, check, questionMath, quick, status: () => status, RULES, SPARK };
 })();
