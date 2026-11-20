@@ -21,7 +21,29 @@
        only honest signal, so a watchdog checks it, and a frozen one is thrown
        away and rebuilt (at most twice per incident: WebKit allows only a few).
      Never suspend it ourselves when the app hides. */
-  const make = () => { const A = window.AudioContext || window.webkitAudioContext; try { ctx = A ? new A() : null; } catch (_) { ctx = null; } };
+  let master = null, away = false, awayAt = 0;
+  const make = () => {
+    const A = window.AudioContext || window.webkitAudioContext;
+    try { ctx = A ? new A() : null; } catch (_) { ctx = null; }
+    master = null;
+    if (ctx) { master = ctx.createGain(); master.gain.value = away ? 0 : 1; master.connect(ctx.destination); }
+  };
+  // Everything plays through here, so leaving can silence it all at once.
+  const out = () => { ac(); return master || (ctx && ctx.destination); };
+  function fadeTo(v, sec) {
+    if (!ctx || !master) return;
+    try { const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(v, t + sec); }
+    catch (_) { try { master.gain.value = v; } catch (__) {} }
+  }
+  // Called by the iPhone app the moment it's left or comes back (AppDelegate.swift).
+  window.impAudioLeave = () => { away = true; awayAt = performance.now(); fadeTo(0, 0.01); };
+  window.impAudioBack = () => { if (document.hidden) return; const was = away; away = false; fadeTo(1, 0.05); if (was && ctx) wake(0); };
+  // It always comes back: iOS can say "leaving" (Control Center, a notification
+  // pulled down) with no "back" after it. Any tap, or 3 s of being plainly on
+  // screen, lifts the mute (Hopscraper's last net).
+  ["pointerdown", "touchstart", "keydown"].forEach(e => addEventListener(e, () => { if (away) window.impAudioBack(); }, true));
+  setInterval(() => { if (away && !document.hidden && performance.now() - awayAt > 3000) window.impAudioBack(); }, 1000);
+  addEventListener("pagehide", () => window.impAudioLeave());
   function ac() {
     if (!ctx) make();
     if (ctx && ctx.state !== "running" && !document.hidden) { try { ctx.resume().catch(() => {}); } catch (_) {} }
@@ -65,7 +87,7 @@
     if (t < 12) { wakeT = setTimeout(() => wake(t + 1), 250); return; }
     gen++;
   }
-  document.addEventListener("visibilitychange", () => { if (ctx && !document.hidden) wake(0); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) window.impAudioLeave(); else if (ctx) window.impAudioBack(); });
   addEventListener("pageshow", () => { if (ctx && !document.hidden) wake(0); });
   addEventListener("focus", () => { if (ctx && !document.hidden) wake(0); });
   addEventListener("blur", () => { if (ctx && !document.hidden) arm(); });     // iPad Home doesn't always send visibilitychange
@@ -78,7 +100,7 @@
     if (ctx.state !== "running") { wake(0); return; }
     if (rebuild()) wdLast = -1;
   }, 2000);
-  window.ImpAudio = { ctx: ac };
+  window.ImpAudio = { ctx: ac, out };
   // Fetch every sound once. (The iPhone app serves its own files with fetch
   // status 0, so read the body whatever the status says.)
   function load() {
@@ -105,7 +127,7 @@
     const s = c.createBufferSource(), g = c.createGain();
     s.playbackRate.value = rate || 1;
     g.gain.value = vol == null ? 1 : vol;
-    s.buffer = b; s.connect(g); g.connect(c.destination);
+    s.buffer = b; s.connect(g); g.connect(out());
     s.start();
   }
 

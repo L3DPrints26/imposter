@@ -37,7 +37,7 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibi
       // (The siren switches the phone to "play even on silent" only while it
       // sounds; see play(). Everyday taps follow the silent switch.)
       // The shared engine in sfx.js keeps itself alive after the app was left.
-      if (window.ImpAudio) { ctx = ImpAudio.ctx(); return; }
+      if (window.ImpAudio) { ctx = ImpAudio.ctx(); return; }      // and plays through ImpAudio.out()
       if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
       // Safari says "interrupted" after a lock or a call, not "suspended".
       if (ctx.state !== "running") ctx.resume();
@@ -93,7 +93,7 @@ html:not(.siren-on) [data-a="hush"],html:not(.siren-on) [data-a="p-hush"]{visibi
     const lfo = ctx.createOscillator(), lfoAmt = ctx.createGain();
     lfo.frequency.value = 0.4; lfoAmt.gain.value = 0.25;
     lfo.connect(lfoAmt); lfoAmt.connect(rot.gain);
-    rot.connect(shape); shape.connect(lp); lp.connect(out); out.connect(ctx.destination);
+    rot.connect(shape); shape.connect(lp); lp.connect(out); out.connect(window.ImpAudio ? ImpAudio.out() : ctx.destination);
 
     const nodes = [lfo];
     [1, 1.2].forEach((ratio, k) => {                // root and minor third
